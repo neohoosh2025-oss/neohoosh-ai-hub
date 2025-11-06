@@ -28,10 +28,10 @@ const Contact = () => {
       {/* Header */}
       <section className="py-16 bg-gradient-to-b from-card/50 to-background">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-primary glow-neon">تماس</span> با ما
-            </h1>
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            تماس با ما
+          </h1>
             <p className="text-lg text-muted-foreground">
               سوال یا پیشنهادی دارید؟ خوشحال می‌شویم از شما بشنویم
             </p>
