@@ -12,6 +12,7 @@ const Navigation = () => {
     { path: "/articles", label: "مقالات" },
     { path: "/products", label: "فروشگاه" },
     { path: "/services", label: "خدمات" },
+    { path: "/chat", label: "چت‌بات" },
     { path: "/about", label: "درباره ما" },
     { path: "/contact", label: "تماس با ما" },
   ];
