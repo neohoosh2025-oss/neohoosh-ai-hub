@@ -1,9 +1,10 @@
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Mail, Send, Instagram } from "lucide-react";
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
@@ -14,13 +15,28 @@ const Contact = () => {
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "پیام شما ارسال شد",
-      description: "به زودی با شما تماس خواهیم گرفت",
+    
+    const { error } = await supabase.from("comments").insert({
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
     });
-    setFormData({ name: "", email: "", message: "" });
+
+    if (error) {
+      toast({
+        title: "خطا",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "پیام ارسال شد",
+        description: "به زودی با شما تماس خواهیم گرفت",
+      });
+      setFormData({ name: "", email: "", message: "" });
+    }
   };
 
   return (
@@ -108,10 +124,10 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold">ایمیل</h3>
                     <a
-                      href="mailto:info@neohoosh.ai"
+                      href="mailto:neohoosh.2025@gmail.com"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      info@neohoosh.ai
+                      neohoosh.2025@gmail.com
                     </a>
                   </div>
                 </div>
@@ -125,7 +141,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold">اینستاگرام</h3>
                     <a
-                      href="https://instagram.com/neohoosh.ai"
+                      href="https://www.instagram.com/neohoosh.ai"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary transition-colors"

@@ -1,10 +1,36 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 
-const products: any[] = [];
+interface Product {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  pages: string;
+  file_url: string | null;
+  created_at: string;
+}
 
 const Products = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    setProducts(data || []);
+    setLoading(false);
+  };
   return (
     <div className="min-h-screen pt-20">
       {/* Header */}
@@ -24,7 +50,11 @@ const Products = () => {
       {/* Products Grid */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          {products.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground">در حال بارگذاری...</p>
+            </div>
+          ) : products.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground">محصولی هنوز منتشر نشده است</p>
             </div>
@@ -56,10 +86,19 @@ const Products = () => {
                   <span className="text-2xl font-bold text-primary">
                     {product.price}
                   </span>
-                  <Button className="gap-2">
-                    <Download className="h-4 w-4" />
-                    خرید و دانلود
-                  </Button>
+                  {product.file_url ? (
+                    <Button className="gap-2" asChild>
+                      <a href={product.file_url} target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4" />
+                        دانلود
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button className="gap-2">
+                      <Download className="h-4 w-4" />
+                      خرید و دانلود
+                    </Button>
+                  )}
                 </div>
               </Card>
               ))}

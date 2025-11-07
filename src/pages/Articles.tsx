@@ -1,14 +1,37 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
-import aiBasicsImage from "@/assets/article-ai-basics.jpg";
-import chatgptImage from "@/assets/article-chatgpt.jpg";
-import imageGenImage from "@/assets/article-image-gen.jpg";
 
-const articles: any[] = [];
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+}
 
 const Articles = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    const { data } = await supabase
+      .from("articles")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    setArticles(data || []);
+    setLoading(false);
+  };
   return (
     <div className="min-h-screen pt-20">
       {/* Header */}
@@ -28,7 +51,11 @@ const Articles = () => {
       {/* Articles Grid */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          {articles.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground">در حال بارگذاری...</p>
+            </div>
+          ) : articles.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-muted-foreground">مقاله‌ای هنوز منتشر نشده است</p>
             </div>
@@ -39,18 +66,20 @@ const Articles = () => {
                 key={article.id}
                 className="overflow-hidden border-border hover:border-primary/50 transition-all group cursor-pointer"
               >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                  />
-                  <div className="absolute top-4 right-4">
-                    <span className="px-3 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium">
-                      {article.category}
-                    </span>
+                {article.image_url && (
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={article.image_url}
+                      alt={article.title}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                    <div className="absolute top-4 right-4">
+                      <span className="px-3 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium">
+                        {article.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="p-6 space-y-4">
                   <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
@@ -65,21 +94,14 @@ const Articles = () => {
                     <div className="flex items-center gap-4">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        {article.date}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {article.readTime}
+                        {new Date(article.created_at).toLocaleDateString("fa-IR")}
                       </span>
                     </div>
                   </div>
 
-                  <Link to={`/articles/${article.id}`}>
-                    <Button variant="ghost" className="w-full gap-2 group-hover:text-primary">
-                      ادامه مطلب
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                  </Link>
+                  <div className="whitespace-pre-wrap text-muted-foreground text-sm">
+                    {article.content.substring(0, 150)}...
+                  </div>
                 </div>
               </Card>
               ))}

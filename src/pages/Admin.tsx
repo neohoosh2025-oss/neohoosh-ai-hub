@@ -1,199 +1,99 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { AdminArticles } from "./AdminArticles";
+import { AdminProducts } from "./AdminProducts";
+import { AdminComments } from "./AdminComments";
+import { LogOut } from "lucide-react";
 
 const Admin = () => {
   const { toast } = useToast();
-  const [articleForm, setArticleForm] = useState({
-    title: "",
-    excerpt: "",
-    content: "",
-    category: "",
-    image: null as File | null,
-  });
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const [productForm, setProductForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    pages: "",
-    file: null as File | null,
-  });
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
-  const handleArticleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "موفق",
-      description: "مقاله با موفقیت ذخیره شد (نیاز به اتصال دیتابیس)",
-    });
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .single();
+
+    if (roleData?.role !== "admin") {
+      toast({
+        title: "دسترسی غیرمجاز",
+        description: "شما دسترسی به پنل مدیریت ندارید",
+        variant: "destructive",
+      });
+      navigate("/");
+      return;
+    }
+
+    setIsAdmin(true);
+    setLoading(false);
   };
 
-  const handleProductSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "موفق",
-      description: "محصول با موفقیت ذخیره شد (نیاز به اتصال دیتابیس)",
-    });
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-20 flex items-center justify-center">
+        <p>در حال بارگذاری...</p>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen pt-20">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-foreground">پنل مدیریت</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-foreground">پنل مدیریت</h1>
+          <Button onClick={handleLogout} variant="outline">
+            <LogOut className="h-4 w-4 ml-2" />
+            خروج
+          </Button>
+        </div>
 
         <Tabs defaultValue="articles" dir="rtl">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="articles">مقالات</TabsTrigger>
             <TabsTrigger value="products">محصولات</TabsTrigger>
+            <TabsTrigger value="comments">نظرات</TabsTrigger>
           </TabsList>
 
           <TabsContent value="articles">
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-6">افزودن مقاله جدید</h2>
-              <form onSubmit={handleArticleSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="article-title">عنوان مقاله</Label>
-                  <Input
-                    id="article-title"
-                    value={articleForm.title}
-                    onChange={(e) => setArticleForm({ ...articleForm, title: e.target.value })}
-                    placeholder="عنوان مقاله را وارد کنید"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="article-category">دسته‌بندی</Label>
-                  <Input
-                    id="article-category"
-                    value={articleForm.category}
-                    onChange={(e) => setArticleForm({ ...articleForm, category: e.target.value })}
-                    placeholder="مثال: آموزش، ابزارها، طراحی"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="article-excerpt">خلاصه مقاله</Label>
-                  <Textarea
-                    id="article-excerpt"
-                    value={articleForm.excerpt}
-                    onChange={(e) => setArticleForm({ ...articleForm, excerpt: e.target.value })}
-                    placeholder="خلاصه‌ای از مقاله..."
-                    rows={3}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="article-content">محتوای مقاله</Label>
-                  <Textarea
-                    id="article-content"
-                    value={articleForm.content}
-                    onChange={(e) => setArticleForm({ ...articleForm, content: e.target.value })}
-                    placeholder="محتوای کامل مقاله..."
-                    rows={10}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="article-image">تصویر شاخص</Label>
-                  <Input
-                    id="article-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setArticleForm({ ...articleForm, image: e.target.files?.[0] || null })}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full">
-                  ذخیره مقاله
-                </Button>
-              </form>
-            </Card>
+            <AdminArticles />
           </TabsContent>
 
           <TabsContent value="products">
-            <Card className="p-6">
-              <h2 className="text-2xl font-semibold mb-6">افزودن محصول جدید</h2>
-              <form onSubmit={handleProductSubmit} className="space-y-6">
-                <div>
-                  <Label htmlFor="product-title">عنوان محصول</Label>
-                  <Input
-                    id="product-title"
-                    value={productForm.title}
-                    onChange={(e) => setProductForm({ ...productForm, title: e.target.value })}
-                    placeholder="عنوان محصول را وارد کنید"
-                    required
-                  />
-                </div>
+            <AdminProducts />
+          </TabsContent>
 
-                <div>
-                  <Label htmlFor="product-description">توضیحات</Label>
-                  <Textarea
-                    id="product-description"
-                    value={productForm.description}
-                    onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
-                    placeholder="توضیحات محصول..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="product-price">قیمت (تومان)</Label>
-                    <Input
-                      id="product-price"
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                      placeholder="۴۹,۰۰۰"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="product-pages">تعداد صفحات</Label>
-                    <Input
-                      id="product-pages"
-                      value={productForm.pages}
-                      onChange={(e) => setProductForm({ ...productForm, pages: e.target.value })}
-                      placeholder="۳۵ صفحه"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="product-file">فایل PDF</Label>
-                  <Input
-                    id="product-file"
-                    type="file"
-                    accept=".pdf"
-                    onChange={(e) => setProductForm({ ...productForm, file: e.target.files?.[0] || null })}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full">
-                  ذخیره محصول
-                </Button>
-              </form>
-            </Card>
+          <TabsContent value="comments">
+            <AdminComments />
           </TabsContent>
         </Tabs>
-
-        <div className="mt-8 p-4 bg-card border border-border rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            ⚠️ توجه: برای فعال‌سازی کامل این پنل، نیاز به اتصال Cloud است. 
-            لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.
-          </p>
-        </div>
       </div>
     </div>
   );
