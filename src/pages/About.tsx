@@ -8,7 +8,7 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              درباره <span className="text-primary glow-neon">نئوهوش</span>
+              درباره <span className="text-foreground">نئوهوش</span>
             </h1>
             <p className="text-lg text-muted-foreground">
               ماموریت ما گسترش دانش هوش مصنوعی در جامعه فارسی‌زبان است

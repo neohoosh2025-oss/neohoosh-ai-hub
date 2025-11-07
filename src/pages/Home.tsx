@@ -31,7 +31,7 @@ const Home = () => {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              <span className="text-primary glow-neon-strong animate-glow">نئوهوش</span>
+              <span className="text-foreground">نئوهوش</span>
               <br />
               دنیای هوش مصنوعی
             </h1>
@@ -72,7 +72,7 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              چرا <span className="text-primary glow-neon">نئوهوش</span>؟
+              چرا <span className="text-foreground">نئوهوش</span>؟
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               ما با هدف آموزش و گسترش دانش هوش مصنوعی، محتوای با کیفیت و کاربردی را ارائه می‌دهیم

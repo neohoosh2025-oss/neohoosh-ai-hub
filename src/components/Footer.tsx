@@ -8,7 +8,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-primary glow-neon">نئوهوش</h3>
+            <h3 className="text-xl font-bold text-foreground">نئوهوش</h3>
             <p className="text-sm text-muted-foreground">
               دنیای هوش مصنوعی برای همه
             </p>
@@ -58,7 +58,7 @@ const Footer = () => {
             <h4 className="font-semibold">شبکه‌های اجتماعی</h4>
             <div className="flex gap-4">
               <a
-                href="https://instagram.com/neohoosh.ai"
+                href="https://www.instagram.com/neohoosh.ai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-primary transition-colors"
@@ -66,7 +66,7 @@ const Footer = () => {
                 <Instagram className="h-5 w-5" />
               </a>
               <a
-                href="mailto:info@neohoosh.ai"
+                href="mailto:neohoosh.2025@gmail.com"
                 className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="h-5 w-5" />
