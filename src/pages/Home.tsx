@@ -34,8 +34,6 @@ const Home = () => {
               <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent animate-glow">
                 نئو هوش
               </span>
-              <br />
-              <span className="text-foreground">دنیای هوش مصنوعی</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
