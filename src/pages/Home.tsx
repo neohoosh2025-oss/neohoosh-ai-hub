@@ -30,10 +30,12 @@ const Home = () => {
               </span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-              <span className="text-foreground">نئوهوش</span>
+            <h1 className="text-5xl md:text-7xl font-bold leading-tight animate-fade-in">
+              <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent animate-glow">
+                نئو هوش
+              </span>
               <br />
-              دنیای هوش مصنوعی
+              <span className="text-foreground">دنیای هوش مصنوعی</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">

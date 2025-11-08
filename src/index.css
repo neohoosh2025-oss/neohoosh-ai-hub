@@ -8,45 +8,57 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 210 100% 50%;
+    --radius: 0.75rem;
+    
+    --neohoosh-blue: 210 100% 50%;
+    --neohoosh-blue-glow: 210 100% 70%;
+    --gradient-neon: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(240 100% 50% / 0.2));
+    --glow-neon: 0 0 8px hsl(210 100% 50% / 0.3), 0 0 16px hsl(210 100% 50% / 0.2);
+    --glow-neon-strong: 0 0 6px hsl(210 100% 50% / 0.4), 0 0 12px hsl(210 100% 50% / 0.3), 0 0 18px hsl(210 100% 50% / 0.2);
+  }
+
+  .dark {
     --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-
     --card: 0 0% 11%;
     --card-foreground: 0 0% 98%;
-
     --popover: 0 0% 11%;
     --popover-foreground: 0 0% 98%;
-
-    --primary: 180 100% 50%;
-    --primary-foreground: 0 0% 4%;
-
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14%;
     --secondary-foreground: 0 0% 98%;
-
     --muted: 0 0% 14%;
     --muted-foreground: 0 0% 63%;
-
-    --accent: 180 100% 50%;
-    --accent-foreground: 0 0% 4%;
-
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-
     --border: 0 0% 18%;
     --input: 0 0% 18%;
-    --ring: 180 100% 50%;
-
-    --radius: 0.75rem;
-
-    --neon-cyan: 180 100% 50%;
-    --neon-cyan-glow: 180 100% 70%;
-    --dark-bg: 0 0% 4%;
-    --dark-surface: 0 0% 11%;
-    --dark-border: 0 0% 18%;
+    --ring: 210 100% 50%;
     
-    --gradient-neon: linear-gradient(135deg, hsl(180 100% 50% / 0.2), hsl(240 100% 50% / 0.2));
-    --glow-neon: 0 0 8px hsl(180 100% 50% / 0.3), 0 0 16px hsl(180 100% 50% / 0.2);
-    --glow-neon-strong: 0 0 6px hsl(180 100% 50% / 0.4), 0 0 12px hsl(180 100% 50% / 0.3), 0 0 18px hsl(180 100% 50% / 0.2);
+    --neohoosh-blue: 210 100% 60%;
+    --neohoosh-blue-glow: 210 100% 80%;
   }
 }
 
@@ -95,10 +107,37 @@ All colors MUST be HSL.
   
   @keyframes glow {
     from {
-      filter: drop-shadow(0 0 5px hsl(180 100% 50% / 0.5));
+      filter: drop-shadow(0 0 5px hsl(var(--neohoosh-blue) / 0.5));
     }
     to {
-      filter: drop-shadow(0 0 20px hsl(180 100% 50% / 0.8));
+      filter: drop-shadow(0 0 20px hsl(var(--neohoosh-blue) / 0.8));
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
     }
   }
 }

@@ -60,11 +60,15 @@ const About = () => {
                 </div>
                 <h2 className="text-2xl font-bold">تیم نئوهوش</h2>
               </div>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed mb-6">
                 تیم ما متشکل از متخصصان حوزه هوش مصنوعی، توسعه‌دهندگان نرم‌افزار
                 و تولیدکنندگان محتوا است که با اشتیاق و علاقه به این فناوری،
                 در حال ایجاد محتوای با کیفیت و کاربردی هستند.
               </p>
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <h3 className="font-semibold text-lg mb-2">محمدرضا معز</h3>
+                <p className="text-sm text-muted-foreground">مدیریت</p>
+              </div>
             </div>
 
             {/* Values */}

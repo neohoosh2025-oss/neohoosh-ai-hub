@@ -2,19 +2,23 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Navigation = () => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useLanguage();
 
   const links = [
-    { path: "/", label: "خانه" },
-    { path: "/articles", label: "مقالات" },
-    { path: "/products", label: "فروشگاه" },
-    { path: "/services", label: "خدمات" },
-    { path: "/chat", label: "چت‌بات" },
-    { path: "/about", label: "درباره ما" },
-    { path: "/contact", label: "تماس با ما" },
+    { path: "/", label: t("home") },
+    { path: "/articles", label: t("articles") },
+    { path: "/products", label: t("products") },
+    { path: "/services", label: t("services") },
+    { path: "/chat", label: t("chatbot") },
+    { path: "/about", label: t("about") },
+    { path: "/contact", label: t("contact") },
   ];
 
   return (
@@ -23,7 +27,9 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-foreground">نئوهوش</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent">
+              {t("hero.title")}
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -41,17 +47,22 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
+            <ThemeToggle />
+            <LanguageToggle />
           </div>
 
           {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
