@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
+import neohooshLogo from "@/assets/neohoosh-logo.png";
 
 const Navigation = () => {
   const location = useLocation();
@@ -26,10 +27,12 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent">
-              {t("hero.title")}
-            </span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <img 
+              src={neohooshLogo} 
+              alt="NeoHoosh Logo" 
+              className="h-12 w-auto transition-all duration-300 group-hover:scale-110 group-hover:brightness-125 group-hover:drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]"
+            />
           </Link>
 
           {/* Desktop Navigation */}
