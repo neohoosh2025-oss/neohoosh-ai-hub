@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Product {
   id: string;
@@ -61,46 +62,38 @@ const Products = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {products.map((product) => (
-              <Card
-                key={product.id}
-                className="p-6 border-border hover:border-primary/50 transition-all group"
-              >
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 transition-all">
-                  <FileText className="h-8 w-8 text-primary" />
-                </div>
+              <Link key={product.id} to={`/products/${product.id}`}>
+                <Card
+                  className="p-6 border-border hover:border-primary/50 transition-all group cursor-pointer h-full flex flex-col"
+                >
+                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-all">
+                    <FileText className="h-8 w-8 text-primary" />
+                  </div>
 
-                <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
-                  {product.title}
-                </h3>
+                  <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                    {product.title}
+                  </h3>
 
-                <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                  {product.description}
-                </p>
+                  <p className="text-muted-foreground text-sm mb-4 leading-relaxed line-clamp-3 flex-1">
+                    {product.description}
+                  </p>
 
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-6 pb-6 border-b border-border">
-                  <span>فرمت: PDF</span>
-                  <span>{product.pages}</span>
-                </div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-6 pb-6 border-b border-border">
+                    <span>فرمت: PDF</span>
+                    <span>{product.pages} صفحه</span>
+                  </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-primary">
-                    {product.price}
-                  </span>
-                  {product.file_url ? (
-                    <Button className="gap-2" asChild>
-                      <a href={product.file_url} target="_blank" rel="noopener noreferrer">
-                        <Download className="h-4 w-4" />
-                        دانلود
-                      </a>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold text-primary">
+                      {product.price}
+                    </span>
+                    <Button variant="outline" size="sm" className="gap-2 group-hover:border-primary group-hover:text-primary">
+                      مشاهده جزییات
+                      <ArrowLeft className="h-3 w-3" />
                     </Button>
-                  ) : (
-                    <Button className="gap-2">
-                      <Download className="h-4 w-4" />
-                      خرید و دانلود
-                    </Button>
-                  )}
-                </div>
-              </Card>
+                  </div>
+                </Card>
+              </Link>
               ))}
             </div>
           )}

@@ -1,9 +1,44 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, BookOpen, MessageCircle } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft, Sparkles, BookOpen, MessageCircle, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import heroImage from "@/assets/hero-bg.jpg";
 
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+}
+
 const Home = () => {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLatestArticles = async () => {
+      const { data, error } = await supabase
+        .from("articles")
+        .select("id, title, excerpt, category, image_url, created_at")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error("Error fetching articles:", error);
+      } else {
+        setArticles(data || []);
+      }
+      setLoading(false);
+    };
+
+    fetchLatestArticles();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -109,6 +144,82 @@ const Home = () => {
                 دستیار هوش مصنوعی آماده پاسخگویی به سوالات شما
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Articles Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              آخرین <span className="text-primary">مقالات</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              جدیدترین آموزش‌ها و محتوای آموزشی هوش مصنوعی
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="overflow-hidden">
+                  <Skeleton className="h-48 w-full" />
+                  <CardHeader>
+                    <Skeleton className="h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
+          ) : articles.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">هنوز مقاله‌ای منتشر نشده است</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-8">
+              {articles.map((article) => (
+                <Link key={article.id} to={`/articles/${article.id}`}>
+                  <Card className="h-full overflow-hidden hover:border-primary/50 transition-all group">
+                    {article.image_url && (
+                      <div className="aspect-video overflow-hidden">
+                        <img
+                          src={article.image_url}
+                          alt={article.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+                    <CardHeader>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary">
+                          {article.category}
+                        </span>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(article.created_at).toLocaleDateString("fa-IR")}
+                        </div>
+                      </div>
+                      <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
+                        {article.title}
+                      </CardTitle>
+                      <CardDescription className="line-clamp-3">
+                        {article.excerpt}
+                      </CardDescription>
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-12">
+            <Link to="/articles">
+              <Button variant="outline" size="lg" className="gap-2">
+                مشاهده همه مقالات
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

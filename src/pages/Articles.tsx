@@ -62,48 +62,49 @@ const Articles = () => {
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {articles.map((article) => (
-              <Card
-                key={article.id}
-                className="overflow-hidden border-border hover:border-primary/50 transition-all group cursor-pointer"
-              >
-                {article.image_url && (
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={article.image_url}
-                      alt={article.title}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute top-4 right-4">
-                      <span className="px-3 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium">
-                        {article.category}
-                      </span>
+              <Link key={article.id} to={`/articles/${article.id}`}>
+                <Card
+                  className="overflow-hidden border-border hover:border-primary/50 transition-all group cursor-pointer h-full"
+                >
+                  {article.image_url && (
+                    <div className="relative overflow-hidden">
+                      <img
+                        src={article.image_url}
+                        alt={article.title}
+                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <span className="px-3 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium">
+                          {article.category}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-6 space-y-4">
+                    <h3 className="text-xl font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                      {article.title}
+                    </h3>
+                    
+                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                      {article.excerpt}
+                    </p>
+
+                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border">
+                      <div className="flex items-center gap-4">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(article.created_at).toLocaleDateString("fa-IR")}
+                        </span>
+                      </div>
+                      <Button variant="ghost" size="sm" className="gap-2 group-hover:text-primary">
+                        ادامه مطلب
+                        <ArrowLeft className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                )}
-
-                <div className="p-6 space-y-4">
-                  <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
-                    {article.title}
-                  </h3>
-                  
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {article.excerpt}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border">
-                    <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(article.created_at).toLocaleDateString("fa-IR")}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="whitespace-pre-wrap text-muted-foreground text-sm">
-                    {article.content.substring(0, 150)}...
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
               ))}
             </div>
           )}
