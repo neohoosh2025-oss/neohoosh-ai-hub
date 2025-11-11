@@ -5,6 +5,7 @@ import { ArrowLeft, Sparkles, BookOpen, MessageCircle, Calendar } from "lucide-r
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import heroImage from "@/assets/hero-bg.jpg";
 
 interface Article {
@@ -19,6 +20,8 @@ interface Article {
 const Home = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const featuresAnimation = useScrollAnimation({ threshold: 0.2 });
+  const articlesAnimation = useScrollAnimation({ threshold: 0.1 });
 
   useEffect(() => {
     const fetchLatestArticles = async () => {
@@ -115,8 +118,8 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group">
+          <div className="grid md:grid-cols-3 gap-8" ref={featuresAnimation.ref}>
+            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in ${featuresAnimation.isVisible ? 'visible' : ''}`}>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <BookOpen className="h-6 w-6 text-primary" />
               </div>
@@ -126,7 +129,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group">
+            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in scroll-fade-in-delay-1 ${featuresAnimation.isVisible ? 'visible' : ''}`}>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
@@ -136,7 +139,7 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group">
+            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in scroll-fade-in-delay-2 ${featuresAnimation.isVisible ? 'visible' : ''}`}>
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <MessageCircle className="h-6 w-6 text-primary" />
               </div>
@@ -178,10 +181,10 @@ const Home = () => {
               <p className="text-muted-foreground">هنوز مقاله‌ای منتشر نشده است</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-8">
-              {articles.map((article) => (
+            <div className="grid md:grid-cols-3 gap-8" ref={articlesAnimation.ref}>
+              {articles.map((article, index) => (
                 <Link key={article.id} to={`/articles/${article.id}`}>
-                  <Card className="h-full overflow-hidden hover:border-primary/50 transition-all group">
+                  <Card className={`h-full overflow-hidden hover:border-primary/50 transition-all group scroll-fade-in ${index === 1 ? 'scroll-fade-in-delay-1' : index === 2 ? 'scroll-fade-in-delay-2' : ''} ${articlesAnimation.isVisible ? 'visible' : ''}`}>
                     {article.image_url && (
                       <div className="aspect-video overflow-hidden">
                         <img
