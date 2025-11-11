@@ -43,13 +43,14 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
+        {/* Background Image with Parallax Effect */}
         <div 
           className="absolute inset-0 z-0"
           style={{
             backgroundImage: `url(${heroImage})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            backgroundAttachment: 'fixed',
           }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
@@ -225,7 +226,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="relative py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-3xl p-12 border border-primary/20 glow-neon">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -242,6 +243,16 @@ const Home = () => {
               </Button>
             </Link>
           </div>
+        </div>
+
+        {/* Sticky CTA Button */}
+        <div className="fixed bottom-8 left-8 z-40 hidden lg:block">
+          <Link to="/chat">
+            <Button size="lg" className="gap-2 glow-neon-strong shadow-2xl">
+              <MessageCircle className="h-5 w-5" />
+              دستیار هوشمند
+            </Button>
+          </Link>
         </div>
       </section>
     </div>
