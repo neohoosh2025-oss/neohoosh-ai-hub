@@ -1,141 +1,148 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Send, Bot, User } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Download, Share2, ZoomIn } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-type Message = { role: "user" | "assistant"; content: string };
+type ModelType = "business" | "personal" | "general" | "ads" | "image";
+
+interface Model {
+  id: ModelType;
+  name: string;
+  description: string;
+  icon: typeof Briefcase;
+  gradient: string;
+}
+
+const models: Model[] = [
+  {
+    id: "business",
+    name: "مشاور کسب و کار",
+    description: "راهنمایی حرفه‌ای برای کسب و کار شما",
+    icon: Briefcase,
+    gradient: "from-blue-500 to-cyan-500"
+  },
+  {
+    id: "personal",
+    name: "توسعه فردی",
+    description: "مشاوره برای رشد شخصی و حرفه‌ای",
+    icon: UserIcon,
+    gradient: "from-purple-500 to-pink-500"
+  },
+  {
+    id: "general",
+    name: "سوالات آزاد",
+    description: "پاسخ به هر سوالی که دارید",
+    icon: MessageSquare,
+    gradient: "from-green-500 to-emerald-500"
+  },
+  {
+    id: "ads",
+    name: "تولید تبلیغات",
+    description: "ایجاد محتوای تبلیغاتی جذاب",
+    icon: Megaphone,
+    gradient: "from-orange-500 to-red-500"
+  },
+  {
+    id: "image",
+    name: "تبدیل متن به عکس",
+    description: "تولید تصویر از توضیحات شما",
+    icon: ImageIcon,
+    gradient: "from-indigo-500 to-violet-500"
+  }
+];
 
 const Chat = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
+  const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; imageUrl?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleModelSelect = (modelId: ModelType) => {
+    setSelectedModel(modelId);
+    setMessages([]);
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const handleBack = () => {
+    setSelectedModel(null);
+    setMessages([]);
+  };
 
-  const streamChat = async (userMessage: Message) => {
-    const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+  const handleSend = async () => {
+    if (!message.trim() || !selectedModel || isLoading) return;
+    
+    const userMessage = { role: "user" as const, content: message };
+    setMessages(prev => [...prev, userMessage]);
+    setMessage("");
+    setIsLoading(true);
 
     try {
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
-      });
-
-      if (resp.status === 429) {
-        toast({
-          title: "خطا",
-          description: "محدودیت تعداد درخواست، لطفاً بعداً تلاش کنید.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (resp.status === 402) {
-        toast({
-          title: "خطا",
-          description: "نیاز به شارژ اعتبار، لطفاً به تنظیمات مراجعه کنید.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
-      if (!resp.ok || !resp.body) {
-        throw new Error("خطا در دریافت پاسخ");
-      }
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = "";
-      let streamDone = false;
-      let assistantContent = "";
-
-      // Add empty assistant message
-      setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
-
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            streamDone = true;
-            break;
+      if (selectedModel === "image") {
+        const { data, error } = await supabase.functions.invoke("chat", {
+          body: { 
+            messages: [userMessage],
+            modelType: "image"
           }
+        });
 
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantContent += content;
-              setMessages((prev) => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = {
-                  role: "assistant",
-                  content: assistantContent,
-                };
-                return newMessages;
-              });
-            }
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
+        if (error) throw error;
+
+        setMessages(prev => [
+          ...prev,
+          { 
+            role: "assistant", 
+            content: "تصویر شما آماده شد:",
+            imageUrl: data.imageUrl 
           }
-        }
-      }
+        ]);
+      } else {
+        const { data, error } = await supabase.functions.invoke("chat", {
+          body: { 
+            messages: [...messages, userMessage],
+            modelType: selectedModel
+          }
+        });
 
-      setIsLoading(false);
+        if (error) throw error;
+
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: data.response }
+        ]);
+      }
     } catch (error) {
       console.error("Error:", error);
-      toast({
-        title: "خطا",
-        description: "مشکلی در ارتباط با هوش مصنوعی پیش آمد",
-        variant: "destructive",
-      });
+      toast.error("خطا در ارتباط با هوش مصنوعی");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = { role: "user", content: input.trim() };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    await streamChat(userMessage);
+  const downloadImage = (imageUrl: string) => {
+    const link = document.createElement('a');
+    link.href = imageUrl;
+    link.download = `neohoosh-${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("تصویر دانلود شد");
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const shareMessage = (content: string) => {
+    if (navigator.share) {
+      navigator.share({
+        text: content,
+        title: 'نئوهوش - پاسخ هوش مصنوعی'
+      }).catch(() => {
+        navigator.clipboard.writeText(content);
+        toast.success("متن کپی شد");
+      });
+    } else {
+      navigator.clipboard.writeText(content);
+      toast.success("متن کپی شد");
     }
   };
 
@@ -143,82 +150,165 @@ const Chat = () => {
     <div className="min-h-screen pt-20 pb-8">
       <div className="container mx-auto px-4 max-w-4xl">
         <div className="mb-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-foreground">چت‌بات هوشمند</span>
+          <h1 className="text-3xl md:text-5xl font-bold mb-4">
+            <span className="text-foreground">دستیار هوشمند نئوهوش</span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            سوالات خود را بپرسید و پاسخ‌های هوشمندانه دریافت کنید
+          <p className="text-base md:text-lg text-muted-foreground">
+            {selectedModel ? models.find(m => m.id === selectedModel)?.description : "مدل مورد نظر خود را انتخاب کنید"}
           </p>
         </div>
 
-        <Card className="flex flex-col h-[600px] border-border">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <Bot className="h-16 w-16 mb-4 text-primary/50" />
-                <p className="text-lg">سلام! چطور می‌تونم کمکتون کنم؟</p>
-                <p className="text-sm mt-2">هر سوالی دارید بپرسید</p>
-              </div>
-            ) : (
-              messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+        {!selectedModel ? (
+          <div className="grid gap-4 md:gap-6">
+            {models.map((model) => {
+              const Icon = model.icon;
+              return (
+                <button
+                  key={model.id}
+                  onClick={() => handleModelSelect(model.id)}
+                  className="group relative overflow-hidden rounded-xl p-4 md:p-6 text-right transition-all hover:scale-105 hover:shadow-lg border border-border bg-card"
                 >
-                  {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-5 w-5 text-primary" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${model.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
+                  <div className="relative flex items-start gap-3 md:gap-4">
+                    <div className={`p-2 md:p-3 rounded-lg bg-gradient-to-br ${model.gradient} flex-shrink-0`}>
+                      <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </div>
-                  )}
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      msg.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground"
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-semibold mb-1 text-base md:text-lg">{model.name}</h5>
+                      <p className="text-xs md:text-sm text-muted-foreground">{model.description}</p>
+                    </div>
                   </div>
-                  {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <User className="h-5 w-5 text-primary" />
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-            {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-primary animate-pulse" />
-                </div>
-                <div className="bg-secondary text-secondary-foreground rounded-2xl px-4 py-3">
-                  <p className="text-sm">در حال فکر کردن...</p>
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+                </button>
+              );
+            })}
           </div>
-
-          {/* Input */}
-          <div className="border-t border-border p-4 bg-card">
-            <div className="flex gap-2">
-              <Input
-                placeholder="پیام خود را بنویسید..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={isLoading}
-                className="flex-1"
-              />
-              <Button onClick={handleSend} disabled={isLoading || !input.trim()} size="icon">
-                <Send className="h-4 w-4" />
+        ) : (
+          <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
+            <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-border p-3 md:p-4 flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="h-8 w-8 flex-shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
+              <h3 className="font-semibold text-sm md:text-base truncate">
+                {models.find(m => m.id === selectedModel)?.name}
+              </h3>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+              {messages.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <div className={`h-12 w-12 md:h-16 md:w-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
+                    {(() => {
+                      const Icon = models.find(m => m.id === selectedModel)?.icon || MessageSquare;
+                      return <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />;
+                    })()}
+                  </div>
+                  <p className="text-xs md:text-sm">{models.find(m => m.id === selectedModel)?.description}</p>
+                </div>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div className={`max-w-[85%] md:max-w-[80%]`}>
+                      <div
+                        className={`rounded-lg p-3 ${
+                          msg.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary text-secondary-foreground"
+                        }`}
+                      >
+                        <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                        {msg.imageUrl && (
+                          <div className="mt-2 space-y-2">
+                            <img 
+                              src={msg.imageUrl} 
+                              alt="Generated" 
+                              className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setZoomedImage(msg.imageUrl!)}
+                            />
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => downloadImage(msg.imageUrl!)}
+                                className="gap-1 text-xs"
+                              >
+                                <Download className="h-3 w-3" />
+                                دانلود
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setZoomedImage(msg.imageUrl!)}
+                                className="gap-1 text-xs"
+                              >
+                                <ZoomIn className="h-3 w-3" />
+                                بزرگ‌نمایی
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      {msg.role === "assistant" && !msg.imageUrl && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => shareMessage(msg.content)}
+                          className="mt-1 gap-1 text-xs h-7"
+                        >
+                          <Share2 className="h-3 w-3" />
+                          اشتراک‌گذاری
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-3 md:p-4 border-t border-border bg-background">
+              <div className="flex gap-2">
+                <Input
+                  placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
+                  disabled={isLoading}
+                  className="flex-1 text-sm"
+                />
+                <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
+                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </div>
-        </Card>
+        )}
       </div>
+
+      <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
+        <DialogContent className="max-w-4xl p-2">
+          {zoomedImage && (
+            <img 
+              src={zoomedImage} 
+              alt="Zoomed" 
+              className="w-full h-auto rounded-lg"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

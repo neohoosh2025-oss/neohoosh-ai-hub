@@ -19,6 +19,11 @@ const Footer = () => {
             <h4 className="font-semibold">دسترسی سریع</h4>
             <ul className="space-y-2">
               <li>
+                <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  صفحه اصلی
+                </Link>
+              </li>
+              <li>
                 <Link to="/articles" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   مقالات
                 </Link>
@@ -31,6 +36,11 @@ const Footer = () => {
               <li>
                 <Link to="/services" className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   خدمات
+                </Link>
+              </li>
+              <li>
+                <Link to="/chat" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  چت‌بات
                 </Link>
               </li>
             </ul>

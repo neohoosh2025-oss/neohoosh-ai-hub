@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
-import ChatBot from "./components/ChatBot";
+
 import Home from "./pages/Home";
 import Articles from "./pages/Articles";
 import ArticleDetail from "./pages/ArticleDetail";
@@ -50,7 +50,6 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
-              <ChatBot />
             </div>
           </BrowserRouter>
         </TooltipProvider>
