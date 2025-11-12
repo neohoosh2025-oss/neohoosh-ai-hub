@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Download, Share2, ZoomIn } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Download, Share2, ZoomIn, Trash2, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image";
 
@@ -14,6 +15,20 @@ interface Model {
   description: string;
   icon: typeof Briefcase;
   gradient: string;
+}
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  imageUrl?: string;
+}
+
+interface Conversation {
+  id: string;
+  model_type: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const models: Model[] = [
@@ -55,27 +70,169 @@ const models: Model[] = [
 ];
 
 const Chat = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string; imageUrl?: string }[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    checkUser();
+  }, []);
+
+  useEffect(() => {
+    if (user && selectedModel) {
+      loadConversations();
+    }
+  }, [user, selectedModel]);
+
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/auth");
+      return;
+    }
+    setUser(session.user);
+  };
+
+  const loadConversations = async () => {
+    if (!selectedModel) return;
+    
+    const { data } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("model_type", selectedModel)
+      .order("updated_at", { ascending: false });
+    
+    setConversations(data || []);
+  };
+
+  const loadConversation = async (conversationId: string) => {
+    setCurrentConversationId(conversationId);
+    
+    const { data } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("conversation_id", conversationId)
+      .order("created_at", { ascending: true });
+    
+    if (data) {
+      const formattedMessages: Message[] = data
+        .filter(msg => msg.role !== 'system')
+        .map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content,
+          imageUrl: msg.image_url || undefined
+        }));
+      setMessages(formattedMessages);
+    }
+  };
+
+  const createNewConversation = async () => {
+    if (!user || !selectedModel) return;
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .insert({
+        user_id: user.id,
+        model_type: selectedModel,
+        title: `گفتگوی جدید - ${models.find(m => m.id === selectedModel)?.name}`
+      })
+      .select()
+      .single();
+
+    if (error) {
+      toast.error("خطا در ایجاد گفتگوی جدید");
+      return;
+    }
+
+    setCurrentConversationId(data.id);
+    setMessages([]);
+    loadConversations();
+  };
+
+  const deleteConversation = async (conversationId: string) => {
+    const { error } = await supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId);
+
+    if (error) {
+      toast.error("خطا در حذف گفتگو");
+      return;
+    }
+
+    if (currentConversationId === conversationId) {
+      setCurrentConversationId(null);
+      setMessages([]);
+    }
+    
+    loadConversations();
+    toast.success("گفتگو حذف شد");
+  };
 
   const handleModelSelect = (modelId: ModelType) => {
     setSelectedModel(modelId);
     setMessages([]);
+    setCurrentConversationId(null);
   };
 
   const handleBack = () => {
     setSelectedModel(null);
     setMessages([]);
+    setCurrentConversationId(null);
+    setConversations([]);
+  };
+
+  const saveMessage = async (role: "user" | "assistant", content: string, imageUrl?: string) => {
+    if (!currentConversationId) return;
+
+    await supabase.from("messages").insert({
+      conversation_id: currentConversationId,
+      role,
+      content,
+      image_url: imageUrl
+    });
+
+    // Update conversation's updated_at
+    await supabase
+      .from("conversations")
+      .update({ updated_at: new Date().toISOString() })
+      .eq("id", currentConversationId);
   };
 
   const handleSend = async () => {
     if (!message.trim() || !selectedModel || isLoading) return;
     
-    const userMessage = { role: "user" as const, content: message };
+    // Create new conversation if needed
+    if (!currentConversationId) {
+      const { data, error } = await supabase
+        .from("conversations")
+        .insert({
+          user_id: user.id,
+          model_type: selectedModel,
+          title: message.slice(0, 50) + (message.length > 50 ? "..." : "")
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("خطا در ایجاد گفتگو");
+        return;
+      }
+
+      setCurrentConversationId(data.id);
+      loadConversations();
+    }
+    
+    const userMessage: Message = { role: "user", content: message };
     setMessages(prev => [...prev, userMessage]);
+    await saveMessage("user", message);
+    
     setMessage("");
     setIsLoading(true);
 
@@ -83,35 +240,41 @@ const Chat = () => {
       if (selectedModel === "image") {
         const { data, error } = await supabase.functions.invoke("chat", {
           body: { 
-            messages: [userMessage],
+            messages: [{ role: "user", content: userMessage.content }],
             modelType: "image"
           }
         });
 
         if (error) throw error;
 
-        setMessages(prev => [
-          ...prev,
-          { 
-            role: "assistant", 
-            content: "تصویر شما آماده شد:",
-            imageUrl: data.imageUrl 
-          }
-        ]);
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: "تصویر شما آماده شد:",
+          imageUrl: data.imageUrl
+        };
+        
+        setMessages(prev => [...prev, assistantMessage]);
+        await saveMessage("assistant", assistantMessage.content, data.imageUrl);
       } else {
+        // Send full conversation history for context awareness
+        const allMessages = [...messages, userMessage];
+        
         const { data, error } = await supabase.functions.invoke("chat", {
           body: { 
-            messages: [...messages, userMessage],
+            messages: allMessages.map(m => ({ role: m.role, content: m.content })),
             modelType: selectedModel
           }
         });
 
         if (error) throw error;
 
-        setMessages(prev => [
-          ...prev,
-          { role: "assistant", content: data.response }
-        ]);
+        const assistantMessage: Message = {
+          role: "assistant",
+          content: data.response
+        };
+        
+        setMessages(prev => [...prev, assistantMessage]);
+        await saveMessage("assistant", data.response);
       }
     } catch (error) {
       console.error("Error:", error);
@@ -148,7 +311,7 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen pt-20 pb-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-6xl">
         <div className="mb-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold mb-4">
             <span className="text-foreground">دستیار هوشمند نئوهوش</span>
@@ -183,115 +346,175 @@ const Chat = () => {
             })}
           </div>
         ) : (
-          <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
-            <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-border p-3 md:p-4 flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleBack}
-                className="h-8 w-8 flex-shrink-0"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <h3 className="font-semibold text-sm md:text-base truncate">
-                {models.find(m => m.id === selectedModel)?.name}
-              </h3>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
-              {messages.length === 0 ? (
-                <div className="text-center text-muted-foreground py-8">
-                  <div className={`h-12 w-12 md:h-16 md:w-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
-                    {(() => {
-                      const Icon = models.find(m => m.id === selectedModel)?.icon || MessageSquare;
-                      return <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />;
-                    })()}
-                  </div>
-                  <p className="text-xs md:text-sm">{models.find(m => m.id === selectedModel)?.description}</p>
-                </div>
-              ) : (
-                messages.map((msg, idx) => (
+          <div className="grid lg:grid-cols-[280px_1fr] gap-4">
+            {/* Sidebar - Conversations */}
+            <div className="bg-card border border-border rounded-2xl p-4 h-fit lg:sticky lg:top-24">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm">گفتگوها</h3>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={createNewConversation}
+                  className="h-7 w-7 p-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {conversations.map((conv) => (
                   <div
-                    key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    key={conv.id}
+                    className={`group p-2 rounded-lg cursor-pointer transition-colors ${
+                      currentConversationId === conv.id
+                        ? "bg-primary/10 border border-primary/20"
+                        : "hover:bg-secondary"
+                    }`}
                   >
-                    <div className={`max-w-[85%] md:max-w-[80%]`}>
-                      <div
-                        className={`rounded-lg p-3 ${
-                          msg.role === "user"
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground"
-                        }`}
+                    <div className="flex items-center justify-between">
+                      <div 
+                        className="flex-1 min-w-0"
+                        onClick={() => loadConversation(conv.id)}
                       >
-                        <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                        {msg.imageUrl && (
-                          <div className="mt-2 space-y-2">
-                            <img 
-                              src={msg.imageUrl} 
-                              alt="Generated" 
-                              className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => setZoomedImage(msg.imageUrl!)}
-                            />
-                            <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => downloadImage(msg.imageUrl!)}
-                                className="gap-1 text-xs"
-                              >
-                                <Download className="h-3 w-3" />
-                                دانلود
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => setZoomedImage(msg.imageUrl!)}
-                                className="gap-1 text-xs"
-                              >
-                                <ZoomIn className="h-3 w-3" />
-                                بزرگ‌نمایی
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                        <p className="text-sm font-medium truncate">{conv.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(conv.updated_at).toLocaleDateString("fa-IR")}
+                        </p>
                       </div>
-                      {msg.role === "assistant" && !msg.imageUrl && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => shareMessage(msg.content)}
-                          className="mt-1 gap-1 text-xs h-7"
-                        >
-                          <Share2 className="h-3 w-3" />
-                          اشتراک‌گذاری
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(conv.id);
+                        }}
+                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                ))
-              )}
-              {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  </div>
-                </div>
-              )}
+                ))}
+                
+                {conversations.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    هنوز گفتگویی ندارید
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="p-3 md:p-4 border-t border-border bg-background">
-              <div className="flex gap-2">
-                <Input
-                  placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
-                  disabled={isLoading}
-                  className="flex-1 text-sm"
-                />
-                <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
-                  {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+            {/* Main Chat */}
+            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
+              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-border p-3 md:p-4 flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleBack}
+                  className="h-8 w-8 flex-shrink-0"
+                >
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <h3 className="font-semibold text-sm md:text-base truncate">
+                  {models.find(m => m.id === selectedModel)?.name}
+                </h3>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+                {messages.length === 0 ? (
+                  <div className="text-center text-muted-foreground py-8">
+                    <div className={`h-12 w-12 md:h-16 md:w-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
+                      {(() => {
+                        const Icon = models.find(m => m.id === selectedModel)?.icon || MessageSquare;
+                        return <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />;
+                      })()}
+                    </div>
+                    <p className="text-xs md:text-sm">{models.find(m => m.id === selectedModel)?.description}</p>
+                  </div>
+                ) : (
+                  messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div className={`max-w-[85%] md:max-w-[80%]`}>
+                        <div
+                          className={`rounded-lg p-3 ${
+                            msg.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-secondary text-secondary-foreground"
+                          }`}
+                        >
+                          <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
+                          {msg.imageUrl && (
+                            <div className="mt-2 space-y-2">
+                              <img 
+                                src={msg.imageUrl} 
+                                alt="Generated" 
+                                className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setZoomedImage(msg.imageUrl!)}
+                              />
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => downloadImage(msg.imageUrl!)}
+                                  className="gap-1 text-xs"
+                                >
+                                  <Download className="h-3 w-3" />
+                                  دانلود
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => setZoomedImage(msg.imageUrl!)}
+                                  className="gap-1 text-xs"
+                                >
+                                  <ZoomIn className="h-3 w-3" />
+                                  بزرگ‌نمایی
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {msg.role === "assistant" && !msg.imageUrl && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => shareMessage(msg.content)}
+                            className="mt-1 gap-1 text-xs h-7"
+                          >
+                            <Share2 className="h-3 w-3" />
+                            اشتراک‌گذاری
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 md:p-4 border-t border-border bg-background">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
+                    disabled={isLoading}
+                    className="flex-1 text-sm"
+                  />
+                  <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

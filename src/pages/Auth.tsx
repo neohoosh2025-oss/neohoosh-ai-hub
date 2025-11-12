@@ -19,7 +19,9 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/admin");
+        // Check where they came from
+        const from = new URLSearchParams(window.location.search).get('from');
+        navigate(from === 'chat' ? '/chat' : '/admin');
       }
     };
     checkUser();
@@ -68,7 +70,8 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
-      navigate("/admin");
+      const from = new URLSearchParams(window.location.search).get('from');
+      navigate(from === 'chat' ? '/chat' : '/admin');
     }
     setLoading(false);
   };
@@ -76,7 +79,7 @@ const Auth = () => {
   return (
     <div className="min-h-screen pt-20 flex items-center justify-center px-4">
       <Card className="w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-center mb-8">ورود به پنل مدیریت</h1>
+        <h1 className="text-3xl font-bold text-center mb-8">ورود / ثبت‌نام</h1>
         
         <Tabs defaultValue="signin" dir="rtl">
           <TabsList className="grid w-full grid-cols-2 mb-8">

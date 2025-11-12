@@ -1,16 +1,39 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Menu, X, LogOut, User } from "lucide-react";
+import { useState, useEffect } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import neohooshLogo from "@/assets/neohoosh-logo.png";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success("با موفقیت خارج شدید");
+    navigate("/");
+  };
 
   const links = [
     { path: "/", label: t("home") },
@@ -52,6 +75,24 @@ const Navigation = () => {
             ))}
             <ThemeToggle />
             <LanguageToggle />
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                خروج
+              </Button>
+            ) : (
+              <Link to="/auth?from=chat">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  ورود
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,6 +126,24 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
+            {user ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="w-full justify-start gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                خروج
+              </Button>
+            ) : (
+              <Link to="/auth?from=chat" onClick={() => setIsOpen(false)} className="block">
+                <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
+                  <User className="h-4 w-4" />
+                  ورود
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>
