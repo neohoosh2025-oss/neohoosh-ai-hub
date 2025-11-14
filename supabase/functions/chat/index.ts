@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,7 +12,13 @@ serve(async (req) => {
   try {
     const { messages, modelType } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Handle image generation separately
     if (modelType === "image") {
@@ -45,9 +52,49 @@ serve(async (req) => {
       }
 
       const imageData = await imageResponse.json();
-      const imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const base64Image = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      
+      if (!base64Image) {
+        throw new Error("No image returned from AI");
+      }
 
-      return new Response(JSON.stringify({ imageUrl }), {
+      // Get user ID from auth header
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) throw new Error("No authorization header");
+      
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      
+      if (userError || !user) {
+        console.error("Auth error:", userError);
+        throw new Error("Authentication failed");
+      }
+
+      // Convert base64 to blob
+      const base64Data = base64Image.split(',')[1];
+      const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const timestamp = Date.now();
+      const fileName = `${user.id}/${timestamp}.png`;
+
+      // Upload to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('chat-images')
+        .upload(fileName, imageBuffer, {
+          contentType: 'image/png',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error("Upload error:", uploadError);
+        throw new Error("Failed to upload image");
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-images')
+        .getPublicUrl(fileName);
+
+      return new Response(JSON.stringify({ imageUrl: publicUrl }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
