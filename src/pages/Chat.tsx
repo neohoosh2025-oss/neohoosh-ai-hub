@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Download, Share2, ZoomIn, Trash2, Plus } from "lucide-react";
@@ -79,6 +79,15 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   useEffect(() => {
     checkUser();
@@ -310,35 +319,38 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4">
-            <span className="text-foreground">دستیار هوشمند نئوهوش</span>
+    <div className="min-h-screen pt-20 pb-8 bg-gradient-soft">
+      <div className="container mx-auto px-4 max-w-7xl">
+        <div className="mb-6 text-center">
+          <h1 className="text-3xl md:text-5xl font-bold mb-3 animate-fade-in">
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">دستیار هوشمند نئوهوش</span>
           </h1>
-          <p className="text-base md:text-lg text-muted-foreground">
+          <p className="text-base md:text-lg text-muted-foreground animate-slide-up">
             {selectedModel ? models.find(m => m.id === selectedModel)?.description : "مدل مورد نظر خود را انتخاب کنید"}
           </p>
         </div>
 
         {!selectedModel ? (
-          <div className="grid gap-4 md:gap-6">
-            {models.map((model) => {
+          <div className="grid gap-4 md:gap-6 max-w-4xl mx-auto">
+            {models.map((model, idx) => {
               const Icon = model.icon;
               return (
                 <button
                   key={model.id}
                   onClick={() => handleModelSelect(model.id)}
-                  className="group relative overflow-hidden rounded-xl p-4 md:p-6 text-right transition-all hover:scale-105 hover:shadow-lg border border-border bg-card"
+                  className={`group relative overflow-hidden rounded-2xl p-5 md:p-7 text-right transition-all duration-300 hover:scale-[1.02] shadow-soft hover:shadow-medium border border-border bg-card scroll-fade-in ${
+                    idx === 0 ? 'visible' : ''
+                  } scroll-fade-in-delay-${Math.min(idx, 3)}`}
+                  style={{ animationDelay: `${idx * 100}ms` }}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${model.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
-                  <div className="relative flex items-start gap-3 md:gap-4">
-                    <div className={`p-2 md:p-3 rounded-lg bg-gradient-to-br ${model.gradient} flex-shrink-0`}>
-                      <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${model.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                  <div className="relative flex items-start gap-4 md:gap-5">
+                    <div className={`p-3 md:p-4 rounded-xl bg-gradient-to-br ${model.gradient} flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                      <Icon className="h-6 w-6 md:h-7 md:w-7 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="font-semibold mb-1 text-base md:text-lg">{model.name}</h5>
-                      <p className="text-xs md:text-sm text-muted-foreground">{model.description}</p>
+                      <h5 className="font-bold mb-2 text-lg md:text-xl">{model.name}</h5>
+                      <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{model.description}</p>
                     </div>
                   </div>
                 </button>
@@ -346,34 +358,35 @@ const Chat = () => {
             })}
           </div>
         ) : (
-          <div className="flex h-[calc(100vh-120px)] gap-0">
+          <div className="flex h-[calc(100vh-200px)] gap-0 rounded-2xl overflow-hidden shadow-medium border border-border bg-card">
             {/* Sidebar - Conversations */}
-            <div className="w-64 bg-secondary/30 border-l border-border flex flex-col">
-              <div className="p-4 border-b border-border">
+            <div className="w-72 bg-secondary/20 backdrop-blur-sm border-l border-border flex flex-col">
+              <div className="p-4 border-b border-border bg-card/50">
                 <Button
                   onClick={createNewConversation}
-                  className="w-full justify-start gap-2"
-                  variant="outline"
+                  className="w-full justify-start gap-2 shadow-soft hover:shadow-medium smooth-transition"
+                  variant="default"
+                  size="lg"
                 >
-                  <Plus className="h-4 w-4" />
-                  گفتگوی جدید
+                  <Plus className="h-5 w-5" />
+                  <span className="font-semibold">گفتگوی جدید</span>
                 </Button>
               </div>
               
-              <div className="flex-1 overflow-y-auto p-2">
+              <div className="flex-1 overflow-y-auto p-3">
                 {conversations.map((conv) => (
                   <div
                     key={conv.id}
-                    className={`group p-3 rounded-lg mb-1 cursor-pointer transition-all ${
+                    className={`group p-3 rounded-xl mb-2 cursor-pointer smooth-transition ${
                       currentConversationId === conv.id
-                        ? "bg-primary/20"
-                        : "hover:bg-secondary"
+                        ? "bg-primary/15 shadow-soft border border-primary/30"
+                        : "hover:bg-secondary/50 hover:shadow-soft"
                     }`}
                     onClick={() => loadConversation(conv.id)}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{conv.title}</p>
+                        <p className="text-sm font-semibold truncate mb-1">{conv.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(conv.updated_at).toLocaleDateString("fa-IR")}
                         </p>
@@ -385,69 +398,76 @@ const Chat = () => {
                           e.stopPropagation();
                           deleteConversation(conv.id);
                         }}
-                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 smooth-transition hover:bg-destructive/20 hover:text-destructive"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                 ))}
                 
                 {conversations.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-8">
-                    هنوز گفتگویی ندارید
-                  </p>
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-3 text-muted-foreground/40" />
+                    <p className="text-sm text-muted-foreground">
+                      هنوز گفتگویی ندارید
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">
+                      با کلیک روی "گفتگوی جدید" شروع کنید
+                    </p>
+                  </div>
                 )}
               </div>
 
-              <div className="p-4 border-t border-border">
+              <div className="p-4 border-t border-border bg-card/50">
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  className="w-full justify-start gap-2"
+                  className="w-full justify-start gap-2 hover:bg-secondary/50 smooth-transition"
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-5 w-5" />
                   بازگشت به مدل‌ها
                 </Button>
               </div>
             </div>
 
             {/* Main Chat */}
-            <div className="flex-1 flex flex-col bg-background">
-              <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 flex flex-col bg-gradient-to-b from-background to-background/95">
+              <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
                 {messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center">
-                    <div className={`h-16 w-16 mb-4 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
+                  <div className="flex flex-col items-center justify-center h-full text-center animate-fade-in">
+                    <div className={`h-20 w-20 mb-5 rounded-2xl bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center shadow-medium animate-glow`}>
                       {(() => {
                         const Icon = models.find(m => m.id === selectedModel)?.icon || MessageSquare;
-                        return <Icon className="h-8 w-8 text-white" />;
+                        return <Icon className="h-10 w-10 text-white" />;
                       })()}
                     </div>
                     <h2 className="text-2xl font-bold mb-2">{models.find(m => m.id === selectedModel)?.name}</h2>
-                    <p className="text-muted-foreground">{models.find(m => m.id === selectedModel)?.description}</p>
+                    <p className="text-muted-foreground max-w-md">{models.find(m => m.id === selectedModel)?.description}</p>
+                    <p className="text-sm text-muted-foreground/70 mt-4">پیام خود را بنویسید تا شروع کنیم</p>
                   </div>
                 ) : (
-                  <div className="max-w-3xl mx-auto space-y-6">
+                  <div className="max-w-4xl mx-auto space-y-5">
                     {messages.map((msg, idx) => (
                       <div
                         key={idx}
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                       >
-                        <div className={`max-w-[80%]`}>
+                        <div className={`max-w-[85%] message-animation`}>
                           <div
-                            className={`rounded-2xl px-4 py-3 ${
+                            className={`rounded-2xl px-5 py-4 shadow-soft ${
                               msg.role === "user"
-                                ? "bg-primary text-primary-foreground"
-                                : "bg-secondary text-secondary-foreground"
+                                ? "bg-gradient-to-br from-primary to-primary/90 text-primary-foreground"
+                                : "bg-card text-card-foreground border border-border"
                             }`}
                           >
-                            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
+                            <p className="text-[15px] whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
                             {msg.imageUrl && (
-                              <div className="mt-3 space-y-2">
+                              <div className="mt-4 space-y-3">
                                 <img 
                                   src={msg.imageUrl} 
                                   alt="Generated" 
-                                  className="rounded-xl max-w-full cursor-pointer hover:opacity-90 transition-opacity"
+                                  className="rounded-xl max-w-full cursor-pointer hover:opacity-90 smooth-transition shadow-medium"
                                   onClick={() => setZoomedImage(msg.imageUrl!)}
                                 />
                                 <div className="flex gap-2">
@@ -478,9 +498,9 @@ const Chat = () => {
                               size="sm"
                               variant="ghost"
                               onClick={() => shareMessage(msg.content)}
-                              className="mt-1 gap-1 text-xs h-7"
+                              className="mt-2 gap-2 text-xs h-8 hover:bg-secondary/50 smooth-transition"
                             >
-                              <Share2 className="h-3 w-3" />
+                              <Share2 className="h-3.5 w-3.5" />
                               اشتراک‌گذاری
                             </Button>
                           )}
@@ -489,28 +509,37 @@ const Chat = () => {
                     ))}
                     {isLoading && (
                       <div className="flex justify-start">
-                        <div className="bg-secondary text-secondary-foreground rounded-2xl px-4 py-3">
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                        <div className="bg-card text-card-foreground rounded-2xl px-5 py-4 shadow-soft border border-border pulse-glow message-animation">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                            <span className="text-sm text-muted-foreground">در حال تایپ...</span>
+                          </div>
                         </div>
                       </div>
                     )}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-border p-4 bg-background">
-                <div className="max-w-3xl mx-auto">
-                  <div className="flex gap-2">
+              <div className="border-t border-border p-5 bg-card/50 backdrop-blur-sm">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex gap-3">
                     <Input
-                      placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
+                      placeholder={selectedModel === "image" ? "🎨 توضیح دقیق تصویر مورد نظرتان را بنویسید..." : "💬 پیام خود را بنویسید..."}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
+                      onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && !isLoading && handleSend()}
                       disabled={isLoading}
-                      className="flex-1"
+                      className="flex-1 h-12 text-[15px] rounded-xl shadow-soft border-border/50 focus:border-primary smooth-transition"
                     />
-                    <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
-                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+                    <Button 
+                      onClick={handleSend} 
+                      size="lg"
+                      disabled={isLoading || !message.trim()} 
+                      className="px-6 rounded-xl shadow-soft hover:shadow-medium smooth-transition disabled:opacity-50"
+                    >
+                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <ArrowLeft className="h-5 w-5" />}
                     </Button>
                   </div>
                 </div>

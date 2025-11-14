@@ -32,8 +32,12 @@ All colors MUST be HSL.
     --neohoosh-blue: 210 100% 50%;
     --neohoosh-blue-glow: 210 100% 70%;
     --gradient-neon: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(240 100% 50% / 0.2));
+    --gradient-soft: linear-gradient(135deg, hsl(210 100% 98%), hsl(240 100% 98%));
     --glow-neon: 0 0 8px hsl(210 100% 50% / 0.3), 0 0 16px hsl(210 100% 50% / 0.2);
     --glow-neon-strong: 0 0 6px hsl(210 100% 50% / 0.4), 0 0 12px hsl(210 100% 50% / 0.3), 0 0 18px hsl(210 100% 50% / 0.2);
+    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.06);
+    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.08), 0 2px 4px hsl(0 0% 0% / 0.06);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
@@ -59,6 +63,9 @@ All colors MUST be HSL.
     
     --neohoosh-blue: 210 100% 60%;
     --neohoosh-blue-glow: 210 100% 80%;
+    --gradient-soft: linear-gradient(135deg, hsl(210 100% 15%), hsl(240 100% 15%));
+    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.3), 0 2px 4px hsl(0 0% 0% / 0.3);
   }
 }
 
@@ -162,5 +169,49 @@ All colors MUST be HSL.
 
   .scroll-fade-in-delay-3 {
     transition-delay: 0.3s;
+  }
+
+  .smooth-transition {
+    transition: var(--transition-smooth);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .bg-gradient-soft {
+    background: var(--gradient-soft);
+  }
+
+  @keyframes messageSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .message-animation {
+    animation: messageSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 10px hsl(var(--primary) / 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.5);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
   }
 }
