@@ -346,36 +346,33 @@ const Chat = () => {
             })}
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[280px_1fr] gap-4">
+          <div className="flex h-[calc(100vh-120px)] gap-0">
             {/* Sidebar - Conversations */}
-            <div className="bg-card border border-border rounded-2xl p-4 h-fit lg:sticky lg:top-24">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm">گفتگوها</h3>
+            <div className="w-64 bg-secondary/30 border-l border-border flex flex-col">
+              <div className="p-4 border-b border-border">
                 <Button
-                  size="sm"
-                  variant="ghost"
                   onClick={createNewConversation}
-                  className="h-7 w-7 p-0"
+                  className="w-full justify-start gap-2"
+                  variant="outline"
                 >
                   <Plus className="h-4 w-4" />
+                  گفتگوی جدید
                 </Button>
               </div>
               
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-2">
                 {conversations.map((conv) => (
                   <div
                     key={conv.id}
-                    className={`group p-2 rounded-lg cursor-pointer transition-colors ${
+                    className={`group p-3 rounded-lg mb-1 cursor-pointer transition-all ${
                       currentConversationId === conv.id
-                        ? "bg-primary/10 border border-primary/20"
+                        ? "bg-primary/20"
                         : "hover:bg-secondary"
                     }`}
+                    onClick={() => loadConversation(conv.id)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div 
-                        className="flex-1 min-w-0"
-                        onClick={() => loadConversation(conv.id)}
-                      >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{conv.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(conv.updated_at).toLocaleDateString("fa-IR")}
@@ -388,7 +385,7 @@ const Chat = () => {
                           e.stopPropagation();
                           deleteConversation(conv.id);
                         }}
-                        className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100"
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -397,123 +394,125 @@ const Chat = () => {
                 ))}
                 
                 {conversations.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-4">
+                  <p className="text-xs text-muted-foreground text-center py-8">
                     هنوز گفتگویی ندارید
                   </p>
                 )}
               </div>
+
+              <div className="p-4 border-t border-border">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  className="w-full justify-start gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  بازگشت به مدل‌ها
+                </Button>
+              </div>
             </div>
 
             {/* Main Chat */}
-            <div className="bg-card border border-border rounded-2xl overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 280px)', minHeight: '400px' }}>
-              <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-border p-3 md:p-4 flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleBack}
-                  className="h-8 w-8 flex-shrink-0"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                <h3 className="font-semibold text-sm md:text-base truncate">
-                  {models.find(m => m.id === selectedModel)?.name}
-                </h3>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+            <div className="flex-1 flex flex-col bg-background">
+              <div className="flex-1 overflow-y-auto p-6">
                 {messages.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">
-                    <div className={`h-12 w-12 md:h-16 md:w-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className={`h-16 w-16 mb-4 rounded-full bg-gradient-to-br ${models.find(m => m.id === selectedModel)?.gradient} flex items-center justify-center`}>
                       {(() => {
                         const Icon = models.find(m => m.id === selectedModel)?.icon || MessageSquare;
-                        return <Icon className="h-6 w-6 md:h-8 md:w-8 text-white" />;
+                        return <Icon className="h-8 w-8 text-white" />;
                       })()}
                     </div>
-                    <p className="text-xs md:text-sm">{models.find(m => m.id === selectedModel)?.description}</p>
+                    <h2 className="text-2xl font-bold mb-2">{models.find(m => m.id === selectedModel)?.name}</h2>
+                    <p className="text-muted-foreground">{models.find(m => m.id === selectedModel)?.description}</p>
                   </div>
                 ) : (
-                  messages.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div className={`max-w-[85%] md:max-w-[80%]`}>
-                        <div
-                          className={`rounded-lg p-3 ${
-                            msg.role === "user"
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary text-secondary-foreground"
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-                          {msg.imageUrl && (
-                            <div className="mt-2 space-y-2">
-                              <img 
-                                src={msg.imageUrl} 
-                                alt="Generated" 
-                                className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => setZoomedImage(msg.imageUrl!)}
-                              />
-                              <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
-                                  onClick={() => downloadImage(msg.imageUrl!)}
-                                  className="gap-1 text-xs"
-                                >
-                                  <Download className="h-3 w-3" />
-                                  دانلود
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="outline"
+                  <div className="max-w-3xl mx-auto space-y-6">
+                    {messages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div className={`max-w-[80%]`}>
+                          <div
+                            className={`rounded-2xl px-4 py-3 ${
+                              msg.role === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary text-secondary-foreground"
+                            }`}
+                          >
+                            <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.content}</p>
+                            {msg.imageUrl && (
+                              <div className="mt-3 space-y-2">
+                                <img 
+                                  src={msg.imageUrl} 
+                                  alt="Generated" 
+                                  className="rounded-xl max-w-full cursor-pointer hover:opacity-90 transition-opacity"
                                   onClick={() => setZoomedImage(msg.imageUrl!)}
-                                  className="gap-1 text-xs"
-                                >
-                                  <ZoomIn className="h-3 w-3" />
-                                  بزرگ‌نمایی
-                                </Button>
+                                />
+                                <div className="flex gap-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => downloadImage(msg.imageUrl!)}
+                                    className="gap-1 text-xs"
+                                  >
+                                    <Download className="h-3 w-3" />
+                                    دانلود
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline"
+                                    onClick={() => setZoomedImage(msg.imageUrl!)}
+                                    className="gap-1 text-xs"
+                                  >
+                                    <ZoomIn className="h-3 w-3" />
+                                    بزرگ‌نمایی
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
+                            )}
+                          </div>
+                          {msg.role === "assistant" && !msg.imageUrl && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => shareMessage(msg.content)}
+                              className="mt-1 gap-1 text-xs h-7"
+                            >
+                              <Share2 className="h-3 w-3" />
+                              اشتراک‌گذاری
+                            </Button>
                           )}
                         </div>
-                        {msg.role === "assistant" && !msg.imageUrl && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => shareMessage(msg.content)}
-                            className="mt-1 gap-1 text-xs h-7"
-                          >
-                            <Share2 className="h-3 w-3" />
-                            اشتراک‌گذاری
-                          </Button>
-                        )}
                       </div>
-                    </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-secondary text-secondary-foreground rounded-lg p-3">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    </div>
+                    ))}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-secondary text-secondary-foreground rounded-2xl px-4 py-3">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
-              <div className="p-3 md:p-4 border-t border-border bg-background">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
-                    disabled={isLoading}
-                    className="flex-1 text-sm"
-                  />
-                  <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
-                  </Button>
+              <div className="border-t border-border p-4 bg-background">
+                <div className="max-w-3xl mx-auto">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
+                      disabled={isLoading}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleSend} size="icon" disabled={isLoading} className="flex-shrink-0">
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowLeft className="h-4 w-4" />}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
