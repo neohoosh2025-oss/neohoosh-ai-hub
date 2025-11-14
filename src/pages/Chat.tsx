@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -79,8 +79,22 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -280,18 +294,31 @@ const Chat = () => {
   };
 
   return (
-    <div className="fixed inset-0 pt-16 bg-background flex" dir="rtl">
+    <div className="fixed inset-0 pt-16 bg-background flex overflow-hidden" dir="rtl">
+      {/* Sidebar Overlay for Mobile */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 bg-secondary/30 border-l border-border flex flex-col overflow-hidden`}>
-        <div className="p-3 border-b border-border">
+      <div className={`
+        ${isMobile ? 'fixed right-0 top-16 bottom-0 z-50' : 'relative'}
+        ${sidebarOpen ? 'w-64' : 'w-0'} 
+        transition-all duration-300 bg-card border-l border-border flex flex-col overflow-hidden
+      `}>
+        <div className="p-3 border-b border-border bg-background">
           <Button
             onClick={() => {
               setSelectedModel(null);
               setCurrentConversationId(null);
               setMessages([]);
+              if (isMobile) setSidebarOpen(false);
             }}
-            className="w-full justify-start gap-2 mb-2"
-            variant="outline"
+            className="w-full justify-start gap-2"
+            variant="default"
           >
             <Plus className="h-4 w-4" />
             گفتگوی جدید
@@ -307,7 +334,10 @@ const Chat = () => {
                   ? "bg-primary/10"
                   : "hover:bg-secondary"
               }`}
-              onClick={() => loadConversation(conv.id)}
+              onClick={() => {
+                loadConversation(conv.id);
+                if (isMobile) setSidebarOpen(false);
+              }}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
@@ -331,24 +361,39 @@ const Chat = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Toggle Sidebar Button */}
-        <div className="p-2 border-b border-border bg-background/50 backdrop-blur">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header with Menu Toggle */}
+        <div className="p-3 border-b border-border bg-background flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="flex-shrink-0"
           >
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {sidebarOpen ? <ArrowRight className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
+          {selectedModel && (
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {(() => {
+                const model = models.find(m => m.id === selectedModel);
+                const Icon = model?.icon || MessageSquare;
+                return (
+                  <>
+                    <Icon className={`h-4 w-4 flex-shrink-0 ${model?.color}`} />
+                    <span className="text-sm font-medium truncate">{model?.name}</span>
+                  </>
+                );
+              })()}
+            </div>
+          )}
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-contain">
           {!selectedModel ? (
-            <div className="max-w-2xl mx-auto p-8 mt-20">
-              <h1 className="text-4xl font-bold text-center mb-2">نئوهوش</h1>
-              <p className="text-center text-muted-foreground mb-12">مدل مورد نظرتان را انتخاب کنید</p>
+            <div className="max-w-2xl mx-auto p-4 md:p-8 pt-8 md:pt-20">
+              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">نئوهوش</h1>
+              <p className="text-center text-sm md:text-base text-muted-foreground mb-8 md:mb-12">مدل مورد نظرتان را انتخاب کنید</p>
               
               <div className="grid gap-3">
                 {models.map((model) => {
@@ -356,8 +401,11 @@ const Chat = () => {
                   return (
                     <button
                       key={model.id}
-                      onClick={() => createNewConversation(model.id)}
-                      className="p-4 rounded-xl border border-border hover:bg-secondary/50 transition-all text-right flex items-center gap-3"
+                      onClick={() => {
+                        createNewConversation(model.id);
+                        if (isMobile) setSidebarOpen(false);
+                      }}
+                      className="p-3 md:p-4 rounded-xl border border-border hover:bg-secondary/50 active:bg-secondary transition-all text-right flex items-center gap-3"
                     >
                       <Icon className={`h-5 w-5 ${model.color}`} />
                       <div className="flex-1">
@@ -384,10 +432,10 @@ const Chat = () => {
               })()}
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto p-6 space-y-6">
+            <div className="max-w-3xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-4">
               {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-4 py-3`}>
+                <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0`}>
+                  <div className={`max-w-[85%] md:max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-3 md:px-4 py-2.5 md:py-3`}>
                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
                     {msg.imageUrl && (
                       <div className="mt-3">
@@ -424,15 +472,20 @@ const Chat = () => {
 
         {/* Input Area */}
         {selectedModel && (
-          <div className="border-t border-border p-4 bg-background">
+          <div className="border-t border-border p-3 md:p-4 bg-background safe-area-bottom">
             <div className="max-w-3xl mx-auto flex gap-2">
               <Input
                 placeholder={selectedModel === "image" ? "توضیح تصویر..." : "پیام خود را بنویسید..."}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && !isLoading && handleSend()}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 min-w-0 text-base"
               />
               <Button 
                 onClick={handleSend} 
