@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -20,6 +21,7 @@ const ArticleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -60,10 +62,10 @@ const ArticleDetail = () => {
     return (
       <div className="min-h-screen py-20">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-3xl font-bold mb-4">مقاله یافت نشد</h1>
+          <h1 className="text-3xl font-bold mb-4">{t("articleDetail.notFound")}</h1>
           <Link to="/articles">
             <Button variant="outline" className="gap-2">
-              بازگشت به مقالات
+              {t("articleDetail.backToArticles")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
@@ -78,7 +80,7 @@ const ArticleDetail = () => {
         <Link to="/articles">
           <Button variant="ghost" className="gap-2 mb-8">
             <ArrowRight className="h-4 w-4" />
-            بازگشت به مقالات
+            {t("articleDetail.backToArticles")}
           </Button>
         </Link>
 
@@ -103,7 +105,7 @@ const ArticleDetail = () => {
             </div>
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
-              <span>نئوهوش</span>
+              <span>{t("articleDetail.author")}</span>
             </div>
           </div>
 

@@ -1,6 +1,9 @@
 import { Sparkles, Target, Users } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const About = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="min-h-screen pt-20">
       {/* Header */}
@@ -8,10 +11,10 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              درباره <span className="text-foreground">نئوهوش</span>
+              {t("about.header")} <span className="text-foreground">{t("about.headerBrand")}</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              ماموریت ما گسترش دانش هوش مصنوعی در جامعه فارسی‌زبان است
+              {t("about.headerDesc")}
             </p>
           </div>
         </div>
@@ -27,13 +30,10 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Target className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">مأموریت ما</h2>
+                <h2 className="text-2xl font-bold">{t("about.missionTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                نئوهوش با هدف آموزش کار با ابزارهای هوش مصنوعی، معرفی قابلیت‌های جدید
-                و ارائه محتوای تخصصی برای شروع کسب‌وکارهای هوشمند ایجاد شده است.
-                ما باور داریم که هوش مصنوعی باید در دسترس همه باشد و هر فردی بتواند
-                از قدرت این فناوری برای بهبود زندگی شخصی و کاری خود استفاده کند.
+                {t("about.missionDesc")}
               </p>
             </div>
 
@@ -43,12 +43,10 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">چشم‌انداز</h2>
+                <h2 className="text-2xl font-bold">{t("about.visionTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                ما در نئوهوش تلاش می‌کنیم تا بزرگترین منبع آموزشی فارسی در زمینه
-                هوش مصنوعی باشیم. هدف ما ایجاد جامعه‌ای از یادگیرندگان و متخصصان
-                است که با کمک یکدیگر و استفاده از AI، آینده بهتری بسازند.
+                {t("about.visionDesc")}
               </p>
             </div>
 
@@ -58,16 +56,14 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">تیم نئوهوش</h2>
+                <h2 className="text-2xl font-bold">{t("about.teamTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                تیم ما متشکل از متخصصان حوزه هوش مصنوعی، توسعه‌دهندگان نرم‌افزار
-                و تولیدکنندگان محتوا است که با اشتیاق و علاقه به این فناوری،
-                در حال ایجاد محتوای با کیفیت و کاربردی هستند.
+                {t("about.teamDesc")}
               </p>
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <h3 className="font-semibold text-lg mb-2">محمدرضا معز</h3>
-                <p className="text-sm text-muted-foreground">مدیریت</p>
+                <h3 className="font-semibold text-lg mb-2">{t("about.founderName")}</h3>
+                <p className="text-sm text-muted-foreground">{t("about.founderRole")}</p>
               </div>
             </div>
 
@@ -79,16 +75,22 @@ const About = () => {
                   آموزش به زبان ساده و قابل فهم
                 </p>
               </div>
-              <div className="p-6 rounded-xl bg-background border border-border text-center">
-                <h3 className="font-semibold mb-2">کاربردی</h3>
+              <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
+                <h3 className="font-semibold text-lg mb-2">{t("about.valueInnovation")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  محتوای عملی و قابل استفاده
+                  {t("about.valueInnovationDesc")}
                 </p>
               </div>
-              <div className="p-6 rounded-xl bg-background border border-border text-center">
-                <h3 className="font-semibold mb-2">نوآوری</h3>
+              <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
+                <h3 className="font-semibold text-lg mb-2">{t("about.valueQuality")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  همیشه به‌روز و پیشرو
+                  {t("about.valueQualityDesc")}
+                </p>
+              </div>
+              <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
+                <h3 className="font-semibold text-lg mb-2">{t("about.valueCommunity")}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {t("about.valueCommunityDesc")}
                 </p>
               </div>
             </div>
