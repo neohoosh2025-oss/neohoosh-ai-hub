@@ -76,15 +76,22 @@ const Navigation = () => {
             <ThemeToggle />
             <LanguageToggle />
             {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                {t("logout")}
-              </Button>
+              <>
+                <Link to="/profile">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {t("logout")}
+                </Button>
+              </>
             ) : (
               <Link to="/auth?from=chat">
                 <Button variant="ghost" size="sm" className="gap-2">
