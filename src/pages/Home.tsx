@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 import heroImage from "@/assets/hero-bg.jpg";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -22,6 +23,7 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const featuresAnimation = useScrollAnimation({ threshold: 0.2 });
   const articlesAnimation = useScrollAnimation({ threshold: 0.1 });
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchLatestArticles = async () => {
@@ -65,32 +67,32 @@ const Home = () => {
             <div className="inline-block mb-4">
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium glow-neon">
                 <Sparkles className="h-4 w-4" />
-                هوش مصنوعی برای همه
+                {t("hero.badge")}
               </span>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold leading-tight animate-fade-in">
               <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent animate-glow">
-                نئو هوش
+                {t("hero.title")}
               </span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              آموزش، محتوا و کاربردهای هوش مصنوعی به زبان ساده برای شروع سفر هوشمندانه شما
+              {t("hero.description")}
             </p>
 
             <div className="flex flex-wrap gap-4 justify-center pt-4">
               <Link to="/articles">
                 <Button size="lg" className="gap-2 glow-neon hover:glow-neon-strong transition-all">
                   <BookOpen className="h-5 w-5" />
-                  شروع یادگیری
+                  {t("hero.cta")}
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               </Link>
               
               <Link to="/articles">
                 <Button size="lg" variant="secondary" className="gap-2">
-                  مقالات جدید
+                  {t("hero.newArticles")}
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
               </Link>
@@ -111,10 +113,10 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              چرا <span className="text-foreground">نئوهوش</span>؟
+              {t("features.title")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              ما با هدف آموزش و گسترش دانش هوش مصنوعی، محتوای با کیفیت و کاربردی را ارائه می‌دهیم
+              {t("features.subtitle")}
             </p>
           </div>
 
@@ -123,9 +125,9 @@ const Home = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <BookOpen className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">آموزش جامع</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("features.learning")}</h3>
               <p className="text-muted-foreground">
-                آموزش‌های گام به گام و کاربردی برای کار با ابزارهای هوش مصنوعی
+                {t("features.learningDesc")}
               </p>
             </div>
 
@@ -133,9 +135,9 @@ const Home = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <Sparkles className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">محتوای به‌روز</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("features.updated")}</h3>
               <p className="text-muted-foreground">
-                آخرین اخبار، ترفندها و کاربردهای عملی هوش مصنوعی
+                {t("features.updatedDesc")}
               </p>
             </div>
 
@@ -143,9 +145,9 @@ const Home = () => {
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
                 <MessageCircle className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">پشتیبانی هوشمند</h3>
+              <h3 className="text-xl font-semibold mb-3">{t("features.community")}</h3>
               <p className="text-muted-foreground">
-                دستیار هوش مصنوعی آماده پاسخگویی به سوالات شما
+                {t("features.communityDesc")}
               </p>
             </div>
           </div>
@@ -157,10 +159,10 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              آخرین <span className="text-primary">مقالات</span>
+              {t("latestArticles.title")}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              جدیدترین آموزش‌ها و محتوای آموزشی هوش مصنوعی
+              {t("latestArticles.subtitle")}
             </p>
           </div>
 
@@ -178,7 +180,7 @@ const Home = () => {
             </div>
           ) : articles.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">هنوز مقاله‌ای منتشر نشده است</p>
+              <p className="text-muted-foreground">{t("latestArticles.noArticles")}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-8" ref={articlesAnimation.ref}>
@@ -220,7 +222,7 @@ const Home = () => {
           <div className="text-center mt-12">
             <Link to="/articles">
               <Button variant="outline" size="lg" className="gap-2">
-                مشاهده همه مقالات
+                {t("cta.button")}
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -233,15 +235,15 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-3xl p-12 border border-primary/20 glow-neon">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              آماده‌اید سفر هوشمندانه را شروع کنید؟
+              {t("cta.title")}
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              با مقالات آموزشی نئوهوش، قدم اول را در دنیای هوش مصنوعی بردارید
+              {t("cta.description")}
             </p>
             <Link to="/articles">
               <Button size="lg" className="gap-2 glow-neon-strong">
                 <BookOpen className="h-5 w-5" />
-                مشاهده مقالات
+                {t("cta.button")}
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
