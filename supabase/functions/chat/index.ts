@@ -10,7 +10,7 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, modelType } = await req.json();
+    const { messages, modelType, imageData } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -109,6 +109,29 @@ serve(async (req) => {
 
     const systemPrompt = systemPrompts[modelType] || systemPrompts.general;
 
+    // Prepare messages for vision API if image is provided
+    let apiMessages;
+    if (imageData) {
+      // If there's an image, use vision-capable model and format message appropriately
+      const lastMessage = messages[messages.length - 1];
+      apiMessages = [
+        { role: "system", content: systemPrompt },
+        ...messages.slice(0, -1),
+        {
+          role: "user",
+          content: [
+            { type: "text", text: lastMessage.content },
+            { type: "image_url", image_url: { url: imageData } }
+          ]
+        }
+      ];
+    } else {
+      apiMessages = [
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ];
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -117,10 +140,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: apiMessages,
       }),
     });
 

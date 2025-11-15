@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -79,8 +79,11 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on mobile
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -205,17 +208,47 @@ const Chat = () => {
       .eq("id", currentConversationId);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error("لطفاً فقط فایل تصویری انتخاب کنید");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadedImage(reader.result as string);
+      setUploadedFile(file);
+      toast.success("تصویر آپلود شد");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeUploadedImage = () => {
+    setUploadedImage(null);
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSend = async () => {
-    if (!message.trim() || !selectedModel || isLoading || !user) return;
+    if ((!message.trim() && !uploadedImage) || !selectedModel || isLoading || !user) return;
     
     // Create new conversation if needed
     if (!currentConversationId) {
+      const title = uploadedImage && !message.trim() 
+        ? "تحلیل تصویر" 
+        : message.slice(0, 50) + (message.length > 50 ? "..." : "");
+      
       const { data, error } = await supabase
         .from("conversations")
         .insert({
           user_id: user.id,
           model_type: selectedModel,
-          title: message.slice(0, 50) + (message.length > 50 ? "..." : "")
+          title
         })
         .select()
         .single();
@@ -229,11 +262,26 @@ const Chat = () => {
       loadAllConversations();
     }
     
-    const userMessage: Message = { role: "user", content: message };
-    setMessages(prev => [...prev, userMessage]);
-    await saveMessage("user", message);
+    const messageContent = uploadedImage && !message.trim() 
+      ? "لطفاً این تصویر را تحلیل کنید" 
+      : message;
     
+    const userMessage: Message = { 
+      role: "user", 
+      content: messageContent,
+      ...(uploadedImage && { imageUrl: uploadedImage })
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    await saveMessage("user", messageContent, uploadedImage || undefined);
+    
+    const currentImage = uploadedImage;
     setMessage("");
+    setUploadedImage(null);
+    setUploadedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setIsLoading(true);
 
     try {
@@ -261,7 +309,8 @@ const Chat = () => {
         const { data, error } = await supabase.functions.invoke("chat", {
           body: { 
             messages: allMessages.map(m => ({ role: m.role, content: m.content })),
-            modelType: selectedModel
+            modelType: selectedModel,
+            ...(currentImage && { imageData: currentImage })
           }
         });
 
@@ -441,18 +490,21 @@ const Chat = () => {
                       <div className="mt-3">
                         <img 
                           src={msg.imageUrl} 
-                          alt="Generated" 
-                          className="rounded-lg max-w-full cursor-pointer"
+                          alt="تصویر" 
+                          className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
                           onClick={() => setZoomedImage(msg.imageUrl!)}
                         />
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => downloadImage(msg.imageUrl!)}
-                          className="mt-2 gap-1 text-xs"
-                        >
-                          دانلود
-                        </Button>
+                        {msg.role === "assistant" && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => downloadImage(msg.imageUrl!)}
+                            className="mt-2 gap-1 text-xs"
+                          >
+                            <Download className="h-3 w-3" />
+                            دانلود
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -473,27 +525,64 @@ const Chat = () => {
         {/* Input Area */}
         {selectedModel && (
           <div className="border-t border-border p-3 md:p-4 bg-background safe-area-bottom">
-            <div className="max-w-3xl mx-auto flex gap-2">
-              <Input
-                placeholder={selectedModel === "image" ? "توضیح تصویر..." : "پیام خود را بنویسید..."}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey && !isLoading) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                disabled={isLoading}
-                className="flex-1 min-w-0 text-base"
-              />
-              <Button 
-                onClick={handleSend} 
-                disabled={isLoading || !message.trim()}
-                size="icon"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+            <div className="max-w-3xl mx-auto">
+              {/* Image Upload Preview */}
+              {uploadedImage && (
+                <div className="mb-3 relative inline-block">
+                  <img 
+                    src={uploadedImage} 
+                    alt="آپلود شده" 
+                    className="max-h-32 rounded-lg border border-border"
+                  />
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={removeUploadedImage}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button
+                  size="icon"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading || selectedModel === "image"}
+                  title="آپلود تصویر"
+                >
+                  <Upload className="h-4 w-4" />
+                </Button>
+                <Input
+                  placeholder={selectedModel === "image" ? "توضیح تصویر..." : uploadedImage ? "سوالی درباره تصویر بپرسید..." : "پیام خود را بنویسید..."}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  disabled={isLoading}
+                  className="flex-1 min-w-0 text-base"
+                />
+                <Button 
+                  onClick={handleSend} 
+                  disabled={isLoading || (!message.trim() && !uploadedImage)}
+                  size="icon"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         )}
