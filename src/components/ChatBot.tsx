@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, X, Send, Briefcase, User, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Briefcase, User, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Film, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-type ModelType = "business" | "personal" | "general" | "ads" | "image";
+type ModelType = "business" | "personal" | "general" | "ads" | "image" | "animation" | "video";
 
 interface Model {
   id: ModelType;
@@ -50,6 +50,20 @@ const models: Model[] = [
     description: "تولید تصویر از توضیحات شما",
     icon: ImageIcon,
     gradient: "from-indigo-500 to-violet-500"
+  },
+  {
+    id: "animation",
+    name: "تبدیل متن به انیمیشن",
+    description: "ساخت انیمیشن از توضیحات شما",
+    icon: Sparkles,
+    gradient: "from-yellow-500 to-amber-500"
+  },
+  {
+    id: "video",
+    name: "تبدیل متن به ویدیو",
+    description: "تولید ویدیو از توضیحات شما",
+    icon: Film,
+    gradient: "from-rose-500 to-pink-500"
   }
 ];
 
@@ -79,23 +93,33 @@ const ChatBot = () => {
     setIsLoading(true);
 
     try {
-      if (selectedModel === "image") {
-        // Handle image generation
+      if (selectedModel === "image" || selectedModel === "animation" || selectedModel === "video") {
+        // Handle media generation (image/animation/video)
         const { data, error } = await supabase.functions.invoke("chat", {
           body: { 
             messages: [userMessage],
-            modelType: "image"
+            modelType: selectedModel
           }
         });
 
         if (error) throw error;
 
+        const contentMessages: Record<ModelType, string> = {
+          image: "تصویر شما آماده شد:",
+          animation: "انیمیشن شما آماده شد:",
+          video: "ویدیو شما آماده شد:",
+          business: "",
+          personal: "",
+          general: "",
+          ads: ""
+        };
+
         setMessages(prev => [
           ...prev,
           { 
             role: "assistant", 
-            content: "تصویر شما آماده شد:",
-            imageUrl: data.imageUrl 
+            content: contentMessages[selectedModel],
+            imageUrl: data.imageUrl || data.videoUrl 
           }
         ]);
       } else {

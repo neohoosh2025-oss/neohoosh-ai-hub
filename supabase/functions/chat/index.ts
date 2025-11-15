@@ -20,8 +20,8 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Handle image generation separately
-    if (modelType === "image") {
+    // Handle media generation (image/animation/video)
+    if (modelType === "image" || modelType === "animation" || modelType === "video") {
       const userPrompt = messages[messages.length - 1].content;
       
       const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -35,7 +35,11 @@ serve(async (req) => {
           messages: [
             {
               role: "user",
-              content: userPrompt
+              content: modelType === "animation" 
+                ? `Create an animated image based on: ${userPrompt}. Make it dynamic and visually engaging.`
+                : modelType === "video"
+                ? `Create a cinematic video-like sequence based on: ${userPrompt}. Make it look like a video frame.`
+                : userPrompt
             }
           ],
           modalities: ["image", "text"]
@@ -44,8 +48,13 @@ serve(async (req) => {
 
       if (!imageResponse.ok) {
         const errorText = await imageResponse.text();
-        console.error("Image generation error:", imageResponse.status, errorText);
-        return new Response(JSON.stringify({ error: "خطا در تولید تصویر" }), {
+        console.error("Media generation error:", imageResponse.status, errorText);
+        const errorMessages: Record<string, string> = {
+          image: "خطا در تولید تصویر",
+          animation: "خطا در تولید انیمیشن",
+          video: "خطا در تولید ویدیو"
+        };
+        return new Response(JSON.stringify({ error: errorMessages[modelType] || "خطا در تولید محتوا" }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -55,7 +64,7 @@ serve(async (req) => {
       const base64Image = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       
       if (!base64Image) {
-        throw new Error("No image returned from AI");
+        throw new Error("No media returned from AI");
       }
 
       // Get user ID from auth header
@@ -86,7 +95,7 @@ serve(async (req) => {
 
       if (uploadError) {
         console.error("Upload error:", uploadError);
-        throw new Error("Failed to upload image");
+        throw new Error("Failed to upload media");
       }
 
       // Get public URL
@@ -94,7 +103,10 @@ serve(async (req) => {
         .from('chat-images')
         .getPublicUrl(fileName);
 
-      return new Response(JSON.stringify({ imageUrl: publicUrl }), {
+      return new Response(JSON.stringify({ 
+        imageUrl: publicUrl,
+        videoUrl: modelType === "video" ? publicUrl : undefined 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
