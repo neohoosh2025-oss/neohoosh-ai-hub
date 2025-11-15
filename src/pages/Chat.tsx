@@ -82,9 +82,12 @@ const Chat = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [typingContent, setTypingContent] = useState<string>("");
+  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -238,6 +241,30 @@ const Chat = () => {
     }
   };
 
+  const typewriterEffect = (text: string, onComplete: () => void) => {
+    setIsTyping(true);
+    setTypingContent("");
+    let currentIndex = 0;
+    
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+    
+    typingIntervalRef.current = setInterval(() => {
+      if (currentIndex < text.length) {
+        setTypingContent(text.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setIsTyping(false);
+        onComplete();
+      }
+    }, 20); // سرعت تایپ (میلی‌ثانیه)
+  };
+
   const handleSend = async () => {
     if ((!message.trim() && !uploadedImage) || !selectedModel || isLoading || !user) return;
     
@@ -309,8 +336,11 @@ const Chat = () => {
           imageUrl: data.imageUrl
         };
         
-        setMessages(prev => [...prev, assistantMessage]);
-        await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
+        // Show typing animation for image generation response
+        typewriterEffect(assistantMessage.content, async () => {
+          setMessages(prev => [...prev, assistantMessage]);
+          await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
+        });
       } else {
         const allMessages = [...messages, userMessage];
         
@@ -329,8 +359,11 @@ const Chat = () => {
           content: data.response
         };
         
-        setMessages(prev => [...prev, assistantMessage]);
-        await saveMessage(convId, "assistant", data.response);
+        // Show typing animation for text response
+        typewriterEffect(data.response, async () => {
+          setMessages(prev => [...prev, assistantMessage]);
+          await saveMessage(convId, "assistant", data.response);
+        });
       }
     } catch (error) {
       console.error("Error:", error);
@@ -518,7 +551,20 @@ const Chat = () => {
                   </div>
                 </div>
               ))}
-              {isLoading && (
+              
+              {/* Typing indicator */}
+              {isTyping && (
+                <div className="flex justify-start px-2 md:px-0 animate-fade-in">
+                  <div className="max-w-[85%] md:max-w-[80%] bg-secondary rounded-2xl px-3 md:px-4 py-2.5 md:py-3">
+                    <p className="text-sm whitespace-pre-wrap">
+                      {typingContent}
+                      <span className="inline-block w-0.5 h-4 bg-primary mr-0.5 animate-pulse"></span>
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {isLoading && !isTyping && (
                 <div className="flex justify-start">
                   <div className="bg-secondary rounded-2xl px-4 py-3 text-sm text-muted-foreground">
                     در حال تایپ...
