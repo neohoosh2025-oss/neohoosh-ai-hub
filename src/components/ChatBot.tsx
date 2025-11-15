@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { MessageCircle, X, Send, Briefcase, User, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Film, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "animation" | "video";
 
@@ -146,13 +147,15 @@ const ChatBot = () => {
     }
   };
 
+  const { t, language } = useLanguage();
+
   return (
     <>
       {/* Chat Button */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform"
+          className={`fixed bottom-6 ${language === 'fa' || language === 'ar' ? 'left-6' : 'right-6'} h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform`}
           size="icon"
         >
           <MessageCircle className="h-6 w-6" />
@@ -161,7 +164,7 @@ const ChatBot = () => {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-6 left-6 w-96 h-[600px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+        <div className={`fixed bottom-6 ${language === 'fa' || language === 'ar' ? 'left-6' : 'right-6'} w-96 h-[600px] bg-card border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden`}>
           {/* Header */}
           <div className="bg-gradient-to-r from-primary/20 to-primary/10 border-b border-border p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -177,7 +180,7 @@ const ChatBot = () => {
               )}
               <MessageCircle className="h-5 w-5 text-primary" />
               <h3 className="font-semibold">
-                {selectedModel ? models.find(m => m.id === selectedModel)?.name : "دستیار هوشمند نئوهوش"}
+                {selectedModel ? models.find(m => m.id === selectedModel)?.name : t("chatbot.title")}
               </h3>
             </div>
             <Button
