@@ -138,27 +138,31 @@ const Chat = () => {
   const loadConversation = async (conversationId: string) => {
     setCurrentConversationId(conversationId);
     
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
     
-    if (data) {
-      const conv = conversations.find(c => c.id === conversationId);
-      if (conv) {
-        setSelectedModel(conv.model_type as ModelType);
-      }
-      
-      const formattedMessages: Message[] = data
-        .filter(msg => msg.role !== 'system')
-        .map(msg => ({
-          role: msg.role as "user" | "assistant",
-          content: msg.content,
-          imageUrl: msg.image_url || undefined
-        }));
-      setMessages(formattedMessages);
+    if (error) {
+      console.error("Error loading messages:", error);
+      toast.error("خطا در بارگذاری پیام‌ها");
+      return;
     }
+    
+    const conv = conversations.find(c => c.id === conversationId);
+    if (conv) {
+      setSelectedModel(conv.model_type as ModelType);
+    }
+    
+    const formattedMessages: Message[] = (data || [])
+      .filter(msg => msg.role !== 'system')
+      .map(msg => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content,
+        imageUrl: msg.image_url || undefined
+      }));
+    setMessages(formattedMessages);
   };
 
   const createNewConversation = async (modelType: ModelType) => {
