@@ -140,7 +140,7 @@ const translations: Record<Language, Record<string, string>> = {
     contact: "Contact",
     logout: "Logout",
     login: "Login",
-    "hero.title": "NeoHoosh?",
+    "hero.title": "NeoHoosh",
     "hero.subtitle": "Where Artificial Intelligence Meets You",
     "hero.description": "Education, content and AI applications in simple language to start your smart journey",
     "hero.cta": "Start Learning",
@@ -381,9 +381,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem("language", lang);
-    document.documentElement.dir = lang === "fa" || lang === "ar" ? "rtl" : "ltr";
   };
 
+  // Keep document direction and language attribute in sync with current language
+  useEffect(() => {
+    const dir = language === "fa" || language === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = dir;
+    document.documentElement.lang = language;
+  }, [language]);
   const t = (key: string) => translations[language][key] || key;
 
   return (
