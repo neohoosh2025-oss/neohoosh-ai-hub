@@ -196,11 +196,11 @@ const Chat = () => {
     toast.success("گفتگو حذف شد");
   };
 
-  const saveMessage = async (role: "user" | "assistant", content: string, imageUrl?: string) => {
-    if (!currentConversationId) return;
+  const saveMessage = async (conversationId: string, role: "user" | "assistant", content: string, imageUrl?: string) => {
+    if (!conversationId) return;
 
     await supabase.from("messages").insert({
-      conversation_id: currentConversationId,
+      conversation_id: conversationId,
       role,
       content,
       image_url: imageUrl
@@ -209,7 +209,7 @@ const Chat = () => {
     await supabase
       .from("conversations")
       .update({ updated_at: new Date().toISOString() })
-      .eq("id", currentConversationId);
+      .eq("id", conversationId);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,10 +241,11 @@ const Chat = () => {
   const handleSend = async () => {
     if ((!message.trim() && !uploadedImage) || !selectedModel || isLoading || !user) return;
     
-    // Create new conversation if needed
+    // Ensure conversation exists and get its id
+    let convId: string;
     if (!currentConversationId) {
-      const title = uploadedImage && !message.trim() 
-        ? "تحلیل تصویر" 
+      const title = uploadedImage && !message.trim()
+        ? "تحلیل تصویر"
         : message.slice(0, 50) + (message.length > 50 ? "..." : "");
       
       const { data, error } = await supabase
@@ -257,13 +258,16 @@ const Chat = () => {
         .select()
         .single();
 
-      if (error) {
+      if (error || !data) {
         toast.error("خطا در ایجاد گفتگو");
         return;
       }
 
-      setCurrentConversationId(data.id);
+      convId = data.id;
+      setCurrentConversationId(convId);
       loadAllConversations();
+    } else {
+      convId = currentConversationId;
     }
     
     const messageContent = uploadedImage && !message.trim() 
@@ -277,7 +281,7 @@ const Chat = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    await saveMessage("user", messageContent, uploadedImage || undefined);
+    await saveMessage(convId, "user", messageContent, uploadedImage || undefined);
     
     const currentImage = uploadedImage;
     setMessage("");
@@ -306,7 +310,7 @@ const Chat = () => {
         };
         
         setMessages(prev => [...prev, assistantMessage]);
-        await saveMessage("assistant", assistantMessage.content, data.imageUrl);
+        await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
       } else {
         const allMessages = [...messages, userMessage];
         
@@ -326,7 +330,7 @@ const Chat = () => {
         };
         
         setMessages(prev => [...prev, assistantMessage]);
-        await saveMessage("assistant", data.response);
+        await saveMessage(convId, "assistant", data.response);
       }
     } catch (error) {
       console.error("Error:", error);
