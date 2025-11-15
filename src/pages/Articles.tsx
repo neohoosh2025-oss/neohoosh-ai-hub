@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
   id: string;
@@ -18,6 +19,7 @@ interface Article {
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchArticles();
@@ -39,10 +41,10 @@ const Articles = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              مقالات آموزشی
+              {t("articles.title")}
             </h1>
             <p className="text-lg text-muted-foreground">
-              دانش هوش مصنوعی را با مقالات جامع و کاربردی نئوهوش فرا بگیرید
+              {t("articles.subtitle")}
             </p>
           </div>
         </div>
@@ -53,11 +55,11 @@ const Articles = () => {
         <div className="container mx-auto px-4">
           {loading ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">در حال بارگذاری...</p>
+              <p className="text-muted-foreground">{t("latestArticles.loading")}</p>
             </div>
           ) : articles.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">مقاله‌ای هنوز منتشر نشده است</p>
+              <p className="text-muted-foreground">{t("latestArticles.noArticles")}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -98,7 +100,7 @@ const Articles = () => {
                         </span>
                       </div>
                       <Button variant="ghost" size="sm" className="gap-2 group-hover:text-primary">
-                        ادامه مطلب
+                        {t("latestArticles.readMore")}
                         <ArrowLeft className="h-3 w-3" />
                       </Button>
                     </div>
