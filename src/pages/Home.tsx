@@ -75,6 +75,8 @@ const Home = () => {
               <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent animate-glow">
                 {t("hero.title")}
               </span>
+              <br />
+              <span className="text-foreground">{t("hero.subtitle")}</span>
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">

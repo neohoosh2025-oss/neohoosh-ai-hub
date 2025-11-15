@@ -83,13 +83,13 @@ const Navigation = () => {
                 className="gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                خروج
+                {t("logout")}
               </Button>
             ) : (
               <Link to="/auth?from=chat">
                 <Button variant="ghost" size="sm" className="gap-2">
                   <User className="h-4 w-4" />
-                  ورود
+                  {t("login")}
                 </Button>
               </Link>
             )}

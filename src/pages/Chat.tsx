@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image";
 
@@ -31,45 +32,45 @@ interface Conversation {
   updated_at: string;
 }
 
-const models: Model[] = [
-  {
-    id: "business",
-    name: "مشاور کسب و کار",
-    description: "راهنمایی حرفه‌ای برای کسب و کار شما",
-    icon: Briefcase,
-    color: "text-blue-500"
-  },
-  {
-    id: "personal",
-    name: "توسعه فردی",
-    description: "مشاوره برای رشد شخصی و حرفه‌ای",
-    icon: UserIcon,
-    color: "text-purple-500"
-  },
-  {
-    id: "general",
-    name: "سوالات آزاد",
-    description: "پاسخ به هر سوالی که دارید",
-    icon: MessageSquare,
-    color: "text-green-500"
-  },
-  {
-    id: "ads",
-    name: "تولید تبلیغات",
-    description: "ایجاد محتوای تبلیغاتی جذاب",
-    icon: Megaphone,
-    color: "text-orange-500"
-  },
-  {
-    id: "image",
-    name: "تبدیل متن به عکس",
-    description: "تولید تصویر از توضیحات شما",
-    icon: ImageIcon,
-    color: "text-indigo-500"
-  },
-];
-
 const Chat = () => {
+  const { t } = useLanguage();
+  const models: Model[] = [
+    {
+      id: "business",
+      name: t("chat.businessAdvisor"),
+      description: t("chat.businessDesc"),
+      icon: Briefcase,
+      color: "text-blue-500"
+    },
+    {
+      id: "personal",
+      name: t("chat.personalDev"),
+      description: t("chat.personalDesc"),
+      icon: UserIcon,
+      color: "text-purple-500"
+    },
+    {
+      id: "general",
+      name: t("chat.openQuestions"),
+      description: t("chat.openQuestionsDesc"),
+      icon: MessageSquare,
+      color: "text-green-500"
+    },
+    {
+      id: "ads",
+      name: t("chat.adsGen"),
+      description: t("chat.adsGenDesc"),
+      icon: Megaphone,
+      color: "text-orange-500"
+    },
+    {
+      id: "image",
+      name: t("chat.textToImage"),
+      description: t("chat.textToImageDesc"),
+      icon: ImageIcon,
+      color: "text-indigo-500"
+    },
+  ];
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
@@ -149,7 +150,7 @@ const Chat = () => {
     
     if (error) {
       console.error("Error loading messages:", error);
-      toast.error("خطا در بارگذاری پیام‌ها");
+      toast.error(t("contact.error"));
       return;
     }
     
@@ -185,7 +186,7 @@ const Chat = () => {
       .eq("id", conversationId);
 
     if (error) {
-      toast.error("خطا در حذف گفتگو");
+      toast.error(t("contact.error"));
       return;
     }
 
@@ -196,7 +197,7 @@ const Chat = () => {
     }
     
     loadAllConversations();
-    toast.success("گفتگو حذف شد");
+    toast.success(t("chat.conversationDeleted"));
   };
 
   const saveMessage = async (conversationId: string, role: "user" | "assistant", content: string, imageUrl?: string) => {
@@ -220,7 +221,7 @@ const Chat = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error("لطفاً فقط فایل تصویری انتخاب کنید");
+      toast.error(t("contact.error"));
       return;
     }
 
@@ -228,7 +229,7 @@ const Chat = () => {
     reader.onloadend = () => {
       setUploadedImage(reader.result as string);
       setUploadedFile(file);
-      toast.success("تصویر آپلود شد");
+      toast.success(t("contact.success"));
     };
     reader.readAsDataURL(file);
   };
@@ -286,7 +287,7 @@ const Chat = () => {
         .single();
 
       if (error || !data) {
-        toast.error("خطا در ایجاد گفتگو");
+        toast.error(t("contact.error"));
         return;
       }
 
@@ -367,7 +368,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("خطا در ارتباط با هوش مصنوعی");
+      toast.error(t("contact.error"));
     } finally {
       setIsLoading(false);
     }

@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Code, Sparkles, Zap, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Services = () => {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen pt-20">
       {/* Header */}
@@ -11,10 +13,10 @@ const Services = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-foreground">خدمات نئوهوش</span>
+              <span className="text-foreground">{t("services.title")}</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              طراحی و توسعه وب‌سایت و اپلیکیشن با قدرت هوش مصنوعی
+              {t("services.subtitle")}
             </p>
           </div>
         </div>
@@ -29,45 +31,43 @@ const Services = () => {
                 <Code className="h-6 w-6 text-primary" />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold">
-                طراحی سایت و اپلیکیشن با هوش مصنوعی
+                {t("services.mainService")}
               </h2>
             </div>
 
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              تیم نئوهوش با استفاده از جدیدترین ابزارها و فناوری‌های هوش مصنوعی، 
-              وب‌سایت و اپلیکیشن‌های مدرن و کاربردی را برای شما طراحی می‌کند.
-              از ایده تا اجرا، ما در کنار شما هستیم.
+              {t("services.description")}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Sparkles className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">طراحی مدرن</h3>
+                <h3 className="font-semibold mb-2">{t("services.modernDesign")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  طراحی UI/UX زیبا و کاربرپسند
+                  {t("services.modernDesignDesc")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Zap className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">توسعه سریع</h3>
+                <h3 className="font-semibold mb-2">{t("services.fastDev")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  اجرای پروژه با سرعت بالا
+                  {t("services.fastDevDesc")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Code className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">کد باکیفیت</h3>
+                <h3 className="font-semibold mb-2">{t("services.qualityCode")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  کدنویسی استاندارد و قابل نگهداری
+                  {t("services.qualityCodeDesc")}
                 </p>
               </div>
             </div>
 
             <Link to="/contact">
               <Button size="lg" className="gap-2 glow-neon-strong">
-                درخواست همکاری
+                {t("services.requestCoop")}
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -80,10 +80,10 @@ const Services = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">
-              نمونه کارهای ما
+              {t("services.portfolio")}
             </h2>
             <p className="text-muted-foreground mb-8">
-              به زودی نمونه کارهای ما را در این بخش مشاهده خواهید کرد
+              {t("services.portfolioDesc")}
             </p>
             <div className="grid md:grid-cols-2 gap-6">
               {[1, 2].map((i) => (

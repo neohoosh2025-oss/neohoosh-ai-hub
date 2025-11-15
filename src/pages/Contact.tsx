@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Mail, Send, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Contact = () => {
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -26,14 +28,14 @@ const Contact = () => {
 
     if (error) {
       toast({
-        title: "خطا",
+        title: t("contact.error"),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "پیام ارسال شد",
-        description: "به زودی با شما تماس خواهیم گرفت",
+        title: t("contact.success"),
+        description: t("contact.successDesc"),
       });
       setFormData({ name: "", email: "", message: "" });
     }
@@ -46,10 +48,10 @@ const Contact = () => {
         <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            تماس با ما
+            {t("contact.title")}
           </h1>
             <p className="text-lg text-muted-foreground">
-              سوال یا پیشنهادی دارید؟ خوشحال می‌شویم از شما بشنویم
+              {t("contact.subtitle")}
             </p>
           </div>
         </div>
@@ -61,25 +63,25 @@ const Contact = () => {
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
             {/* Form */}
             <Card className="p-8 border-border">
-              <h2 className="text-2xl font-bold mb-6">فرم تماس</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("contact.formTitle")}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    نام و نام خانوادگی
+                    {t("contact.name")}
                   </label>
                   <Input
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder="نام خود را وارد کنید"
+                    placeholder={t("contact.namePlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    ایمیل
+                    {t("contact.email")}
                   </label>
                   <Input
                     type="email"
@@ -94,14 +96,14 @@ const Contact = () => {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    پیام شما
+                    {t("contact.message")}
                   </label>
                   <Textarea
                     value={formData.message}
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
                     }
-                    placeholder="پیام خود را بنویسید..."
+                    placeholder={t("contact.messagePlaceholder")}
                     rows={5}
                     required
                   />
@@ -109,7 +111,7 @@ const Contact = () => {
 
                 <Button type="submit" className="w-full gap-2 glow-neon">
                   <Send className="h-4 w-4" />
-                  ارسال پیام
+                  {t("contact.send")}
                 </Button>
               </form>
             </Card>
