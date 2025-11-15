@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Film, Sparkles } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 
-type ModelType = "business" | "personal" | "general" | "ads" | "image" | "animation" | "video";
+type ModelType = "business" | "personal" | "general" | "ads" | "image";
 
 interface Model {
   id: ModelType;
@@ -67,20 +67,6 @@ const models: Model[] = [
     icon: ImageIcon,
     color: "text-indigo-500"
   },
-  {
-    id: "animation",
-    name: "تبدیل متن به انیمیشن",
-    description: "ساخت انیمیشن از توضیحات شما",
-    icon: Sparkles,
-    color: "text-yellow-500"
-  },
-  {
-    id: "video",
-    name: "تبدیل متن به ویدیو",
-    description: "تولید ویدیو از توضیحات شما",
-    icon: Film,
-    color: "text-rose-500"
-  }
 ];
 
 const Chat = () => {
@@ -334,36 +320,26 @@ const Chat = () => {
     setIsLoading(true);
 
     try {
-      if (selectedModel === "image" || selectedModel === "animation" || selectedModel === "video") {
+      if (selectedModel === "image") {
         const { data, error } = await supabase.functions.invoke("chat", {
           body: { 
             messages: [{ role: "user", content: userMessage.content }],
-            modelType: selectedModel
+            modelType: "image"
           }
         });
 
         if (error) throw error;
 
-        const contentMessages: Record<ModelType, string> = {
-          image: "تصویر شما آماده شد:",
-          animation: "انیمیشن شما آماده شد:",
-          video: "ویدیو شما آماده شد:",
-          business: "",
-          personal: "",
-          general: "",
-          ads: ""
-        };
-
         const assistantMessage: Message = {
           role: "assistant",
-          content: contentMessages[selectedModel],
-          imageUrl: data.imageUrl || data.videoUrl
+          content: "تصویر شما آماده شد:",
+          imageUrl: data.imageUrl
         };
         
         // Show typing animation for image generation response
         typewriterEffect(assistantMessage.content, async () => {
           setMessages(prev => [...prev, assistantMessage]);
-          await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl || data.videoUrl);
+          await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
         });
       } else {
         const allMessages = [...messages, userMessage];

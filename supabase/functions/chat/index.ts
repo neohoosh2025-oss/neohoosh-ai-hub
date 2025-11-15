@@ -20,8 +20,8 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Handle media generation (image/animation/video)
-    if (modelType === "image" || modelType === "animation" || modelType === "video") {
+    // Handle media generation (image only - video/animation not yet supported)
+    if (modelType === "image") {
       const userPrompt = messages[messages.length - 1].content;
       
       const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -35,11 +35,7 @@ serve(async (req) => {
           messages: [
             {
               role: "user",
-              content: modelType === "animation" 
-                ? `Create an animated image based on: ${userPrompt}. Make it dynamic and visually engaging.`
-                : modelType === "video"
-                ? `Create a cinematic video-like sequence based on: ${userPrompt}. Make it look like a video frame.`
-                : userPrompt
+              content: userPrompt
             }
           ],
           modalities: ["image", "text"]
@@ -48,13 +44,8 @@ serve(async (req) => {
 
       if (!imageResponse.ok) {
         const errorText = await imageResponse.text();
-        console.error("Media generation error:", imageResponse.status, errorText);
-        const errorMessages: Record<string, string> = {
-          image: "خطا در تولید تصویر",
-          animation: "خطا در تولید انیمیشن",
-          video: "خطا در تولید ویدیو"
-        };
-        return new Response(JSON.stringify({ error: errorMessages[modelType] || "خطا در تولید محتوا" }), {
+        console.error("Image generation error:", imageResponse.status, errorText);
+        return new Response(JSON.stringify({ error: "خطا در تولید تصویر" }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -107,6 +98,18 @@ serve(async (req) => {
         imageUrl: publicUrl,
         videoUrl: modelType === "video" ? publicUrl : undefined 
       }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    // Video and animation not yet supported - Lovable AI currently only supports image generation
+    if (modelType === "animation" || modelType === "video") {
+      return new Response(JSON.stringify({ 
+        error: modelType === "animation" 
+          ? "قابلیت تولید انیمیشن به زودی اضافه خواهد شد"
+          : "قابلیت تولید ویدیو به زودی اضافه خواهد شد"
+      }), {
+        status: 501,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
