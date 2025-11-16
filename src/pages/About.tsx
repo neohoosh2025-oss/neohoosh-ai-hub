@@ -88,9 +88,9 @@ const About = () => {
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
-                <h3 className="font-semibold text-lg mb-2">{t("about.valueCommunity")}</h3>
+                <h3 className="font-semibold text-lg mb-2">{t("aboutPage.valueCommunity")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("about.valueCommunityDesc")}
+                  {t("aboutPage.valueCommunityDesc")}
                 </p>
               </div>
             </div>
