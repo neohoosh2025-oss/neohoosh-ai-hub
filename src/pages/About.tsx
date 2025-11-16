@@ -11,10 +11,10 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {t("about.header")} <span className="text-foreground">{t("about.headerBrand")}</span>
+              {t("aboutPage.header")} <span className="text-foreground">{t("aboutPage.headerBrand")}</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              {t("about.headerDesc")}
+              {t("aboutPage.headerDesc")}
             </p>
           </div>
         </div>
@@ -30,10 +30,10 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Target className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{t("about.missionTitle")}</h2>
+                <h2 className="text-2xl font-bold">{t("aboutPage.missionTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                {t("about.missionDesc")}
+                {t("aboutPage.missionDesc")}
               </p>
             </div>
 
@@ -43,10 +43,10 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{t("about.visionTitle")}</h2>
+                <h2 className="text-2xl font-bold">{t("aboutPage.visionTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                {t("about.visionDesc")}
+                {t("aboutPage.visionDesc")}
               </p>
             </div>
 
@@ -56,35 +56,35 @@ const About = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
-                <h2 className="text-2xl font-bold">{t("about.teamTitle")}</h2>
+                <h2 className="text-2xl font-bold">{t("aboutPage.teamTitle")}</h2>
               </div>
               <p className="text-muted-foreground leading-relaxed mb-6">
-                {t("about.teamDesc")}
+                {t("aboutPage.teamDesc")}
               </p>
               <div className="p-4 rounded-xl bg-primary/5 border border-primary/20">
-                <h3 className="font-semibold text-lg mb-2">{t("about.founderName")}</h3>
-                <p className="text-sm text-muted-foreground">{t("about.founderRole")}</p>
+                <h3 className="font-semibold text-lg mb-2">{t("aboutPage.founderName")}</h3>
+                <p className="text-sm text-muted-foreground">{t("aboutPage.founderRole")}</p>
               </div>
             </div>
 
             {/* Values */}
             <div className="grid md:grid-cols-3 gap-6">
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
-                <h3 className="font-semibold text-lg mb-2">{t("about.valueSimplicity")}</h3>
+                <h3 className="font-semibold text-lg mb-2">{t("aboutPage.valueSimplicity")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("about.valueSimplicityDesc")}
+                  {t("aboutPage.valueSimplicityDesc")}
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
-                <h3 className="font-semibold text-lg mb-2">{t("about.valueInnovation")}</h3>
+                <h3 className="font-semibold text-lg mb-2">{t("aboutPage.valueInnovation")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("about.valueInnovationDesc")}
+                  {t("aboutPage.valueInnovationDesc")}
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
-                <h3 className="font-semibold text-lg mb-2">{t("about.valueQuality")}</h3>
+                <h3 className="font-semibold text-lg mb-2">{t("aboutPage.valueQuality")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("about.valueQualityDesc")}
+                  {t("aboutPage.valueQualityDesc")}
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
