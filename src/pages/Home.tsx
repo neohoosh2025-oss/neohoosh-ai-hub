@@ -180,10 +180,6 @@ const Home = () => {
                 </Card>
               ))}
             </div>
-          ) : articles.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">{t("latestArticles.noArticles")}</p>
-            </div>
           ) : (
             <div className="grid md:grid-cols-3 gap-8" ref={articlesAnimation.ref}>
               {articles.map((article, index) => (
