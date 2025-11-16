@@ -124,12 +124,12 @@ const Contact = () => {
                     <Mail className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">ایمیل</h3>
+                    <h3 className="font-semibold">{t("contact.emailLabel")}</h3>
                     <a
-                      href="mailto:neohoosh.2025@gmail.com"
+                      href={`mailto:${t("contact.emailValue")}`}
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      neohoosh.2025@gmail.com
+                      {t("contact.emailValue")}
                     </a>
                   </div>
                 </div>
@@ -141,24 +141,23 @@ const Contact = () => {
                     <Instagram className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">اینستاگرام</h3>
+                    <h3 className="font-semibold">{t("contact.instagramLabel")}</h3>
                     <a
-                      href="https://www.instagram.com/neohoosh.ai"
+                      href={`https://www.instagram.com/${t("contact.instagramValue").replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      @neohoosh.ai
+                      {t("contact.instagramValue")}
                     </a>
                   </div>
                 </div>
               </Card>
 
               <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
-                <h3 className="font-semibold mb-2">زمان پاسخگویی</h3>
+                <h3 className="font-semibold mb-2">{t("contact.hoursLabel")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  ما معمولاً ظرف ۲۴ ساعت به پیام‌ها پاسخ می‌دهیم.
-                  برای پشتیبانی سریع‌تر می‌توانید از طریق اینستاگرام با ما در ارتباط باشید.
+                  {t("contact.hoursValue")}
                 </p>
               </div>
             </div>

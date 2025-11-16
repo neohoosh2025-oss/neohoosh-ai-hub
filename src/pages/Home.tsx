@@ -92,10 +92,10 @@ const Home = () => {
                 </Button>
               </Link>
               
-              <Link to="/articles">
+              <Link to="/chat">
                 <Button size="lg" variant="secondary" className="gap-2">
-                  {t("hero.newArticles")}
-                  <ArrowLeft className="h-4 w-4" />
+                  <MessageCircle className="h-5 w-5" />
+                  {t("hero.smartAssistant")}
                 </Button>
               </Link>
             </div>
