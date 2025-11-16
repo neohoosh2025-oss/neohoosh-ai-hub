@@ -76,6 +76,22 @@ const translations = {
       smartAssistant: "دستیار هوشمند"
     },
     
+    features: {
+      title: "چرا نئوهوش؟",
+      subtitle: "آموزش ساده، به‌روز و همراه با جامعه کاربری",
+      learning: "یادگیری ساده",
+      learningDesc: "مفاهیم پیچیده را با مثال‌های کاربردی و قابل فهم یاد بگیرید.",
+      updated: "به‌روز و عملی",
+      updatedDesc: "همیشه با جدیدترین ابزارها و تکنیک‌های هوش مصنوعی همراه باشید.",
+      community: "جامعه فعال",
+      communityDesc: "با افراد علاقه‌مند به AI گفتگو کنید و تجربه‌ها را به اشتراک بگذارید."
+    },
+
+    latestArticles: {
+      title: "آخرین مقالات",
+      subtitle: "منتخب جدیدترین مطالب آموزشی و کاربردی"
+    },
+
     contactPage: {
       title: "تماس با ما",
       subtitle: "سوالات، پیشنهادات یا نظرات خود را با ما در میان بگذارید",
@@ -117,6 +133,16 @@ const translations = {
       valueInnovationDesc: "به‌روز ماندن با آخرین پیشرفت‌های هوش مصنوعی",
       valueQuality: "کیفیت",
       valueQualityDesc: "ارائه محتوای دقیق و معتبر"
+    },
+    
+    footer: {
+      brand: "نئوهوش",
+      tagline: "پلی به دنیای هوش مصنوعی",
+      quickLinks: "لینک‌های سریع",
+      homepage: "صفحه اصلی",
+      learnMore: "بیشتر بدانید",
+      social: "شبکه‌های اجتماعی",
+      copyright: "تمام حقوق محفوظ است"
     },
     
     chat: {
@@ -191,7 +217,23 @@ const translations = {
       newArticles: "Latest Articles",
       smartAssistant: "Smart Assistant"
     },
-    
+
+    features: {
+      title: "Why NeoHoosh?",
+      subtitle: "Simple, up-to-date learning with community",
+      learning: "Simple Learning",
+      learningDesc: "Learn complex concepts through clear, practical examples.",
+      updated: "Up-to-date & Practical",
+      updatedDesc: "Stay current with the latest AI tools and techniques.",
+      community: "Active Community",
+      communityDesc: "Discuss and share experiences with AI enthusiasts."
+    },
+
+    latestArticles: {
+      title: "Latest Articles",
+      subtitle: "Handpicked fresh educational content"
+    },
+
     contactPage: {
       title: "Contact Us",
       subtitle: "Share your questions, suggestions, or feedback with us",
@@ -235,6 +277,26 @@ const translations = {
       valueQualityDesc: "Providing accurate and reliable content"
     },
     
+    footer: {
+      brand: "NeoHoosh",
+      tagline: "A bridge to the world of AI",
+      quickLinks: "Quick Links",
+      homepage: "Homepage",
+      learnMore: "Learn More",
+      social: "Social",
+      copyright: "All rights reserved"
+    },
+
+    footer: {
+      brand: "نيوهوش",
+      tagline: "جسر إلى عالم الذكاء الاصطناعي",
+      quickLinks: "روابط سريعة",
+      homepage: "الصفحة الرئيسية",
+      learnMore: "اعرف المزيد",
+      social: "التواصل الاجتماعي",
+      copyright: "جميع الحقوق محفوظة"
+    },
+
     chat: {
       pleaseLogin: "Please login first",
       selectModel: "Select a model",
@@ -306,6 +368,22 @@ const translations = {
       cta: "ابدأ التعلم",
       newArticles: "أحدث المقالات",
       smartAssistant: "المساعد الذكي"
+    },
+
+    features: {
+      title: "لماذا نيوهوش؟",
+      subtitle: "تعلم بسيط ومواكب مع مجتمع نشط",
+      learning: "تعلم بسيط",
+      learningDesc: "تعلّم المفاهيم المعقّدة عبر أمثلة عملية مفهومة.",
+      updated: "مواكب وعملي",
+      updatedDesc: "ابقَ على اطلاع بأحدث أدوات وتقنيات الذكاء الاصطناعي.",
+      community: "مجتمع نشط",
+      communityDesc: "تحدّث وشارك الخبرات مع محبي الذكاء الاصطناعي."
+    },
+
+    latestArticles: {
+      title: "أحدث المقالات",
+      subtitle: "مختارات من أحدث المواد التعليمية"
     },
 
     contactPage: {
