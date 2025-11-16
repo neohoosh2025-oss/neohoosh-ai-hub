@@ -126,10 +126,10 @@ const Contact = () => {
                   <div>
                     <h3 className="font-semibold">{t("contactPage.emailLabel")}</h3>
                     <a
-                      href={`mailto:${t("contactPage.emailValue")}`}
+                      href="mailto:neohoosh.2025@gmail.com"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      {t("contactPage.emailValue")}
+                      neohoosh.2025@gmail.com
                     </a>
                   </div>
                 </div>
