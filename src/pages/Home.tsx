@@ -248,12 +248,14 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Sticky CTA Button */}
-        <div className="fixed bottom-8 left-8 z-40 hidden lg:block">
+        {/* Floating Smart Assistant Button */}
+        <div className="fixed bottom-8 left-8 z-40">
           <Link to="/chat">
-            <Button size="lg" className="gap-2 glow-neon-strong shadow-2xl">
-              <MessageCircle className="h-5 w-5" />
-              دستیار هوشمند
+            <Button 
+              size="icon"
+              className="h-16 w-16 rounded-full glow-neon-strong shadow-2xl hover:scale-110 transition-transform"
+            >
+              <MessageCircle className="h-8 w-8" />
             </Button>
           </Link>
         </div>
