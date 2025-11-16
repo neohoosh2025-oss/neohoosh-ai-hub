@@ -13,10 +13,10 @@ const Services = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-foreground">{t("services.title")}</span>
+              <span className="text-foreground">{t("servicesPage.title")}</span>
             </h1>
             <p className="text-lg text-muted-foreground">
-              {t("services.subtitle")}
+              {t("servicesPage.subtitle")}
             </p>
           </div>
         </div>
@@ -31,43 +31,43 @@ const Services = () => {
                 <Code className="h-6 w-6 text-primary" />
               </div>
               <h2 className="text-2xl md:text-3xl font-bold">
-                {t("services.mainService")}
+                {t("servicesPage.mainService")}
               </h2>
             </div>
 
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-              {t("services.description")}
+              {t("servicesPage.description")}
             </p>
 
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Sparkles className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">{t("services.modernDesign")}</h3>
+                <h3 className="font-semibold mb-2">{t("servicesPage.modernDesign")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("services.modernDesignDesc")}
+                  {t("servicesPage.modernDesignDesc")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Zap className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">{t("services.fastDev")}</h3>
+                <h3 className="font-semibold mb-2">{t("servicesPage.fastDev")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("services.fastDevDesc")}
+                  {t("servicesPage.fastDevDesc")}
                 </p>
               </div>
 
               <div className="p-4 rounded-xl bg-background border border-border">
                 <Code className="h-8 w-8 text-primary mb-3" />
-                <h3 className="font-semibold mb-2">{t("services.qualityCode")}</h3>
+                <h3 className="font-semibold mb-2">{t("servicesPage.qualityCode")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("services.qualityCodeDesc")}
+                  {t("servicesPage.qualityCodeDesc")}
                 </p>
               </div>
             </div>
 
             <Link to="/contact">
               <Button size="lg" className="gap-2 glow-neon-strong">
-                {t("services.requestCoop")}
+                {t("servicesPage.requestCoop")}
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
@@ -80,10 +80,10 @@ const Services = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">
-              {t("services.portfolio")}
+              {t("servicesPage.portfolio")}
             </h2>
             <p className="text-muted-foreground mb-8">
-              {t("services.portfolioDesc")}
+              {t("servicesPage.portfolioDesc")}
             </p>
             <div className="grid md:grid-cols-2 gap-6">
               {[1, 2].map((i) => (

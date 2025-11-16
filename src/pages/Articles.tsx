@@ -41,10 +41,10 @@ const Articles = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              {t("articles.title")}
+              {t("articlesPage.title")}
             </h1>
             <p className="text-lg text-muted-foreground">
-              {t("articles.subtitle")}
+              {t("articlesPage.subtitle")}
             </p>
           </div>
         </div>
