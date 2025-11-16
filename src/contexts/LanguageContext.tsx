@@ -242,6 +242,122 @@ const translations = {
       newConversation: "New Conversation",
       backToModels: "Back to Models"
     }
+  },
+  ar: {
+    home: "الرئيسية",
+    articles: "المقالات",
+    products: "المتجر",
+    services: "الخدمات",
+    chatbot: "المساعد الذكي",
+    about: "من نحن",
+    contact: "اتصل بنا",
+    logout: "تسجيل الخروج",
+    login: "تسجيل الدخول",
+
+    profile: {
+      title: "الملف الشخصي",
+      description: "إدارة معلومات حسابك",
+      email: "البريد الإلكتروني",
+      emailNote: "لا يمكن تغيير البريد الإلكتروني",
+      displayName: "الاسم المعروض",
+      displayNamePlaceholder: "أدخل اسمك",
+      save: "حفظ التغييرات",
+      updateSuccess: "تم تحديث الملف الشخصي بنجاح"
+    },
+
+    dashboard: {
+      welcome: "مرحباً",
+      subtitle: "نظرة عامة على أنشطتك وإحصائياتك",
+      savedArticles: "المقالات المحفوظة",
+      totalActivity: "إجمالي الأنشطة",
+      memberSince: "عضو منذ",
+      recentlySaved: "المحفوظ مؤخراً",
+      savedDesc: "مقالاتك المحفوظة",
+      noSaved: "لم تحفظ أي مقالات بعد",
+      recentActivity: "النشاط الأخير",
+      activityDesc: "أحدث أنشطتك",
+      noActivity: "لا يوجد نشاط حتى الآن",
+      viewedArticle: "شاهد مقالاً",
+      savedArticle: "حفظ مقالاً"
+    },
+
+    auth: {
+      title: "تسجيل الدخول",
+      subtitle: "مرحباً بك في عالم الذكاء الاصطناعي",
+      signup: "إنشاء حساب",
+      password: "كلمة المرور",
+      signupSuccess: "تم إنشاء حسابك. يرجى تسجيل الدخول.",
+      forgotPassword: "هل نسيت كلمة المرور؟",
+      signingIn: "جارٍ تسجيل الدخول...",
+      signingUp: "جارٍ إنشاء الحساب...",
+      orContinueWith: "أو المتابعة باستخدام",
+      resetSent: "تم إرسال رسالة إعادة تعيين كلمة المرور",
+      enterEmail: "أدخل بريدك الإلكتروني",
+      sending: "جارٍ الإرسال...",
+      sendReset: "إرسال رابط إعادة التعيين",
+      backToLogin: "العودة إلى تسجيل الدخول"
+    },
+
+    hero: {
+      badge: "منصة تعلم الذكاء الاصطناعي",
+      title: "تعلم الذكاء الاصطناعي",
+      subtitle: "ببساطة وعملياً",
+      description: "في نيوهوش، ستتعرّف على مفاهيم الذكاء الاصطناعي وكيفية استخدام أدواته في حياتك وعملك.",
+      cta: "ابدأ التعلم",
+      newArticles: "أحدث المقالات",
+      smartAssistant: "المساعد الذكي"
+    },
+
+    contactPage: {
+      title: "اتصل بنا",
+      subtitle: "شاركنا أسئلتك واقتراحاتك وملاحظاتك",
+      formTitle: "إرسال رسالة",
+      name: "الاسم",
+      namePlaceholder: "أدخل اسمك",
+      email: "البريد الإلكتروني",
+      message: "الرسالة",
+      messagePlaceholder: "اكتب رسالتك...",
+      send: "إرسال الرسالة",
+      success: "تم إرسال رسالتك!",
+      successDesc: "سنتواصل معك قريباً",
+      error: "حدث خطأ أثناء إرسال الرسالة",
+      contactInfo: "معلومات الاتصال",
+      contactDesc: "يمكنك التواصل معنا عبر الطرق التالية:",
+      emailLabel: "البريد الإلكتروني",
+      emailValue: "support@neohoosh.com",
+      instagramLabel: "إنستغرام",
+      instagramValue: "@neohoosh.ai",
+      hoursLabel: "ساعات الدعم",
+      hoursValue: "من السبت إلى الخميس، 9 صباحاً حتى 6 مساءً"
+    },
+
+    aboutPage: {
+      header: "حول",
+      headerBrand: "نيوهوش",
+      headerDesc: "جسر إلى عالم الذكاء الاصطناعي",
+      missionTitle: "مهمتنا",
+      missionDesc: "تأسست نيوهوش بهدف تبسيط ونشر معرفة الذكاء الاصطناعي.",
+      visionTitle: "رؤيتنا",
+      visionDesc: "أن نصبح المرجع الرئيسي والموثوق لتعلم واستخدام الذكاء الاصطناعي في إيران والمنطقة.",
+      teamTitle: "فريقنا",
+      teamDesc: "يتكون فريق نيوهوش من محبي الذكاء الاصطناعي.",
+      founderName: "أميرحسين صابري",
+      founderRole: "المؤسس والمدير التنفيذي",
+      valueSimplicity: "البساطة",
+      valueSimplicityDesc: "التعليم بلغة بسيطة ومفهومة",
+      valueInnovation: "الابتكار",
+      valueInnovationDesc: "مواكبة أحدث تطورات الذكاء الاصطناعي",
+      valueQuality: "الجودة",
+      valueQualityDesc: "تقديم محتوى دقيق وموثوق"
+    },
+
+    chat: {
+      pleaseLogin: "يرجى تسجيل الدخول أولاً",
+      selectModel: "اختر نموذجاً",
+      typeMessage: "اكتب رسالتك...",
+      newConversation: "محادثة جديدة",
+      backToModels: "العودة إلى النماذج"
+    }
   }
 } as const;
 
@@ -259,14 +375,25 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   const t = (key: string): string => {
     const keys = key.split(".");
-    let value: any = translations[language];
-    
-    for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) break;
+
+    // Try current language, then fallback to English, then Persian
+    const langsToTry: Array<keyof typeof translations> = [
+      language as keyof typeof translations,
+      "en",
+      "fa",
+    ];
+
+    for (const lang of langsToTry) {
+      let val: any = (translations as any)[lang];
+      for (const k of keys) {
+        val = val?.[k];
+        if (val === undefined) break;
+      }
+      if (typeof val === "string") return val;
     }
-    
-    return value || key;
+
+    // As a last resort return the key to avoid rendering objects or undefined
+    return key;
   };
 
   return (
