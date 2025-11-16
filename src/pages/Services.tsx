@@ -75,29 +75,6 @@ const Services = () => {
         </div>
       </section>
 
-      {/* Portfolio Preview */}
-      <section className="py-12 bg-card/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              {t("servicesPage.portfolio")}
-            </h2>
-            <p className="text-muted-foreground mb-8">
-              {t("servicesPage.portfolioDesc")}
-            </p>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="h-64 rounded-2xl bg-gradient-to-br from-primary/5 to-accent/5 border border-border flex items-center justify-center"
-                >
-                  <span className="text-muted-foreground">به زودی...</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
