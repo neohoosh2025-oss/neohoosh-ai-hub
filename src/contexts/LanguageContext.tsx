@@ -89,7 +89,41 @@ const translations = {
 
     latestArticles: {
       title: "آخرین مقالات",
-      subtitle: "منتخب جدیدترین مطالب آموزشی و کاربردی"
+      subtitle: "منتخب جدیدترین مطالب آموزشی و کاربردی",
+      loading: "در حال بارگذاری...",
+      noArticles: "هنوز مقاله‌ای منتشر نشده است",
+      readMore: "ادامه مطلب"
+    },
+
+    articles: {
+      title: "مقالات آموزشی",
+      subtitle: "مجموعه کامل مقالات هوش مصنوعی"
+    },
+
+    products: {
+      header: "فروشگاه محصولات",
+      headerDesc: "کتاب‌ها و محصولات آموزشی هوش مصنوعی",
+      loading: "در حال بارگذاری...",
+      noProducts: "هنوز محصولی منتشر نشده است",
+      format: "فرمت: PDF",
+      pages: "صفحه",
+      viewDetails: "مشاهده جزئیات"
+    },
+
+    services: {
+      title: "خدمات ما",
+      subtitle: "خدمات حرفه‌ای طراحی و توسعه وب",
+      mainService: "طراحی و توسعه وب‌سایت",
+      description: "ما وب‌سایت‌های مدرن، سریع و کاربرپسند طراحی و توسعه می‌دهیم. با استفاده از جدیدترین تکنولوژی‌ها، پروژه شما را به واقعیت تبدیل می‌کنیم.",
+      modernDesign: "طراحی مدرن",
+      modernDesignDesc: "رابط کاربری زیبا و کاربرپسند",
+      fastDev: "توسعه سریع",
+      fastDevDesc: "تحویل پروژه در کوتاه‌ترین زمان",
+      qualityCode: "کد با کیفیت",
+      qualityCodeDesc: "کد تمیز، قابل نگهداری و مقیاس‌پذیر",
+      requestCoop: "درخواست همکاری",
+      portfolio: "نمونه کارها",
+      portfolioDesc: "پروژه‌های انجام شده ما را مشاهده کنید"
     },
 
     contactPage: {
@@ -125,7 +159,7 @@ const translations = {
       visionDesc: "تبدیل شدن به منبع اصلی و قابل اعتماد برای یادگیری و استفاده از هوش مصنوعی در ایران و منطقه.",
       teamTitle: "تیم ما",
       teamDesc: "تیم نئوهوش متشکل از متخصصان علاقه‌مند به هوش مصنوعی است.",
-      founderName: "امیرحسین صابری",
+      founderName: "محمدرضا تقی معز",
       founderRole: "بنیانگذار و مدیر عامل",
       valueSimplicity: "سادگی",
       valueSimplicityDesc: "آموزش به زبان ساده و قابل فهم",
@@ -231,7 +265,41 @@ const translations = {
 
     latestArticles: {
       title: "Latest Articles",
-      subtitle: "Handpicked fresh educational content"
+      subtitle: "Handpicked fresh educational content",
+      loading: "Loading...",
+      noArticles: "No articles published yet",
+      readMore: "Read More"
+    },
+
+    articles: {
+      title: "Educational Articles",
+      subtitle: "Complete collection of AI articles"
+    },
+
+    products: {
+      header: "Product Shop",
+      headerDesc: "AI educational books and products",
+      loading: "Loading...",
+      noProducts: "No products available yet",
+      format: "Format: PDF",
+      pages: "pages",
+      viewDetails: "View Details"
+    },
+
+    services: {
+      title: "Our Services",
+      subtitle: "Professional web design and development services",
+      mainService: "Website Design & Development",
+      description: "We design and develop modern, fast, and user-friendly websites. Using the latest technologies, we bring your project to life.",
+      modernDesign: "Modern Design",
+      modernDesignDesc: "Beautiful and user-friendly interface",
+      fastDev: "Fast Development",
+      fastDevDesc: "Project delivery in the shortest time",
+      qualityCode: "Quality Code",
+      qualityCodeDesc: "Clean, maintainable, and scalable code",
+      requestCoop: "Request Cooperation",
+      portfolio: "Portfolio",
+      portfolioDesc: "View our completed projects"
     },
 
     contactPage: {
@@ -267,7 +335,7 @@ const translations = {
       visionDesc: "To become the main and trusted source for learning and using AI in Iran and the region.",
       teamTitle: "Our Team",
       teamDesc: "The NeoHoosh team consists of AI enthusiasts.",
-      founderName: "Amirhossein Saberi",
+      founderName: "Mohammadreza Taghimoez",
       founderRole: "Founder & CEO",
       valueSimplicity: "Simplicity",
       valueSimplicityDesc: "Teaching in simple and understandable language",
@@ -285,16 +353,6 @@ const translations = {
       learnMore: "Learn More",
       social: "Social",
       copyright: "All rights reserved"
-    },
-
-    footer: {
-      brand: "نيوهوش",
-      tagline: "جسر إلى عالم الذكاء الاصطناعي",
-      quickLinks: "روابط سريعة",
-      homepage: "الصفحة الرئيسية",
-      learnMore: "اعرف المزيد",
-      social: "التواصل الاجتماعي",
-      copyright: "جميع الحقوق محفوظة"
     },
 
     chat: {
@@ -383,7 +441,41 @@ const translations = {
 
     latestArticles: {
       title: "أحدث المقالات",
-      subtitle: "مختارات من أحدث المواد التعليمية"
+      subtitle: "مختارات من أحدث المواد التعليمية",
+      loading: "جارٍ التحميل...",
+      noArticles: "لم يتم نشر مقالات بعد",
+      readMore: "اقرأ المزيد"
+    },
+
+    articles: {
+      title: "المقالات التعليمية",
+      subtitle: "مجموعة كاملة من مقالات الذكاء الاصطناعي"
+    },
+
+    products: {
+      header: "متجر المنتجات",
+      headerDesc: "كتب ومنتجات تعليمية للذكاء الاصطناعي",
+      loading: "جارٍ التحميل...",
+      noProducts: "لا توجد منتجات متاحة بعد",
+      format: "الصيغة: PDF",
+      pages: "صفحة",
+      viewDetails: "عرض التفاصيل"
+    },
+
+    services: {
+      title: "خدماتنا",
+      subtitle: "خدمات احترافية لتصميم وتطوير الويب",
+      mainService: "تصميم وتطوير المواقع",
+      description: "نقوم بتصميم وتطوير مواقع ويب حديثة وسريعة وسهلة الاستخدام. باستخدام أحدث التقنيات، نحوّل مشروعك إلى واقع.",
+      modernDesign: "تصميم حديث",
+      modernDesignDesc: "واجهة جميلة وسهلة الاستخدام",
+      fastDev: "تطوير سريع",
+      fastDevDesc: "تسليم المشروع في أقصر وقت",
+      qualityCode: "كود عالي الجودة",
+      qualityCodeDesc: "كود نظيف وقابل للصيانة والتوسع",
+      requestCoop: "طلب التعاون",
+      portfolio: "معرض الأعمال",
+      portfolioDesc: "اطّلع على مشاريعنا المنجزة"
     },
 
     contactPage: {
@@ -419,7 +511,7 @@ const translations = {
       visionDesc: "أن نصبح المرجع الرئيسي والموثوق لتعلم واستخدام الذكاء الاصطناعي في إيران والمنطقة.",
       teamTitle: "فريقنا",
       teamDesc: "يتكون فريق نيوهوش من محبي الذكاء الاصطناعي.",
-      founderName: "أميرحسين صابري",
+      founderName: "محمدرضا تقي معز",
       founderRole: "المؤسس والمدير التنفيذي",
       valueSimplicity: "البساطة",
       valueSimplicityDesc: "التعليم بلغة بسيطة ومفهومة",
@@ -427,6 +519,16 @@ const translations = {
       valueInnovationDesc: "مواكبة أحدث تطورات الذكاء الاصطناعي",
       valueQuality: "الجودة",
       valueQualityDesc: "تقديم محتوى دقيق وموثوق"
+    },
+
+    footer: {
+      brand: "نيوهوش",
+      tagline: "جسر إلى عالم الذكاء الاصطناعي",
+      quickLinks: "روابط سريعة",
+      homepage: "الصفحة الرئيسية",
+      learnMore: "اعرف المزيد",
+      social: "التواصل الاجتماعي",
+      copyright: "جميع الحقوق محفوظة"
     },
 
     chat: {
