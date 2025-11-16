@@ -124,7 +124,7 @@ const Contact = () => {
                     <Mail className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{t("contactPage.emailLabel")}</h3>
+                    <h3 className="font-semibold">{t("contact.email")}</h3>
                     <a
                       href="mailto:neohoosh.2025@gmail.com"
                       className="text-muted-foreground hover:text-primary transition-colors"
