@@ -10,8 +10,9 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-const translations: Record<Language, Record<string, string>> = {
+const translations = {
   fa: {
+    // Navigation
     home: "خانه",
     articles: "مقالات",
     products: "فروشگاه",
@@ -21,442 +22,398 @@ const translations: Record<Language, Record<string, string>> = {
     contact: "تماس با ما",
     logout: "خروج",
     login: "ورود",
-    "chatbot.title": "دستیار هوشمند",
-    "chatbot.newChat": "گفتگوی جدید",
-    "profile.title": "پروفایل کاربری",
-    "profile.description": "اطلاعات حساب کاربری خود را مدیریت کنید",
-    "profile.email": "ایمیل",
-    "profile.emailNote": "ایمیل قابل تغییر نیست",
-    "profile.displayName": "نام نمایشی",
-    "profile.displayNamePlaceholder": "نام خود را وارد کنید",
-    "profile.save": "ذخیره تغییرات",
-    "profile.updateSuccess": "پروفایل با موفقیت به‌روز شد",
-    "dashboard.welcome": "خوش آمدید",
-    "dashboard.subtitle": "نمای کلی فعالیت‌ها و آمار شما",
-    "dashboard.savedArticles": "مقالات ذخیره شده",
-    "dashboard.totalActivity": "کل فعالیت‌ها",
-    "dashboard.memberSince": "عضویت از",
-    "dashboard.recentlySaved": "اخیراً ذخیره شده",
-    "dashboard.savedDesc": "مقالات ذخیره شده شما",
-    "dashboard.noSaved": "هنوز مقاله‌ای ذخیره نکرده‌اید",
-    "dashboard.recentActivity": "فعالیت‌های اخیر",
-    "dashboard.activityDesc": "آخرین فعالیت‌های شما",
-    "dashboard.noActivity": "هنوز فعالیتی ثبت نشده",
-    "dashboard.viewedArticle": "مقاله را مشاهده کرد",
-    "dashboard.savedArticle": "مقاله را ذخیره کرد",
-    "auth.title": "ورود به سیستم",
-    "auth.subtitle": "به دنیای هوش مصنوعی خوش آمدید",
-    "auth.signup": "ثبت‌نام",
-    "auth.password": "رمز عبور",
-    "auth.signupSuccess": "حساب شما ایجاد شد. لطفا وارد شوید.",
-    "auth.forgotPassword": "رمز عبور را فراموش کرده‌اید",
-    "auth.signingIn": "در حال ورود...",
-    "auth.signingUp": "در حال ثبت‌نام...",
-    "auth.orContinueWith": "یا ادامه با",
-    "auth.resetSent": "ایمیل بازیابی رمز عبور ارسال شد",
-    "auth.enterEmail": "ایمیل خود را وارد کنید",
-    "auth.sending": "در حال ارسال...",
-    "auth.sendReset": "ارسال لینک بازیابی",
-    "auth.backToLogin": "بازگشت به ورود",
-    "hero.title": "نئوهوش",
-    "hero.subtitle": "جایی که هوش مصنوعی با شما روبرو می‌شود",
-    "hero.description": "آموزش، محتوا و کاربردهای هوش مصنوعی به زبان ساده برای شروع سفر هوشمندانه شما",
-    "hero.cta": "شروع یادگیری",
-    "hero.badge": "هوش مصنوعی برای همه",
-    "hero.newArticles": "مقالات جدید",
-    "features.title": "چرا نئوهوش",
-    "features.subtitle": "ما با هدف آموزش و گسترش دانش هوش مصنوعی، محتوای با کیفیت و کاربردی را ارائه می‌دهیم",
-    "features.learning": "یادگیری آسان",
-    "features.learningDesc": "محتوای ساده و کاربردی برای همه سطوح",
-    "features.updated": "محتوای بروز",
-    "features.updatedDesc": "آخرین اخبار و پیشرفت‌های هوش مصنوعی",
-    "features.community": "جامعه فعال",
-    "features.communityDesc": "پشتیبانی و تبادل دانش با هم‌فکران",
-    "latestArticles.title": "آخرین مقالات",
-    "latestArticles.subtitle": "جدیدترین محتواهای آموزشی و خبری ما",
-    "latestArticles.readMore": "ادامه مطلب",
-    "latestArticles.loading": "در حال بارگذاری...",
-    "latestArticles.noArticles": "هنوز مقاله‌ای منتشر نشده است",
-    "cta.title": "آماده‌اید تا سفر یادگیری خود را شروع کنید",
-    "cta.description": "به جامعه نئوهوش بپیوندید و دنیای هوش مصنوعی را کشف کنید",
-    "cta.button": "مشاهده همه مقالات",
-    "articles.title": "مقالات نئوهوش",
-    "articles.subtitle": "آخرین مقالات و آموزش‌های هوش مصنوعی",
-    "about.mission": "مأموریت ما",
-    "about.vision": "چشم‌انداز",
-    "about.team": "تیم نئوهوش",
-    "footer.brand": "نئوهوش",
-    "footer.tagline": "دنیای هوش مصنوعی برای همه",
-    "footer.quickLinks": "دسترسی سریع",
-    "footer.homepage": "صفحه اصلی",
-    "footer.learnMore": "بیشتر بدانید",
-    "footer.social": "شبکه‌های اجتماعی",
-    "footer.copyright": "تمامی حقوق محفوظ است",
-    "services.title": "خدمات نئوهوش",
-    "services.subtitle": "طراحی و توسعه وب‌سایت و اپلیکیشن با قدرت هوش مصنوعی",
-    "services.mainService": "طراحی سایت و اپلیکیشن با هوش مصنوعی",
-    "services.description": "تیم نئوهوش با استفاده از جدیدترین ابزارها و فناوری‌های هوش مصنوعی، وب‌سایت و اپلیکیشن‌های مدرن و کاربردی را برای شما طراحی می‌کند. از ایده تا اجرا، ما در کنار شما هستیم.",
-    "services.modernDesign": "طراحی مدرن",
-    "services.modernDesignDesc": "طراحی UI/UX زیبا و کاربرپسند",
-    "services.fastDev": "توسعه سریع",
-    "services.fastDevDesc": "اجرای پروژه با سرعت بالا",
-    "services.qualityCode": "کد باکیفیت",
-    "services.qualityCodeDesc": "کدنویسی استاندارد و قابل نگهداری",
-    "services.requestCoop": "درخواست همکاری",
-    "services.portfolio": "نمونه کارهای ما",
-    "services.portfolioDesc": "به زودی نمونه کارهای ما را در این بخش مشاهده خواهید کرد",
-    "services.comingSoon": "به زودی...",
-    "contact.title": "تماس با ما",
-    "contact.subtitle": "سوال یا پیشنهادی دارید خوشحال می‌شویم از شما بشنویم",
-    "contact.formTitle": "فرم تماس",
-    "contact.name": "نام و نام خانوادگی",
-    "contact.namePlaceholder": "نام خود را وارد کنید",
-    "contact.email": "ایمیل",
-    "contact.message": "پیام شما",
-    "contact.messagePlaceholder": "پیام خود را بنویسید...",
-    "contact.send": "ارسال پیام",
-    "contact.info": "اطلاعات تماس",
-    "contact.infoDesc": "از طریق راه‌های زیر می‌توانید با ما در ارتباط باشید",
-    "contact.error": "خطا",
-    "contact.success": "پیام ارسال شد",
-    "contact.successDesc": "به زودی با شما تماس خواهیم گرفت",
-    "chat.pleaseLogin": "لطفا ابتدا وارد شوید",
-    "chat.businessAdvisor": "مشاور کسب و کار",
-    "chat.businessDesc": "راهنمایی حرفه‌ای برای کسب و کار شما",
-    "chat.personalDev": "توسعه فردی",
-    "chat.personalDesc": "مشاوره برای رشد شخصی و حرفه‌ای",
-    "chat.openQuestions": "سوالات آزاد",
-    "chat.openQuestionsDesc": "پاسخ به هر سوالی که دارید",
-    "chat.adsGen": "تولید تبلیغات",
-    "chat.adsGenDesc": "ایجاد محتوای تبلیغاتی جذاب",
-    "chat.textToImage": "تبدیل متن به عکس",
-    "chat.textToImageDesc": "تولید تصویر از توضیحات شما",
-    "chat.selectModel": "یک مدل را انتخاب کنید",
-    "chat.newChat": "گفتگوی جدید",
-    "chat.deleteConversation": "حذف گفتگو",
-    "chat.conversationDeleted": "گفتگو حذف شد",
-    "chat.typePlaceholder": "پیام خود را بنویسید...",
-    "chat.uploadImage": "آپلود تصویر",
-    "chat.send": "ارسال",
-    "chat.download": "دانلود تصویر",
-    "about.header": "درباره",
-    "about.headerBrand": "نئوهوش",
-    "about.headerDesc": "ماموریت ما گسترش دانش هوش مصنوعی در جامعه فارسی‌زبان است",
-    "about.missionTitle": "مأموریت ما",
-    "about.missionDesc": "نئوهوش با هدف آموزش کار با ابزارهای هوش مصنوعی، معرفی قابلیت‌های جدید و ارائه محتوای تخصصی برای شروع کسب‌وکارهای هوشمند ایجاد شده است. ما باور داریم که هوش مصنوعی باید در دسترس همه باشد و هر فردی بتواند از قدرت این فناوری برای بهبود زندگی شخصی و کاری خود استفاده کند.",
-    "about.visionTitle": "چشم‌انداز",
-    "about.visionDesc": "ما در نئوهوش تلاش می‌کنیم تا بزرگترین منبع آموزشی فارسی در زمینه هوش مصنوعی باشیم. هدف ما ایجاد جامعه‌ای از یادگیرندگان و متخصصان است که با کمک یکدیگر و استفاده از AI، آینده بهتری بسازند.",
-    "about.teamTitle": "تیم نئوهوش",
-    "about.teamDesc": "تیم ما متشکل از متخصصان حوزه هوش مصنوعی، توسعه‌دهندگان نرم‌افزار و تولیدکنندگان محتوا است که با اشتیاق و علاقه به این فناوری، در حال ایجاد محتوای با کیفیت و کاربردی هستند.",
-    "about.founderName": "محمدرضا معز",
-    "about.founderRole": "مدیریت",
-    "about.valueInnovation": "نوآوری",
-    "about.valueInnovationDesc": "همیشه نو به دنبال و یاد هم نو",
-    "about.valueQuality": "کیفیت",
-    "about.valueQualityDesc": "محتوای علمی و قابل استفاده",
-    "about.valueCommunity": "جامعه",
-    "about.valueCommunityDesc": "آموزش به زبان ساده و قابل فهم",
-    "products.header": "فروشگاه محتوا",
-    "products.headerDesc": "کتاب‌ها و راهنماهای تخصصی هوش مصنوعی برای یادگیری سریع‌تر",
-    "products.loading": "در حال بارگذاری...",
-    "products.noProducts": "محصولی هنوز منتشر نشده است",
-    "products.format": "فرمت: PDF",
-    "products.pages": "صفحه",
-    "products.viewDetails": "مشاهده جزییات",
-    "articleDetail.notFound": "مقاله یافت نشد",
-    "articleDetail.backToArticles": "بازگشت به مقالات",
-    "articleDetail.author": "نئوهوش",
+    
+    // Profile
+    profile: {
+      title: "پروفایل کاربری",
+      description: "اطلاعات حساب کاربری خود را مدیریت کنید",
+      email: "ایمیل",
+      emailNote: "ایمیل قابل تغییر نیست",
+      displayName: "نام نمایشی",
+      displayNamePlaceholder: "نام خود را وارد کنید",
+      save: "ذخیره تغییرات",
+      updateSuccess: "پروفایل با موفقیت به‌روز شد"
+    },
+    
+    // Dashboard
+    dashboard: {
+      welcome: "خوش آمدید",
+      subtitle: "نمای کلی فعالیت‌ها و آمار شما",
+      savedArticles: "مقالات ذخیره شده",
+      totalActivity: "کل فعالیت‌ها",
+      memberSince: "عضویت از",
+      recentlySaved: "اخیراً ذخیره شده",
+      savedDesc: "مقالات ذخیره شده شما",
+      noSaved: "هنوز مقاله‌ای ذخیره نکرده‌اید",
+      recentActivity: "فعالیت‌های اخیر",
+      activityDesc: "آخرین فعالیت‌های شما",
+      noActivity: "هنوز فعالیتی ثبت نشده",
+      viewedArticle: "مقاله را مشاهده کرد",
+      savedArticle: "مقاله را ذخیره کرد"
+    },
+    
+    // Auth
+    auth: {
+      title: "ورود به سیستم",
+      subtitle: "به دنیای هوش مصنوعی خوش آمدید",
+      signup: "ثبت‌نام",
+      password: "رمز عبور",
+      signupSuccess: "حساب شما ایجاد شد. لطفا وارد شوید.",
+      forgotPassword: "رمز عبور را فراموش کرده‌اید",
+      signingIn: "در حال ورود...",
+      signingUp: "در حال ثبت‌نام...",
+      orContinueWith: "یا ادامه با",
+      resetSent: "ایمیل بازیابی رمز عبور ارسال شد",
+      enterEmail: "ایمیل خود را وارد کنید",
+      sending: "در حال ارسال...",
+      sendReset: "ارسال لینک بازیابی",
+      backToLogin: "بازگشت به ورود"
+    },
+    
+    // Hero
+    hero: {
+      badge: "پلتفرم آموزش هوش مصنوعی",
+      title: "یادگیری هوش مصنوعی",
+      subtitle: "به سادگی و کاربردی",
+      description: "در نئوهوش، شما با مفاهیم هوش مصنوعی آشنا می‌شوید و یاد می‌گیرید چگونه از ابزارهای AI در زندگی و کار خود استفاده کنید.",
+      cta: "شروع یادگیری",
+      newArticles: "مقالات جدید",
+      smartAssistant: "دستیار هوشمند"
+    },
+    
+    // Features
+    features: {
+      title: "چرا نئوهوش",
+      subtitle: "ما با هدف آموزش و گسترش دانش هوش مصنوعی، محتوای با کیفیت و کاربردی را ارائه می‌دهیم",
+      learning: "یادگیری آسان",
+      learningDesc: "محتوای ساده و کاربردی برای همه سطوح",
+      updated: "محتوای بروز",
+      updatedDesc: "آخرین اخبار و پیشرفت‌های هوش مصنوعی",
+      community: "جامعه فعال",
+      communityDesc: "پشتیبانی و تبادل دانش با هم‌فکران"
+    },
+    
+    // Latest Articles
+    latestArticles: {
+      title: "آخرین مقالات",
+      readMore: "ادامه مطلب",
+      loading: "در حال بارگذاری...",
+      noArticles: "هنوز مقاله‌ای منتشر نشده است"
+    },
+    
+    // Articles
+    articles: {
+      title: "مقالات نئوهوش",
+      subtitle: "آخرین مقالات و آموزش‌های هوش مصنوعی"
+    },
+    
+    // About
+    about: {
+      header: "درباره",
+      headerBrand: "نئوهوش",
+      headerDesc: "پلی به دنیای هوش مصنوعی",
+      missionTitle: "ماموریت ما",
+      missionDesc: "نئوهوش با هدف ساده‌سازی و دموکراتیزه‌کردن دانش هوش مصنوعی تاسیس شده است. ما بر این باوریم که هر فردی باید بتواند از قدرت فناوری‌های نوین بهره‌مند شود.",
+      visionTitle: "چشم‌انداز ما",
+      visionDesc: "تبدیل شدن به منبع اصلی و قابل اعتماد برای یادگیری و استفاده از هوش مصنوعی در ایران و منطقه.",
+      teamTitle: "تیم ما",
+      teamDesc: "تیم نئوهوش متشکل از متخصصان علاقه‌مند به هوش مصنوعی است که تلاش می‌کنند بهترین تجربه آموزشی را برای شما فراهم کنند.",
+      founderName: "امیرحسین صابری",
+      founderRole: "بنیانگذار و مدیر عامل",
+      valueSimplicity: "سادگی",
+      valueSimplicityDesc: "آموزش به زبان ساده و قابل فهم",
+      valueInnovation: "نوآوری",
+      valueInnovationDesc: "به‌روز ماندن با آخرین پیشرفت‌های هوش مصنوعی",
+      valueQuality: "کیفیت",
+      valueQualityDesc: "ارائه محتوای دقیق و معتبر"
+    },
+    
+    // Services
+    services: {
+      title: "خدمات نئوهوش",
+      subtitle: "طراحی و توسعه وب‌سایت و اپلیکیشن با قدرت هوش مصنوعی",
+      mainService: "طراحی سایت و اپلیکیشن با هوش مصنوعی",
+      description: "تیم نئوهوش با استفاده از جدیدترین ابزارها و فناوری‌های هوش مصنوعی، وب‌سایت و اپلیکیشن‌های مدرن و کاربردی را برای شما طراحی می‌کند. از ایده تا اجرا، ما در کنار شما هستیم.",
+      modernDesign: "طراحی مدرن",
+      modernDesignDesc: "طراحی UI/UX زیبا و کاربرپسند",
+      fastDev: "توسعه سریع",
+      fastDevDesc: "اجرای پروژه با سرعت بالا",
+      qualityCode: "کد باکیفیت",
+      qualityCodeDesc: "کدنویسی استاندارد و قابل نگهداری",
+      requestCoop: "درخواست همکاری",
+      portfolio: "نمونه کارهای ما",
+      portfolioDesc: "به زودی نمونه کارهای ما را در این بخش مشاهده خواهید کرد",
+      comingSoon: "به زودی..."
+    },
+    
+    // Contact
+    contact: {
+      title: "تماس با ما",
+      subtitle: "سوالات، پیشنهادات یا نظرات خود را با ما در میان بگذارید",
+      formTitle: "ارسال پیام",
+      name: "نام",
+      namePlaceholder: "نام خود را وارد کنید",
+      email: "ایمیل",
+      message: "پیام",
+      messagePlaceholder: "پیام خود را بنویسید...",
+      send: "ارسال پیام",
+      success: "پیام شما ارسال شد!",
+      successDesc: "به زودی با شما تماس خواهیم گرفت",
+      error: "خطا در ارسال پیام",
+      contactInfo: "اطلاعات تماس",
+      contactDesc: "از راه‌های زیر می‌توانید با ما در ارتباط باشید:",
+      emailLabel: "ایمیل",
+      emailValue: "support@neohoosh.com",
+      instagramLabel: "اینستاگرام",
+      instagramValue: "@neohoosh.ai",
+      hoursLabel: "ساعات پاسخگویی",
+      hoursValue: "شنبه تا پنجشنبه، ۹ صبح تا ۶ عصر"
+    },
+    
+    // Chat
+    chat: {
+      pleaseLogin: "لطفا ابتدا وارد شوید",
+      selectModel: "یک مدل انتخاب کنید",
+      typeMessage: "پیام خود را بنویسید...",
+      newConversation: "گفتگوی جدید",
+      backToModels: "بازگشت به مدل‌ها"
+    },
+
+    // ChatBot
+    chatbot: {
+      title: "دستیار هوشمند",
+      newChat: "گفتگوی جدید"
+    }
   },
   en: {
+    // Navigation
     home: "Home",
     articles: "Articles",
     products: "Shop",
     services: "Services",
     chatbot: "Chatbot",
-    about: "About Us",
+    about: "About",
     contact: "Contact",
     logout: "Logout",
     login: "Login",
-    "chatbot.title": "AI Assistant",
-    "chatbot.newChat": "New Chat",
-    "profile.title": "User Profile",
-    "profile.description": "Manage your account information",
-    "profile.email": "Email",
-    "profile.emailNote": "Email cannot be changed",
-    "profile.displayName": "Display Name",
-    "profile.displayNamePlaceholder": "Enter your name",
-    "profile.save": "Save Changes",
-    "profile.updateSuccess": "Profile updated successfully",
-    "hero.title": "NeoHoosh",
-    "hero.subtitle": "Where Artificial Intelligence Meets You",
-    "hero.description": "Education, content and AI applications in simple language to start your smart journey",
-    "hero.cta": "Start Learning",
-    "hero.badge": "AI for Everyone",
-    "hero.newArticles": "New Articles",
-    "features.title": "Why NeoHoosh",
-    "features.subtitle": "We provide quality and practical content with the aim of educating and expanding AI knowledge",
-    "features.learning": "Easy Learning",
-    "features.learningDesc": "Simple and practical content for all levels",
-    "features.updated": "Updated Content",
-    "features.updatedDesc": "Latest news and AI developments",
-    "features.community": "Active Community",
-    "features.communityDesc": "Support and knowledge sharing with like-minded people",
-    "latestArticles.title": "Latest Articles",
-    "latestArticles.subtitle": "Our newest educational and news content",
-    "latestArticles.readMore": "Read More",
-    "latestArticles.loading": "Loading...",
-    "latestArticles.noArticles": "No articles published yet",
-    "cta.title": "Ready to Start Your Learning Journey",
-    "cta.description": "Join the NeoHoosh community and discover the world of AI",
-    "cta.button": "View All Articles",
-    "articles.title": "NeoHoosh Articles",
-    "articles.subtitle": "Latest AI articles and tutorials",
-    "about.mission": "Our Mission",
-    "about.vision": "Vision",
-    "about.team": "NeoHoosh Team",
-    "footer.brand": "NeoHoosh",
-    "footer.tagline": "AI World for Everyone",
-    "footer.quickLinks": "Quick Links",
-    "footer.homepage": "Homepage",
-    "footer.learnMore": "Learn More",
-    "footer.social": "Social Media",
-    "footer.copyright": "All rights reserved",
-    "services.title": "NeoHoosh Services",
-    "services.subtitle": "Website and application design and development powered by AI",
-    "services.mainService": "AI-Powered Website and App Design",
-    "services.description": "NeoHoosh team uses the latest AI tools and technologies to design modern and practical websites and applications for you. From idea to implementation, we are with you.",
-    "services.modernDesign": "Modern Design",
-    "services.modernDesignDesc": "Beautiful and user-friendly UI/UX design",
-    "services.fastDev": "Fast Development",
-    "services.fastDevDesc": "High-speed project execution",
-    "services.qualityCode": "Quality Code",
-    "services.qualityCodeDesc": "Standard and maintainable coding",
-    "services.requestCoop": "Request Collaboration",
-    "services.portfolio": "Our Portfolio",
-    "services.portfolioDesc": "You will soon see our portfolio in this section",
-    "services.comingSoon": "Coming Soon...",
-    "contact.title": "Contact Us",
-    "contact.subtitle": "Have a question or suggestion We'd love to hear from you",
-    "contact.formTitle": "Contact Form",
-    "contact.name": "Full Name",
-    "contact.namePlaceholder": "Enter your name",
-    "contact.email": "Email",
-    "contact.message": "Your Message",
-    "contact.messagePlaceholder": "Write your message...",
-    "contact.send": "Send Message",
-    "contact.info": "Contact Information",
-    "contact.infoDesc": "You can contact us through the following ways",
-    "contact.error": "Error",
-    "contact.success": "Message Sent",
-    "contact.successDesc": "We will contact you soon",
-    "chat.pleaseLogin": "Please login first",
-    "chat.businessAdvisor": "Business Advisor",
-    "chat.businessDesc": "Professional guidance for your business",
-    "chat.personalDev": "Personal Development",
-    "chat.personalDesc": "Consulting for personal and professional growth",
-    "chat.openQuestions": "Open Questions",
-    "chat.openQuestionsDesc": "Answer to any question you have",
-    "chat.adsGen": "Ad Generation",
-    "chat.adsGenDesc": "Create engaging advertising content",
-    "chat.textToImage": "Text to Image",
-    "chat.textToImageDesc": "Generate images from your descriptions",
-    "chat.selectModel": "Select a Model",
-    "chat.newChat": "New Chat",
-    "chat.deleteConversation": "Delete Conversation",
-    "chat.conversationDeleted": "Conversation deleted",
-    "chat.typePlaceholder": "Type your message...",
-    "chat.uploadImage": "Upload Image",
-    "chat.send": "Send",
-    "chat.download": "Download Image",
-    "about.header": "About",
-    "about.headerBrand": "NeoHoosh",
-    "about.headerDesc": "Our mission is to expand AI knowledge in the Persian-speaking community",
-    "about.missionTitle": "Our Mission",
-    "about.missionDesc": "NeoHoosh was created with the goal of teaching AI tools, introducing new capabilities, and providing specialized content for starting smart businesses. We believe that AI should be accessible to everyone and everyone should be able to use the power of this technology to improve their personal and professional life.",
-    "about.visionTitle": "Vision",
-    "about.visionDesc": "At NeoHoosh, we strive to be the largest Persian educational resource in the field of AI. Our goal is to create a community of learners and experts who, with the help of each other and using AI, build a better future.",
-    "about.teamTitle": "NeoHoosh Team",
-    "about.teamDesc": "Our team consists of AI specialists, software developers, and content creators who are passionately creating quality and practical content with enthusiasm for this technology.",
-    "about.founderName": "Mohammadreza Moez",
-    "about.founderRole": "Management",
-    "about.valueInnovation": "Innovation",
-    "about.valueInnovationDesc": "Always learning and new ideas",
-    "about.valueQuality": "Quality",
-    "about.valueQualityDesc": "Scientific and usable content",
-    "about.valueCommunity": "Community",
-    "about.valueCommunityDesc": "Education in simple language",
-    "products.header": "Content Shop",
-    "products.headerDesc": "Specialized AI books and guides for faster learning",
-    "products.loading": "Loading...",
-    "products.noProducts": "No products published yet",
-    "products.format": "Format: PDF",
-    "products.pages": "pages",
-    "products.viewDetails": "View Details",
-    "articleDetail.notFound": "Article not found",
-    "articleDetail.backToArticles": "Back to Articles",
-    "articleDetail.author": "NeoHoosh",
-  },
-  ar: {
-    home: "الرئيسية",
-    articles: "المقالات",
-    products: "المتجر",
-    services: "الخدمات",
-    chatbot: "الدردشة",
-    about: "من نحن",
-    contact: "اتصل بنا",
-    logout: "تسجيل الخروج",
-    login: "تسجيل الدخول",
-    "chatbot.title": "المساعد الذكي",
-    "chatbot.newChat": "محادثة جديدة",
-    "profile.title": "الملف الشخصي",
-    "profile.description": "إدارة معلومات حسابك",
-    "profile.email": "البريد الإلكتروني",
-    "profile.emailNote": "لا يمكن تغيير البريد الإلكتروني",
-    "profile.displayName": "الاسم المعروض",
-    "profile.displayNamePlaceholder": "أدخل اسمك",
-    "profile.save": "حفظ التغييرات",
-    "profile.updateSuccess": "تم تحديث الملف الشخصي بنجاح",
-    "hero.title": "نيوهوش",
-    "hero.subtitle": "حيث يلتقي الذكاء الاصطناعي بك",
-    "hero.description": "التعليم والمحتوى وتطبيقات الذكاء الاصطناعي بلغة بسيطة لبدء رحلتك الذكية",
-    "hero.cta": "ابدأ التعلم",
-    "hero.badge": "الذكاء الاصطناعي للجميع",
-    "hero.newArticles": "مقالات جديدة",
-    "features.title": "لماذا نيوهوش",
-    "features.subtitle": "نقدم محتوى عالي الجودة وعملي بهدف تعليم وتوسيع معرفة الذكاء الاصطناعي",
-    "features.learning": "تعلم سهل",
-    "features.learningDesc": "محتوى بسيط وعملي لجميع المستويات",
-    "features.updated": "محتوى محدث",
-    "features.updatedDesc": "آخر الأخبار وتطورات الذكاء الاصطناعي",
-    "features.community": "مجتمع نشط",
-    "features.communityDesc": "الدعم وتبادل المعرفة مع الأشخاص ذوي التفكير المماثل",
-    "latestArticles.title": "أحدث المقالات",
-    "latestArticles.subtitle": "أحدث محتوانا التعليمي والإخباري",
-    "latestArticles.readMore": "اقرأ المزيد",
-    "latestArticles.loading": "جاري التحميل...",
-    "latestArticles.noArticles": "لم يتم نشر أي مقالات بعد",
-    "cta.title": "هل أنت مستعد لبدء رحلة التعلم الخاصة بك",
-    "cta.description": "انضم إلى مجتمع نيوهوش واكتشف عالم الذكاء الاصطناعي",
-    "cta.button": "عرض جميع المقالات",
-    "articles.title": "مقالات نيوهوش",
-    "articles.subtitle": "أحدث مقالات ودروس الذكاء الاصطناعي",
-    "about.mission": "مهمتنا",
-    "about.vision": "الرؤية",
-    "about.team": "فريق نيوهوش",
-    "footer.brand": "نيوهوش",
-    "footer.tagline": "عالم الذكاء الاصطناعي للجميع",
-    "footer.quickLinks": "روابط سريعة",
-    "footer.homepage": "الصفحة الرئيسية",
-    "footer.learnMore": "تعلم المزيد",
-    "footer.social": "وسائل التواصل الاجتماعي",
-    "footer.copyright": "جميع الحقوق محفوظة",
-    "services.title": "خدمات نيوهوش",
-    "services.subtitle": "تصميم وتطوير المواقع والتطبيقات بقوة الذكاء الاصطناعي",
-    "services.mainService": "تصميم المواقع والتطبيقات بالذكاء الاصطناعي",
-    "services.description": "يستخدم فريق نيوهوش أحدث الأدوات وتقنيات الذكاء الاصطناعي لتصميم مواقع وتطبيقات حديثة وعملية لك. من الفكرة إلى التنفيذ، نحن معك.",
-    "services.modernDesign": "تصميم حديث",
-    "services.modernDesignDesc": "تصميم UI/UX جميل وسهل الاستخدام",
-    "services.fastDev": "تطوير سريع",
-    "services.fastDevDesc": "تنفيذ المشروع بسرعة عالية",
-    "services.qualityCode": "كود عالي الجودة",
-    "services.qualityCodeDesc": "برمجة قياسية وقابلة للصيانة",
-    "services.requestCoop": "طلب التعاون",
-    "services.portfolio": "أعمالنا",
-    "services.portfolioDesc": "سترى أعمالنا قريباً في هذا القسم",
-    "services.comingSoon": "قريباً...",
-    "contact.title": "اتصل بنا",
-    "contact.subtitle": "هل لديك سؤال أو اقتراح يسعدنا أن نسمع منك",
-    "contact.formTitle": "نموذج الاتصال",
-    "contact.name": "الاسم الكامل",
-    "contact.namePlaceholder": "أدخل اسمك",
-    "contact.email": "البريد الإلكتروني",
-    "contact.message": "رسالتك",
-    "contact.messagePlaceholder": "اكتب رسالتك...",
-    "contact.send": "إرسال الرسالة",
-    "contact.info": "معلومات الاتصال",
-    "contact.infoDesc": "يمكنك الاتصال بنا من خلال الطرق التالية",
-    "contact.error": "خطأ",
-    "contact.success": "تم إرسال الرسالة",
-    "contact.successDesc": "سنتصل بك قريباً",
-    "chat.pleaseLogin": "يرجى تسجيل الدخول أولاً",
-    "chat.businessAdvisor": "مستشار الأعمال",
-    "chat.businessDesc": "إرشادات مهنية لعملك",
-    "chat.personalDev": "التطوير الشخصي",
-    "chat.personalDesc": "استشارات للنمو الشخصي والمهني",
-    "chat.openQuestions": "أسئلة مفتوحة",
-    "chat.openQuestionsDesc": "إجابة على أي سؤال لديك",
-    "chat.adsGen": "إنشاء الإعلانات",
-    "chat.adsGenDesc": "إنشاء محتوى إعلاني جذاب",
-    "chat.textToImage": "تحويل النص إلى صورة",
-    "chat.textToImageDesc": "توليد الصور من أوصافك",
-    "chat.selectModel": "اختر نموذجاً",
-    "chat.newChat": "محادثة جديدة",
-    "chat.deleteConversation": "حذف المحادثة",
-    "chat.conversationDeleted": "تم حذف المحادثة",
-    "chat.typePlaceholder": "اكتب رسالتك...",
-    "chat.uploadImage": "تحميل الصورة",
-    "chat.send": "إرسال",
-    "chat.download": "تحميل الصورة",
-    "about.header": "من نحن",
-    "about.headerBrand": "نيوهوش",
-    "about.headerDesc": "مهمتنا هي توسيع معرفة الذكاء الاصطناعي في المجتمع الناطق بالفارسية",
-    "about.missionTitle": "مهمتنا",
-    "about.missionDesc": "تم إنشاء نيوهوش بهدف تعليم أدوات الذكاء الاصطناعي وتقديم قدرات جديدة وتوفير محتوى متخصص لبدء الأعمال الذكية. نؤمن أن الذكاء الاصطناعي يجب أن يكون في متناول الجميع وأن يتمكن الجميع من استخدام قوة هذه التكنولوجيا لتحسين حياتهم الشخصية والمهنية.",
-    "about.visionTitle": "الرؤية",
-    "about.visionDesc": "في نيوهوش، نسعى لنكون أكبر مصدر تعليمي فارسي في مجال الذكاء الاصطناعي. هدفنا هو إنشاء مجتمع من المتعلمين والخبراء الذين، بمساعدة بعضهم البعض واستخدام الذكاء الاصطناعي، يبنون مستقبلاً أفضل.",
-    "about.teamTitle": "فريق نيوهوش",
-    "about.teamDesc": "يتكون فريقنا من متخصصين في الذكاء الاصطناعي ومطوري البرمجيات ومنشئي المحتوى الذين يقومون بإنشاء محتوى عالي الجودة وعملي بشغف لهذه التكنولوجيا.",
-    "about.founderName": "محمد رضا معز",
-    "about.founderRole": "الإدارة",
-    "about.valueInnovation": "الابتكار",
-    "about.valueInnovationDesc": "دائماً التعلم والأفكار الجديدة",
-    "about.valueQuality": "الجودة",
-    "about.valueQualityDesc": "محتوى علمي وقابل للاستخدام",
-    "about.valueCommunity": "المجتمع",
-    "about.valueCommunityDesc": "التعليم بلغة بسيطة",
-    "products.header": "متجر المحتوى",
-    "products.headerDesc": "كتب وأدلة متخصصة في الذكاء الاصطناعي للتعلم بشكل أسرع",
-    "products.loading": "جاري التحميل...",
-    "products.noProducts": "لم يتم نشر منتجات بعد",
-    "products.format": "التنسيق: PDF",
-    "products.pages": "صفحة",
-    "products.viewDetails": "عرض التفاصيل",
-    "articleDetail.notFound": "المقالة غير موجودة",
-    "articleDetail.backToArticles": "العودة إلى المقالات",
-    "articleDetail.author": "نيوهوش",
-  },
-};
+    
+    // Profile
+    profile: {
+      title: "User Profile",
+      description: "Manage your account information",
+      email: "Email",
+      emailNote: "Email cannot be changed",
+      displayName: "Display Name",
+      displayNamePlaceholder: "Enter your name",
+      save: "Save Changes",
+      updateSuccess: "Profile updated successfully"
+    },
+    
+    // Dashboard
+    dashboard: {
+      welcome: "Welcome",
+      subtitle: "Overview of your activities and statistics",
+      savedArticles: "Saved Articles",
+      totalActivity: "Total Activities",
+      memberSince: "Member Since",
+      recentlySaved: "Recently Saved",
+      savedDesc: "Your saved articles",
+      noSaved: "You haven't saved any articles yet",
+      recentActivity: "Recent Activity",
+      activityDesc: "Your latest activities",
+      noActivity: "No activity recorded yet",
+      viewedArticle: "Viewed article",
+      savedArticle: "Saved article"
+    },
+    
+    // Auth
+    auth: {
+      title: "Sign In",
+      subtitle: "Welcome to the world of AI",
+      signup: "Sign Up",
+      password: "Password",
+      signupSuccess: "Your account has been created. Please sign in.",
+      forgotPassword: "Forgot Password",
+      signingIn: "Signing in...",
+      signingUp: "Signing up...",
+      orContinueWith: "Or continue with",
+      resetSent: "Password reset email sent",
+      enterEmail: "Enter your email",
+      sending: "Sending...",
+      sendReset: "Send Reset Link",
+      backToLogin: "Back to Login"
+    },
+    
+    // Hero
+    hero: {
+      badge: "AI Learning Platform",
+      title: "Learning AI",
+      subtitle: "Simply and Practically",
+      description: "At NeoHoosh, you'll learn about AI concepts and how to use AI tools in your life and work.",
+      cta: "Start Learning",
+      newArticles: "Latest Articles",
+      smartAssistant: "Smart Assistant"
+    },
+    
+    // Features
+    features: {
+      title: "Why NeoHoosh",
+      subtitle: "We provide quality and practical content with the aim of teaching and expanding AI knowledge",
+      learning: "Easy Learning",
+      learningDesc: "Simple and practical content for all levels",
+      updated: "Updated Content",
+      updatedDesc: "Latest AI news and advances",
+      community: "Active Community",
+      communityDesc: "Support and knowledge exchange with like-minded people"
+    },
+    
+    // Latest Articles
+    latestArticles: {
+      title: "Latest Articles",
+      readMore: "Read More",
+      loading: "Loading...",
+      noArticles: "No articles published yet"
+    },
+    
+    // CTA
+    cta: {
+      title: "Ready to start your learning journey",
+      description: "Join the NeoHoosh community and discover the world of AI",
+      button: "View All Articles"
+    },
+    
+    // Articles
+    articles: {
+      title: "NeoHoosh Articles",
+      subtitle: "Latest AI articles and tutorials"
+    },
+    
+    // About
+    about: {
+      header: "About",
+      headerBrand: "NeoHoosh",
+      headerDesc: "A Bridge to the World of AI",
+      missionTitle: "Our Mission",
+      missionDesc: "NeoHoosh was founded with the goal of simplifying and democratizing AI knowledge. We believe everyone should be able to benefit from the power of modern technologies.",
+      visionTitle: "Our Vision",
+      visionDesc: "To become the main and trusted source for learning and using AI in Iran and the region.",
+      teamTitle: "Our Team",
+      teamDesc: "The NeoHoosh team consists of AI enthusiasts who strive to provide you with the best educational experience.",
+      founderName: "Amirhossein Saberi",
+      founderRole: "Founder & CEO",
+      valueSimplicity: "Simplicity",
+      valueSimplicityDesc: "Teaching in simple and understandable language",
+      valueInnovation: "Innovation",
+      valueInnovationDesc: "Staying up-to-date with the latest AI advances",
+      valueQuality: "Quality",
+      valueQualityDesc: "Providing accurate and reliable content"
+    },
+    
+    // Footer
+    footer: {
+      brand: "NeoHoosh",
+      tagline: "AI world for everyone",
+      quickLinks: "Quick Links",
+      homepage: "Homepage",
+      learnMore: "Learn More",
+      social: "Social Media",
+      copyright: "All rights reserved"
+    },
+    
+    // Services
+    services: {
+      title: "NeoHoosh Services",
+      subtitle: "Website and app design and development powered by AI",
+      mainService: "AI-Powered Website and App Design",
+      description: "The NeoHoosh team uses the latest AI tools and technologies to design modern and functional websites and apps for you. From idea to implementation, we're with you.",
+      modernDesign: "Modern Design",
+      modernDesignDesc: "Beautiful and user-friendly UI/UX design",
+      fastDev: "Fast Development",
+      fastDevDesc: "Project execution with high speed",
+      qualityCode: "Quality Code",
+      qualityCodeDesc: "Standard and maintainable coding",
+      requestCoop: "Request Cooperation",
+      portfolio: "Our Portfolio",
+      portfolioDesc: "You'll soon see our portfolio in this section",
+      comingSoon: "Coming Soon..."
+    },
+    
+    // Contact
+    contact: {
+      title: "Contact Us",
+      subtitle: "Share your questions, suggestions, or feedback with us",
+      formTitle: "Send Message",
+      name: "Name",
+      namePlaceholder: "Enter your name",
+      email: "Email",
+      message: "Message",
+      messagePlaceholder: "Write your message...",
+      send: "Send Message",
+      success: "Your message has been sent!",
+      successDesc: "We will contact you soon",
+      error: "Error sending message",
+      contactInfo: "Contact Information",
+      contactDesc: "You can contact us through the following ways:",
+      emailLabel: "Email",
+      emailValue: "support@neohoosh.com",
+      instagramLabel: "Instagram",
+      instagramValue: "@neohoosh.ai",
+      hoursLabel: "Support Hours",
+      hoursValue: "Saturday to Thursday, 9 AM to 6 PM"
+    },
+    
+    // Chat
+    chat: {
+      pleaseLogin: "Please login first",
+      selectModel: "Select a model",
+      typeMessage: "Type your message...",
+      newConversation: "New Conversation",
+      backToModels: "Back to Models"
+    },
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("fa");
+    // ChatBot
+    chatbot: {
+      title: "Smart Assistant",
+      newChat: "New Chat"
+    }
+  }
+} as const;
+
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const [language, setLanguage] = useState<Language>(() => {
+    const saved = localStorage.getItem("language");
+    return (saved as Language) || "fa";
+  });
 
   useEffect(() => {
-    const saved = localStorage.getItem("language") as Language;
-    if (saved) setLanguage(saved);
-  }, []);
-
-  const handleSetLanguage = (lang: Language) => {
-    setLanguage(lang);
-    localStorage.setItem("language", lang);
-  };
-
-  // Keep document direction and language attribute in sync with current language
-  useEffect(() => {
-    const dir = language === "fa" || language === "ar" ? "rtl" : "ltr";
-    document.documentElement.dir = dir;
+    localStorage.setItem("language", language);
+    document.documentElement.dir = language === "ar" || language === "fa" ? "rtl" : "ltr";
     document.documentElement.lang = language;
   }, [language]);
-  const t = (key: string) => translations[language][key] || key;
+
+  const t = (key: string): string => {
+    const keys = key.split(".");
+    let value: any = translations[language];
+    
+    for (const k of keys) {
+      value = value?.[k];
+      if (value === undefined) break;
+    }
+    
+    return value || key;
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
-}
+};
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) throw new Error("useLanguage must be used within LanguageProvider");
+  if (!context) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
   return context;
 };

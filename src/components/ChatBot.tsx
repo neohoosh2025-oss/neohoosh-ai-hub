@@ -179,9 +179,22 @@ const ChatBot = () => {
                 </Button>
               )}
               <MessageCircle className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">
-                {selectedModel ? models.find(m => m.id === selectedModel)?.name : t("chatbot.title")}
+              <h3 className="font-semibold flex-1">
+                {selectedModel ? models.find(m => m.id === selectedModel)?.name : t("hero.smartAssistant")}
               </h3>
+              {selectedModel && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setSelectedModel(null);
+                    setMessages([]);
+                  }}
+                  className="gap-2 mr-2"
+                >
+                  {t("chat.newConversation")}
+                </Button>
+              )}
             </div>
             <Button
               variant="ghost"
@@ -200,7 +213,7 @@ const ChatBot = () => {
           {/* Content */}
           {!selectedModel ? (
             <div className="flex-1 overflow-y-auto p-6">
-              <h4 className="text-lg font-bold mb-4 text-center">یک مدل را انتخاب کنید</h4>
+              <h4 className="text-lg font-bold mb-4 text-center">{t("chat.selectModel")}</h4>
               <div className="grid gap-3">
                 {models.map((model) => {
                   const Icon = model.icon;
@@ -277,7 +290,7 @@ const ChatBot = () => {
               <div className="p-4 border-t border-border bg-background">
                 <div className="flex gap-2">
                   <Input
-                    placeholder={selectedModel === "image" ? "توضیح تصویر مورد نظر..." : "پیام خود را بنویسید..."}
+                    placeholder={t("chat.typeMessage")}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}

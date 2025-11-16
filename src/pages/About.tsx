@@ -69,10 +69,10 @@ const About = () => {
 
             {/* Values */}
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-6 rounded-xl bg-background border border-border text-center">
-                <h3 className="font-semibold mb-2">سادگی</h3>
+              <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
+                <h3 className="font-semibold text-lg mb-2">{t("about.valueSimplicity")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  آموزش به زبان ساده و قابل فهم
+                  {t("about.valueSimplicityDesc")}
                 </p>
               </div>
               <div className="p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-all">
