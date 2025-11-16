@@ -41,10 +41,10 @@ const Products = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              {t("products.header")}
+              {t("productsPage.header")}
             </h1>
             <p className="text-lg text-muted-foreground">
-              {t("products.headerDesc")}
+              {t("productsPage.headerDesc")}
             </p>
           </div>
         </div>
@@ -55,11 +55,11 @@ const Products = () => {
         <div className="container mx-auto px-4">
           {loading ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">{t("products.loading")}</p>
+              <p className="text-muted-foreground">{t("productsPage.loading")}</p>
             </div>
           ) : products.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">{t("products.noProducts")}</p>
+              <p className="text-muted-foreground">{t("productsPage.noProducts")}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -81,8 +81,8 @@ const Products = () => {
                   </p>
 
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-6 pb-6 border-b border-border">
-                    <span>{t("products.format")}</span>
-                    <span>{product.pages} {t("products.pages")}</span>
+                    <span>{t("productsPage.format")}</span>
+                    <span>{product.pages} {t("productsPage.pages")}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -90,7 +90,7 @@ const Products = () => {
                       {product.price}
                     </span>
                     <Button variant="outline" size="sm" className="gap-2 group-hover:border-primary group-hover:text-primary">
-                      {t("products.viewDetails")}
+                      {t("productsPage.viewDetails")}
                       <ArrowLeft className="h-3 w-3" />
                     </Button>
                   </div>
