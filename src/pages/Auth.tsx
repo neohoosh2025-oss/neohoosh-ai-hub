@@ -176,7 +176,7 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="signin-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      {t("contact.email") || "ایمیل"}
+                    {t("contactPage.email") || "ایمیل"}
                     </Label>
                     <Input
                       id="signin-email"
@@ -245,7 +245,7 @@ const Auth = () => {
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      {t("contact.email") || "ایمیل"}
+                      {t("contactPage.email") || "ایمیل"}
                     </Label>
                     <Input
                       id="signup-email"
@@ -305,7 +305,7 @@ const Auth = () => {
               <div className="space-y-2">
                 <Label htmlFor="reset-email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  {t("contact.email") || "ایمیل"}
+                  {t("contactPage.email") || "ایمیل"}
                 </Label>
                 <Input
                   id="reset-email"
