@@ -28,14 +28,14 @@ const Contact = () => {
 
     if (error) {
       toast({
-        title: t("contact.error"),
+        title: t("contactPage.error"),
         description: error.message,
         variant: "destructive",
       });
     } else {
       toast({
-        title: t("contact.success"),
-        description: t("contact.successDesc"),
+        title: t("contactPage.success"),
+        description: t("contactPage.successDesc"),
       });
       setFormData({ name: "", email: "", message: "" });
     }
@@ -48,10 +48,10 @@ const Contact = () => {
         <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            {t("contact.title")}
+            {t("contactPage.title")}
           </h1>
             <p className="text-lg text-muted-foreground">
-              {t("contact.subtitle")}
+              {t("contactPage.subtitle")}
             </p>
           </div>
         </div>
@@ -63,25 +63,25 @@ const Contact = () => {
           <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
             {/* Form */}
             <Card className="p-8 border-border">
-              <h2 className="text-2xl font-bold mb-6">{t("contact.formTitle")}</h2>
+              <h2 className="text-2xl font-bold mb-6">{t("contactPage.formTitle")}</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    {t("contact.name")}
+                    {t("contactPage.name")}
                   </label>
                   <Input
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    placeholder={t("contact.namePlaceholder")}
+                    placeholder={t("contactPage.namePlaceholder")}
                     required
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    {t("contact.email")}
+                    {t("contactPage.email")}
                   </label>
                   <Input
                     type="email"
@@ -96,14 +96,14 @@ const Contact = () => {
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    {t("contact.message")}
+                    {t("contactPage.message")}
                   </label>
                   <Textarea
                     value={formData.message}
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
                     }
-                    placeholder={t("contact.messagePlaceholder")}
+                    placeholder={t("contactPage.messagePlaceholder")}
                     rows={5}
                     required
                   />
@@ -111,7 +111,7 @@ const Contact = () => {
 
                 <Button type="submit" className="w-full gap-2 glow-neon">
                   <Send className="h-4 w-4" />
-                  {t("contact.send")}
+                  {t("contactPage.send")}
                 </Button>
               </form>
             </Card>
@@ -124,12 +124,12 @@ const Contact = () => {
                     <Mail className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{t("contact.emailLabel")}</h3>
+                    <h3 className="font-semibold">{t("contactPage.emailLabel")}</h3>
                     <a
-                      href={`mailto:${t("contact.emailValue")}`}
+                      href={`mailto:${t("contactPage.emailValue")}`}
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      {t("contact.emailValue")}
+                      {t("contactPage.emailValue")}
                     </a>
                   </div>
                 </div>
@@ -141,23 +141,23 @@ const Contact = () => {
                     <Instagram className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">{t("contact.instagramLabel")}</h3>
+                    <h3 className="font-semibold">{t("contactPage.instagramLabel")}</h3>
                     <a
-                      href={`https://www.instagram.com/${t("contact.instagramValue").replace('@', '')}`}
+                      href={`https://www.instagram.com/${t("contactPage.instagramValue").replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-muted-foreground hover:text-primary transition-colors"
                     >
-                      {t("contact.instagramValue")}
+                      {t("contactPage.instagramValue")}
                     </a>
                   </div>
                 </div>
               </Card>
 
               <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
-                <h3 className="font-semibold mb-2">{t("contact.hoursLabel")}</h3>
+                <h3 className="font-semibold mb-2">{t("contactPage.hoursLabel")}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {t("contact.hoursValue")}
+                  {t("contactPage.hoursValue")}
                 </p>
               </div>
             </div>
