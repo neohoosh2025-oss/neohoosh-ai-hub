@@ -329,7 +329,17 @@ const Chat = () => {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          // Handle specific error cases
+          if (error.message?.includes("402") || error.message?.includes("اعتبار")) {
+            toast.error(t("chat.creditError"));
+          } else if (error.message?.includes("429") || error.message?.includes("محدودیت")) {
+            toast.error(t("chat.rateLimitError"));
+          } else {
+            toast.error(t("chat.error"));
+          }
+          throw error;
+        }
 
         const assistantMessage: Message = {
           role: "assistant",
@@ -353,7 +363,17 @@ const Chat = () => {
           }
         });
 
-        if (error) throw error;
+        if (error) {
+          // Handle specific error cases
+          if (error.message?.includes("402") || error.message?.includes("اعتبار")) {
+            toast.error(t("chat.creditError"));
+          } else if (error.message?.includes("429") || error.message?.includes("محدودیت")) {
+            toast.error(t("chat.rateLimitError"));
+          } else {
+            toast.error(t("chat.error"));
+          }
+          throw error;
+        }
 
         const assistantMessage: Message = {
           role: "assistant",
@@ -366,9 +386,9 @@ const Chat = () => {
           await saveMessage(convId, "assistant", data.response);
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
-      toast.error(t("chat.error"));
+      // Error toast is already shown above, no need to show again
     } finally {
       setIsLoading(false);
     }
