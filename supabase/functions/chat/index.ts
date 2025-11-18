@@ -11,11 +11,11 @@ serve(async (req) => {
 
   try {
     const { messages, modelType, imageData, model } = await req.json();
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is not configured");
+    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -24,21 +24,18 @@ serve(async (req) => {
     if (modelType === "image") {
       const userPrompt = messages[messages.length - 1].content;
       
-      const imageResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      const imageResponse = await fetch("https://api.openai.com/v1/images/generations", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": SUPABASE_URL,
         },
         body: JSON.stringify({
-          model: model || "google/gemini-2.5-flash-image-preview",
-          messages: [
-            {
-              role: "user",
-              content: userPrompt
-            }
-          ],
+          model: "gpt-image-1",
+          prompt: userPrompt,
+          n: 1,
+          size: "1024x1024",
+          response_format: "b64_json"
         }),
       });
 
@@ -52,7 +49,7 @@ serve(async (req) => {
       }
 
       const imageData = await imageResponse.json();
-      const base64Image = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+      const base64Image = imageData.data?.[0]?.b64_json;
       
       if (!base64Image) {
         throw new Error("No media returned from AI");
@@ -71,8 +68,7 @@ serve(async (req) => {
       }
 
       // Convert base64 to blob
-      const base64Data = base64Image.split(',')[1];
-      const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const imageBuffer = Uint8Array.from(atob(base64Image), c => c.charCodeAt(0));
       const timestamp = Date.now();
       const fileName = `${user.id}/${timestamp}.png`;
 
@@ -147,19 +143,18 @@ serve(async (req) => {
       ];
     }
 
-    const requestBody = {
-      model: model || "google/gemini-2.0-flash-exp:free",
+    const requestBody: any = {
+      model: model || "gpt-4o-mini",
       messages: apiMessages,
     };
     
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": SUPABASE_URL,
       },
       body: JSON.stringify(requestBody),
     });
@@ -177,20 +172,20 @@ serve(async (req) => {
         });
       }
       if (response.status === 402 || response.status === 401) {
-        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenRouter یا API key نامعتبر است" }), {
+        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenAI یا API key نامعتبر است" }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       
-      return new Response(JSON.stringify({ error: `خطا از OpenRouter (${response.status}): ${errorText.substring(0, 100)}` }), {
+      return new Response(JSON.stringify({ error: `خطا از OpenAI (${response.status}): ${errorText.substring(0, 100)}` }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await response.json();
-    console.log("OpenRouter response:", JSON.stringify(data, null, 2));
+    console.log("OpenAI response:", JSON.stringify(data, null, 2));
     
     const assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
 
