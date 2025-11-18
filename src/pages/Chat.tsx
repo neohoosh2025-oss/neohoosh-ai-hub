@@ -411,8 +411,7 @@ const Chat = () => {
             className="w-full justify-start gap-2"
             variant="default"
           >
-            <Plus className="h-4 w-4" />
-            گفتگوی جدید
+            <Plus className="h-5 w-5" />
           </Button>
         </div>
         
