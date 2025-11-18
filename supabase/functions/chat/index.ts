@@ -10,12 +10,12 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, modelType, imageData } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const { messages, modelType, imageData, model } = await req.json();
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -24,21 +24,21 @@ serve(async (req) => {
     if (modelType === "image") {
       const userPrompt = messages[messages.length - 1].content;
       
-      const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const imageResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
           "Content-Type": "application/json",
+          "HTTP-Referer": SUPABASE_URL,
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
+          model: model || "google/gemini-2.5-flash-image-preview",
           messages: [
             {
               role: "user",
               content: userPrompt
             }
           ],
-          modalities: ["image", "text"]
         }),
       });
 
@@ -147,14 +147,17 @@ serve(async (req) => {
       ];
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    console.log("Sending request to OpenRouter with model:", model || "google/gemini-2.0-flash-exp:free");
+
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": SUPABASE_URL,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: model || "google/gemini-2.0-flash-exp:free",
         messages: apiMessages,
       }),
     });
@@ -167,7 +170,7 @@ serve(async (req) => {
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار، لطفاً به تنظیمات Lovable مراجعه کنید." }), {
+        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenRouter" }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -183,7 +186,7 @@ serve(async (req) => {
     const data = await response.json();
     const assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
 
-    return new Response(JSON.stringify({ response: assistantResponse }), {
+    return new Response(JSON.stringify({ text: assistantResponse }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
