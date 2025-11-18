@@ -34,7 +34,25 @@ const translations = {
     contactPage: { title: "تماس با ما", subtitle: "سوالات، پیشنهادات یا نظرات خود را با ما در میان بگذارید", formTitle: "ارسال پیام", name: "نام", namePlaceholder: "نام خود را وارد کنید", email: "ایمیل", message: "پیام", messagePlaceholder: "پیام خود را بنویسید", send: "ارسال پیام", success: "پیام شما ارسال شد", successDesc: "به زودی با شما تماس خواهیم گرفت", error: "خطا در ارسال پیام", contactInfo: "اطلاعات تماس", contactDesc: "از راه‌های زیر می‌توانید با ما در ارتباط باشید:", emailLabel: "ایمیل", emailValue: "support@neohoosh.com", instagramLabel: "اینستاگرام", instagramValue: "@neohoosh.ai", hoursLabel: "ساعات پاسخگویی", hoursValue: "شنبه تا پنجشنبه، ۹ صبح تا ۶ عصر" },
     aboutPage: { header: "درباره", headerBrand: "نئوهوش", headerDesc: "پلی به دنیای هوش مصنوعی", missionTitle: "ماموریت ما", missionDesc: "نئوهوش با هدف ساده‌سازی و دموکراتیزه‌کردن دانش هوش مصنوعی تاسیس شده است", visionTitle: "چشم‌انداز ما", visionDesc: "تبدیل شدن به منبع اصلی و قابل اعتماد برای یادگیری و استفاده از هوش مصنوعی در ایران و منطقه", teamTitle: "تیم ما", teamDesc: "تیم نئوهوش متشکل از متخصصان علاقه‌مند به هوش مصنوعی است", founderName: "محمدرضا تقی معز", founderRole: "بنیانگذار و مدیر عامل", valueSimplicity: "سادگی", valueSimplicityDesc: "آموزش به زبان ساده و قابل فهم", valueInnovation: "نوآوری", valueInnovationDesc: "به‌روز ماندن با آخرین پیشرفت‌های هوش مصنوعی", valueQuality: "کیفیت", valueQualityDesc: "ارائه محتوای دقیق و معتبر", valueCommunity: "جامعه", valueCommunityDesc: "ایجاد یک جامعه فعال از علاقه‌مندان به هوش مصنوعی" },
     footer: { brand: "نئوهوش", tagline: "پلی به دنیای هوش مصنوعی", quickLinks: "لینک‌های سریع", homepage: "صفحه اصلی", learnMore: "بیشتر بدانید", social: "شبکه‌های اجتماعی", copyright: "تمام حقوق محفوظ است" },
-    chat: { title: "نئوهوش", subtitle: "مدل مورد نظرتان را انتخاب کنید", pleaseLogin: "لطفا ابتدا وارد شوید", selectModel: "یک مدل انتخاب کنید", typeMessage: "پیام خود را بنویسید", newConversation: "گفتگوی جدید", backToModels: "بازگشت به مدل‌ها" }
+    chat: {
+      title: "نئوهوش",
+      subtitle: "مدل مورد نظرتان را انتخاب کنید",
+      businessAdvisor: "مشاور کسب‌وکار",
+      businessDesc: "دریافت مشاوره برای کسب‌وکار و استراتژی",
+      personalDev: "توسعه فردی",
+      personalDesc: "راهنمایی برای رشد شخصی و مهارت‌های زندگی",
+      openQuestions: "سوالات باز",
+      openQuestionsDesc: "پرسش و پاسخ درباره هر موضوع",
+      adsGen: "تولید تبلیغات",
+      adsGenDesc: "ساخت محتوای تبلیغاتی خلاقانه",
+      textToImage: "متن به تصویر",
+      textToImageDesc: "تبدیل توضیحات به تصاویر بصری",
+      pleaseLogin: "لطفا ابتدا وارد شوید",
+      selectModel: "یک مدل انتخاب کنید",
+      typeMessage: "پیام خود را بنویسید",
+      newConversation: "گفتگوی جدید",
+      backToModels: "بازگشت به مدل‌ها"
+    }
   },
   en: {
     home: "Home", articles: "Articles", products: "Shop", services: "Services", chatbot: "Chatbot", about: "About", contact: "Contact", logout: "Logout", login: "Login",
@@ -51,7 +69,25 @@ const translations = {
     contactPage: { title: "Contact Us", subtitle: "Share your questions, suggestions, or feedback with us", formTitle: "Send Message", name: "Name", namePlaceholder: "Enter your name", email: "Email", message: "Message", messagePlaceholder: "Write your message", send: "Send Message", success: "Your message has been sent", successDesc: "We will contact you soon", error: "Error sending message", contactInfo: "Contact Information", contactDesc: "You can contact us through the following ways:", emailLabel: "Email", emailValue: "support@neohoosh.com", instagramLabel: "Instagram", instagramValue: "@neohoosh.ai", hoursLabel: "Support Hours", hoursValue: "Saturday to Thursday, 9 AM to 6 PM" },
     aboutPage: { header: "About", headerBrand: "NeoHoosh", headerDesc: "A Bridge to the World of AI", missionTitle: "Our Mission", missionDesc: "NeoHoosh was founded with the goal of simplifying and democratizing AI knowledge", visionTitle: "Our Vision", visionDesc: "To become the main and trusted source for learning and using AI in Iran and the region", teamTitle: "Our Team", teamDesc: "The NeoHoosh team consists of AI enthusiasts", founderName: "Mohammadreza Taghimoez", founderRole: "Founder & CEO", valueSimplicity: "Simplicity", valueSimplicityDesc: "Teaching in simple and understandable language", valueInnovation: "Innovation", valueInnovationDesc: "Staying up-to-date with the latest AI advances", valueQuality: "Quality", valueQualityDesc: "Providing accurate and reliable content", valueCommunity: "Community", valueCommunityDesc: "Building an active community of AI enthusiasts" },
     footer: { brand: "NeoHoosh", tagline: "A bridge to the world of AI", quickLinks: "Quick Links", homepage: "Homepage", learnMore: "Learn More", social: "Social", copyright: "All rights reserved" },
-    chat: { title: "NeoHoosh", subtitle: "Choose your desired model", pleaseLogin: "Please login first", selectModel: "Select a model", typeMessage: "Type your message", newConversation: "New Conversation", backToModels: "Back to Models" }
+    chat: {
+      title: "NeoHoosh",
+      subtitle: "Choose your desired model",
+      businessAdvisor: "Business Advisor",
+      businessDesc: "Get advice for business and strategy",
+      personalDev: "Personal Development",
+      personalDesc: "Guidance for personal growth and life skills",
+      openQuestions: "Open Questions",
+      openQuestionsDesc: "Q&A about any topic",
+      adsGen: "Ad Generation",
+      adsGenDesc: "Create creative advertising content",
+      textToImage: "Text to Image",
+      textToImageDesc: "Convert descriptions into visual images",
+      pleaseLogin: "Please login first",
+      selectModel: "Select a model",
+      typeMessage: "Type your message",
+      newConversation: "New Conversation",
+      backToModels: "Back to Models"
+    }
   },
   ar: {
     home: "الرئيسية", articles: "المقالات", products: "المتجر", services: "الخدمات", chatbot: "المساعد الذكي", about: "من نحن", contact: "اتصل بنا", logout: "تسجيل الخروج", login: "تسجيل الدخول",
@@ -68,7 +104,25 @@ const translations = {
     contactPage: { title: "اتصل بنا", subtitle: "شاركنا أسئلتك واقتراحاتك وملاحظاتك", formTitle: "إرسال رسالة", name: "الاسم", namePlaceholder: "أدخل اسمك", email: "البريد الإلكتروني", message: "الرسالة", messagePlaceholder: "اكتب رسالتك", send: "إرسال الرسالة", success: "تم إرسال رسالتك", successDesc: "سنتواصل معك قريباً", error: "حدث خطأ أثناء إرسال الرسالة", contactInfo: "معلومات الاتصال", contactDesc: "يمكنك التواصل معنا عبر الطرق التالية:", emailLabel: "البريد الإلكتروني", emailValue: "support@neohoosh.com", instagramLabel: "إنستغرام", instagramValue: "@neohoosh.ai", hoursLabel: "ساعات الدعم", hoursValue: "من السبت إلى الخميس، 9 صباحاً حتى 6 مساءً" },
     aboutPage: { header: "حول", headerBrand: "نيوهوش", headerDesc: "جسر إلى عالم الذكاء الاصطناعي", missionTitle: "مهمتنا", missionDesc: "تأسست نيوهوش بهدف تبسيط ونشر معرفة الذكاء الاصطناعي", visionTitle: "رؤيتنا", visionDesc: "أن نصبح المرجع الرئيسي والموثوق لتعلم واستخدام الذكاء الاصطناعي في إيران والمنطقة", teamTitle: "فريقنا", teamDesc: "يتكون فريق نيوهوش من محبي الذكاء الاصطناعي", founderName: "محمدرضا تقي معز", founderRole: "المؤسس والمدير التنفيذي", valueSimplicity: "البساطة", valueSimplicityDesc: "التعليم بلغة بسيطة ومفهومة", valueInnovation: "الابتكار", valueInnovationDesc: "مواكبة أحدث تطورات الذكاء الاصطناعي", valueQuality: "الجودة", valueQualityDesc: "تقديم محتوى دقيق وموثوق", valueCommunity: "المجتمع", valueCommunityDesc: "بناء مجتمع نشط من محبي الذكاء الاصطناعي" },
     footer: { brand: "نيوهوش", tagline: "جسر إلى عالم الذكاء الاصطناعي", quickLinks: "روابط سريعة", homepage: "الصفحة الرئيسية", learnMore: "اعرف المزيد", social: "التواصل الاجتماعي", copyright: "جميع الحقوق محفوظة" },
-    chat: { title: "نيوهوش", subtitle: "اختر النموذج المطلوب", pleaseLogin: "يرجى تسجيل الدخول أولاً", selectModel: "اختر نموذجاً", typeMessage: "اكتب رسالتك", newConversation: "محادثة جديدة", backToModels: "العودة إلى النماذج" }
+    chat: {
+      title: "نيوهوش",
+      subtitle: "اختر النموذج المطلوب",
+      businessAdvisor: "مستشار الأعمال",
+      businessDesc: "احصل على المشورة للأعمال والاستراتيجية",
+      personalDev: "التطوير الشخصي",
+      personalDesc: "إرشادات للنمو الشخصي ومهارات الحياة",
+      openQuestions: "أسئلة مفتوحة",
+      openQuestionsDesc: "أسئلة وأجوبة حول أي موضوع",
+      adsGen: "إنشاء الإعلانات",
+      adsGenDesc: "إنشاء محتوى إعلاني إبداعي",
+      textToImage: "نص إلى صورة",
+      textToImageDesc: "تحويل الأوصاف إلى صور مرئية",
+      pleaseLogin: "يرجى تسجيل الدخول أولاً",
+      selectModel: "اختر نموذجاً",
+      typeMessage: "اكتب رسالتك",
+      newConversation: "محادثة جديدة",
+      backToModels: "العودة إلى النماذج"
+    }
   }
 } as const;
 
