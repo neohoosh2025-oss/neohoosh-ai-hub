@@ -482,8 +482,8 @@ const Chat = () => {
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {!selectedModel ? (
             <div className="max-w-2xl mx-auto p-4 md:p-8 pt-8 md:pt-20">
-              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">نئوهوش</h1>
-              <p className="text-center text-sm md:text-base text-muted-foreground mb-8 md:mb-12">مدل مورد نظرتان را انتخاب کنید</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">{t("chat.title")}</h1>
+              <p className="text-center text-sm md:text-base text-muted-foreground mb-8 md:mb-12">{t("chat.subtitle")}</p>
               
               <div className="grid gap-3">
                 {models.map((model) => {
