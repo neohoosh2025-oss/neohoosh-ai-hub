@@ -368,7 +368,7 @@ const Chat = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error(t("contact.error"));
+      toast.error(t("chat.error"));
     } finally {
       setIsLoading(false);
     }

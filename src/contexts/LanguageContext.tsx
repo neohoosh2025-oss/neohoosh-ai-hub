@@ -50,6 +50,7 @@ const translations = {
       pleaseLogin: "لطفا ابتدا وارد شوید",
       selectModel: "یک مدل انتخاب کنید",
       typeMessage: "پیام خود را بنویسید",
+      error: "خطا در برقراری ارتباط با چت‌بات",
       newConversation: "گفتگوی جدید",
       backToModels: "بازگشت به مدل‌ها"
     }
@@ -85,6 +86,7 @@ const translations = {
       pleaseLogin: "Please login first",
       selectModel: "Select a model",
       typeMessage: "Type your message",
+      error: "Error communicating with chatbot",
       newConversation: "New Conversation",
       backToModels: "Back to Models"
     }
@@ -120,6 +122,7 @@ const translations = {
       pleaseLogin: "يرجى تسجيل الدخول أولاً",
       selectModel: "اختر نموذجاً",
       typeMessage: "اكتب رسالتك",
+      error: "خطأ في الاتصال بالروبوت",
       newConversation: "محادثة جديدة",
       backToModels: "العودة إلى النماذج"
     }
