@@ -147,7 +147,12 @@ serve(async (req) => {
       ];
     }
 
-    console.log("Sending request to OpenRouter with model:", model || "google/gemini-2.0-flash-exp:free");
+    const requestBody = {
+      model: model || "google/gemini-2.0-flash-exp:free",
+      messages: apiMessages,
+    };
+    
+    console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -156,34 +161,37 @@ serve(async (req) => {
         "Content-Type": "application/json",
         "HTTP-Referer": SUPABASE_URL,
       },
-      body: JSON.stringify({
-        model: model || "google/gemini-2.0-flash-exp:free",
-        messages: apiMessages,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log("OpenRouter response status:", response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenRouter error details:", response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "محدودیت تعداد درخواست، لطفاً بعداً تلاش کنید." }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenRouter" }), {
+      if (response.status === 402 || response.status === 401) {
+        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenRouter یا API key نامعتبر است" }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "خطا در ارتباط با هوش مصنوعی" }), {
+      
+      return new Response(JSON.stringify({ error: `خطا از OpenRouter (${response.status}): ${errorText.substring(0, 100)}` }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const data = await response.json();
+    console.log("OpenRouter response:", JSON.stringify(data, null, 2));
+    
     const assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
 
     return new Response(JSON.stringify({ text: assistantResponse }), {
