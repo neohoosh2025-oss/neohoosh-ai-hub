@@ -51,6 +51,8 @@ const translations = {
       selectModel: "یک مدل انتخاب کنید",
       typeMessage: "پیام خود را بنویسید",
       error: "خطا در برقراری ارتباط با چت‌بات",
+      creditError: "اعتبار Lovable AI تمام شده است. لطفاً از بخش تنظیمات اعتبار اضافه کنید.",
+      rateLimitError: "تعداد درخواست‌ها زیاد است. لطفاً کمی صبر کنید.",
       newConversation: "گفتگوی جدید",
       backToModels: "بازگشت به مدل‌ها"
     }
@@ -87,6 +89,8 @@ const translations = {
       selectModel: "Select a model",
       typeMessage: "Type your message",
       error: "Error communicating with chatbot",
+      creditError: "Lovable AI credits have run out. Please add credits from settings.",
+      rateLimitError: "Too many requests. Please wait a moment.",
       newConversation: "New Conversation",
       backToModels: "Back to Models"
     }
@@ -123,6 +127,8 @@ const translations = {
       selectModel: "اختر نموذجاً",
       typeMessage: "اكتب رسالتك",
       error: "خطأ في الاتصال بالروبوت",
+      creditError: "نفدت أرصدة Lovable AI. يرجى إضافة الأرصدة من الإعدادات.",
+      rateLimitError: "طلبات كثيرة جداً. يرجى الانتظار قليلاً.",
       newConversation: "محادثة جديدة",
       backToModels: "العودة إلى النماذج"
     }
