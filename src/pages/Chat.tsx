@@ -329,16 +329,18 @@ const Chat = () => {
           }
         });
 
-        if (error) {
-          // Handle specific error cases
-          if (error.message?.includes("402") || error.message?.includes("اعتبار")) {
+        // Check for errors in both error object and data.error
+        if (error || data?.error) {
+          const errorMsg = data?.error || error?.message || "";
+          
+          if (errorMsg.includes("اعتبار") || errorMsg.includes("402")) {
             toast.error(t("chat.creditError"));
-          } else if (error.message?.includes("429") || error.message?.includes("محدودیت")) {
+          } else if (errorMsg.includes("محدودیت") || errorMsg.includes("429")) {
             toast.error(t("chat.rateLimitError"));
           } else {
             toast.error(t("chat.error"));
           }
-          throw error;
+          throw new Error(errorMsg);
         }
 
         const assistantMessage: Message = {
@@ -363,16 +365,18 @@ const Chat = () => {
           }
         });
 
-        if (error) {
-          // Handle specific error cases
-          if (error.message?.includes("402") || error.message?.includes("اعتبار")) {
+        // Check for errors in both error object and data.error
+        if (error || data?.error) {
+          const errorMsg = data?.error || error?.message || "";
+          
+          if (errorMsg.includes("اعتبار") || errorMsg.includes("402")) {
             toast.error(t("chat.creditError"));
-          } else if (error.message?.includes("429") || error.message?.includes("محدودیت")) {
+          } else if (errorMsg.includes("محدودیت") || errorMsg.includes("429")) {
             toast.error(t("chat.rateLimitError"));
           } else {
             toast.error(t("chat.error"));
           }
-          throw error;
+          throw new Error(errorMsg);
         }
 
         const assistantMessage: Message = {
