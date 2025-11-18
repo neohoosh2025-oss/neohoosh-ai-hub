@@ -136,7 +136,7 @@ const ChatBot = () => {
 
         setMessages(prev => [
           ...prev,
-          { role: "assistant", content: data.response }
+          { role: "assistant", content: data.text }
         ]);
       }
     } catch (error) {
