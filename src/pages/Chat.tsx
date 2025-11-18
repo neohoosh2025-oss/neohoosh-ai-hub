@@ -243,6 +243,12 @@ const Chat = () => {
   };
 
   const typewriterEffect = (text: string, onComplete: () => void) => {
+    if (!text || typeof text !== 'string') {
+      console.error('Invalid text for typewriter effect:', text);
+      onComplete();
+      return;
+    }
+    
     setIsTyping(true);
     setTypingContent("");
     let currentIndex = 0;
@@ -379,15 +385,22 @@ const Chat = () => {
           throw new Error(errorMsg);
         }
 
+        const responseText = data.text || data.response || "";
+        
+        if (!responseText) {
+          toast.error(t("chat.error"));
+          throw new Error("No response from AI");
+        }
+        
         const assistantMessage: Message = {
           role: "assistant",
-          content: data.response
+          content: responseText
         };
         
         // Show typing animation for text response
-        typewriterEffect(data.response, async () => {
+        typewriterEffect(responseText, async () => {
           setMessages(prev => [...prev, assistantMessage]);
-          await saveMessage(convId, "assistant", data.response);
+          await saveMessage(convId, "assistant", responseText);
         });
       }
     } catch (error: any) {
