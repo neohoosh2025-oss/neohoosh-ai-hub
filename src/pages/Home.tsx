@@ -184,7 +184,7 @@ const Home = () => {
             <div className="grid md:grid-cols-3 gap-8" ref={articlesAnimation.ref}>
               {articles.map((article, index) => (
                 <Link key={article.id} to={`/articles/${article.id}`}>
-                  <Card className={`h-full overflow-hidden hover:border-primary/50 transition-all group scroll-fade-in ${index === 1 ? 'scroll-fade-in-delay-1' : index === 2 ? 'scroll-fade-in-delay-2' : ''} ${articlesAnimation.isVisible ? 'visible' : ''}`}>
+                  <Card className={`h-full overflow-hidden hover:border-primary/50 transition-all group scroll-fade-in visible ${index === 1 ? 'scroll-fade-in-delay-1' : index === 2 ? 'scroll-fade-in-delay-2' : ''} ${articlesAnimation.isVisible ? 'visible' : ''}`}>
                     {article.image_url && (
                       <div className="aspect-video overflow-hidden">
                         <img
