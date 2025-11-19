@@ -20,6 +20,15 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Get user ID from auth header for memory access
+    const authHeader = req.headers.get('Authorization');
+    let userId = null;
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      userId = user?.id;
+    }
+
     // Handle media generation (image generation via OpenRouter)
     if (modelType === "image") {
       const userPrompt = messages[messages.length - 1].content;
@@ -115,6 +124,20 @@ serve(async (req) => {
       });
     }
 
+    // Load user memory
+    let userContext = "";
+    if (userId) {
+      const { data: memories } = await supabase
+        .from('user_memory')
+        .select('key, value')
+        .eq('user_id', userId);
+      
+      if (memories && memories.length > 0) {
+        userContext = "\n\nاطلاعات ذخیره شده کاربر:\n" + 
+          memories.map(m => `${m.key}: ${m.value}`).join("\n");
+      }
+    }
+
     // Define system prompts for each model
     const systemPrompts: Record<string, string> = {
       business: "شما یک مشاور حرفه‌ای کسب و کار هستید. تخصص شما در استراتژی، بازاریابی، مدیریت و رشد کسب و کار است. پاسخ‌های شما عملی، تحلیلی و مبتنی بر داده است.",
@@ -123,7 +146,14 @@ serve(async (req) => {
       ads: "شما یک متخصص تبلیغات و بازاریابی محتوا هستید. می‌توانید متن‌های تبلیغاتی جذاب، شعارها و کمپین‌های خلاقانه ایجاد کنید. پاسخ‌های شما خلاق و متقاعدکننده هستند.",
     };
 
-    const systemPrompt = systemPrompts[modelType] || systemPrompts.general;
+    let systemPrompt = systemPrompts[modelType] || systemPrompts.general;
+    
+    // Add memory instructions and context
+    systemPrompt += `\n\nدستورالعمل حافظه: وقتی کاربر اطلاعات شخصی مهمی مانند نام، سن، شغل، علایق یا هر جزئیات مهم دیگری به شما می‌دهد، این اطلاعات را به خاطر بسپارید. در انتهای پاسخ خود، اگر اطلاعات جدیدی یاد گرفتید، آن را در این فرمت اضافه کنید:
+[MEMORY_SAVE:key=value]
+مثال: [MEMORY_SAVE:name=محمدرضا] یا [MEMORY_SAVE:job=برنامه‌نویس]
+
+همیشه از اطلاعات ذخیره شده برای شخصی‌سازی پاسخ‌های خود استفاده کنید.${userContext}`;
 
     // Prepare messages for vision API if image is provided
     let apiMessages;
@@ -194,7 +224,36 @@ serve(async (req) => {
     const data = await response.json();
     console.log("OpenRouter response:", JSON.stringify(data, null, 2));
     
-    const assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
+    let assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
+
+    // Extract and save memory items
+    if (userId) {
+      const memoryPattern = /\[MEMORY_SAVE:(\w+)=([^\]]+)\]/g;
+      let match;
+      
+      while ((match = memoryPattern.exec(assistantResponse)) !== null) {
+        const [fullMatch, key, value] = match;
+        
+        // Save to database
+        await supabase
+          .from('user_memory')
+          .upsert({
+            user_id: userId,
+            memory_type: 'profile',
+            key: key,
+            value: value,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,key'
+          });
+        
+        // Remove memory tags from response
+        assistantResponse = assistantResponse.replace(fullMatch, '');
+      }
+      
+      // Clean up any extra whitespace
+      assistantResponse = assistantResponse.trim();
+    }
 
     return new Response(JSON.stringify({ text: assistantResponse }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
