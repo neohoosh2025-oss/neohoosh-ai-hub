@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Mail, LogOut, Loader2, Brain } from "lucide-react";
+import { User, Mail, LogOut, Loader2, Brain, Activity } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Profile = () => {
@@ -139,14 +139,39 @@ const Profile = () => {
               </Button>
             </div>
 
-            {/* Memory Management Link */}
-            <div className="pt-4 border-t">
-              <Link to="/memory">
-                <Button variant="outline" className="w-full gap-2">
-                  <Brain className="h-4 w-4" />
-                  مدیریت حافظه چت‌بات
-                </Button>
-              </Link>
+            {/* Quick Access Links */}
+            <div className="pt-6 border-t">
+              <h3 className="font-semibold mb-4">{t("profile.quickAccess")}</h3>
+              <div className="space-y-2">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{t("profile.userDashboard")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("profile.dashboardDescription")}
+                    </p>
+                  </div>
+                </Link>
+                <Link
+                  to="/memory"
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Brain className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium">{t("profile.memoryManagement")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("profile.memoryDescription")}
+                    </p>
+                  </div>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

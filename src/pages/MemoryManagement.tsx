@@ -59,7 +59,7 @@ const MemoryManagement = () => {
       setMemories(data || []);
     } catch (error) {
       console.error("Error loading memories:", error);
-      toast.error("خطا در بارگذاری حافظه");
+      toast.error(t("memory.error"));
     } finally {
       setLoading(false);
     }
@@ -79,7 +79,7 @@ const MemoryManagement = () => {
 
   const handleSaveEdit = async (id: string) => {
     if (!editKey.trim() || !editValue.trim()) {
-      toast.error("کلید و مقدار نمی‌توانند خالی باشند");
+      toast.error(t("memory.emptyError"));
       return;
     }
 
@@ -99,19 +99,19 @@ const MemoryManagement = () => {
 
       if (error) throw error;
 
-      toast.success("حافظه با موفقیت به‌روزرسانی شد");
+      toast.success(t("memory.updateSuccess"));
       setEditingId(null);
       setEditKey("");
       setEditValue("");
       loadMemories();
     } catch (error) {
       console.error("Error updating memory:", error);
-      toast.error("خطا در به‌روزرسانی حافظه");
+      toast.error(t("memory.error"));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("آیا مطمئن هستید که می‌خواهید این حافظه را حذف کنید؟")) {
+    if (!confirm(t("memory.deleteConfirm"))) {
       return;
     }
 
@@ -127,17 +127,17 @@ const MemoryManagement = () => {
 
       if (error) throw error;
 
-      toast.success("حافظه با موفقیت حذف شد");
+      toast.success(t("memory.deleteSuccess"));
       loadMemories();
     } catch (error) {
       console.error("Error deleting memory:", error);
-      toast.error("خطا در حذف حافظه");
+      toast.error(t("memory.error"));
     }
   };
 
   const handleAddMemory = async () => {
     if (!newKey.trim() || !newValue.trim()) {
-      toast.error("کلید و مقدار نمی‌توانند خالی باشند");
+      toast.error(t("memory.emptyError"));
       return;
     }
 
@@ -156,7 +156,7 @@ const MemoryManagement = () => {
 
       if (error) throw error;
 
-      toast.success("حافظه جدید اضافه شد");
+      toast.success(t("memory.addSuccess"));
       setIsAdding(false);
       setNewKey("");
       setNewValue("");
@@ -164,15 +164,15 @@ const MemoryManagement = () => {
     } catch (error: any) {
       console.error("Error adding memory:", error);
       if (error.code === '23505') {
-        toast.error("این کلید قبلاً استفاده شده است");
+        toast.error(t("memory.duplicateError"));
       } else {
-        toast.error("خطا در افزودن حافظه");
+        toast.error(t("memory.error"));
       }
     }
   };
 
   const handleClearAll = async () => {
-    if (!confirm("آیا مطمئن هستید که می‌خواهید تمام حافظه‌ها را حذف کنید؟ این عمل قابل بازگشت نیست!")) {
+    if (!confirm(t("memory.clearAllConfirm"))) {
       return;
     }
 
@@ -187,16 +187,16 @@ const MemoryManagement = () => {
 
       if (error) throw error;
 
-      toast.success("تمام حافظه‌ها پاک شدند");
+      toast.success(t("memory.clearSuccess"));
       loadMemories();
     } catch (error) {
       console.error("Error clearing memories:", error);
-      toast.error("خطا در پاک کردن حافظه‌ها");
+      toast.error(t("memory.error"));
     }
   };
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-4" dir="rtl">
+    <div className="min-h-screen pt-24 pb-16 px-4">
       <div className="container mx-auto max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -204,8 +204,8 @@ const MemoryManagement = () => {
               <Brain className="h-8 w-8 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">مدیریت حافظه</h1>
-              <p className="text-muted-foreground">اطلاعات ذخیره شده در چت‌بات</p>
+              <h1 className="text-3xl font-bold">{t("memory.title")}</h1>
+              <p className="text-muted-foreground">{t("memory.description")}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -215,7 +215,7 @@ const MemoryManagement = () => {
               disabled={isAdding}
             >
               <Plus className="h-4 w-4" />
-              افزودن حافظه
+              {t("memory.addMemory")}
             </Button>
             {memories.length > 0 && (
               <Button
@@ -224,7 +224,7 @@ const MemoryManagement = () => {
                 className="gap-2"
               >
                 <Trash2 className="h-4 w-4" />
-                پاک کردن همه
+                {t("memory.clearAll")}
               </Button>
             )}
           </div>
@@ -234,34 +234,34 @@ const MemoryManagement = () => {
         {isAdding && (
           <Card className="mb-6 border-primary">
             <CardHeader>
-              <CardTitle>افزودن حافظه جدید</CardTitle>
-              <CardDescription>اطلاعات جدیدی که می‌خواهید ذخیره شود</CardDescription>
+              <CardTitle>{t("memory.addNewTitle")}</CardTitle>
+              <CardDescription>{t("memory.addNewDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-key">کلید (مثلاً: name, age, job)</Label>
+                <Label htmlFor="new-key">{t("memory.keyLabel")}</Label>
                 <Input
                   id="new-key"
                   value={newKey}
                   onChange={(e) => setNewKey(e.target.value)}
-                  placeholder="نام کلید..."
+                  placeholder={t("memory.keyPlaceholder")}
                   maxLength={50}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-value">مقدار</Label>
+                <Label htmlFor="new-value">{t("memory.valueLabel")}</Label>
                 <Input
                   id="new-value"
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
-                  placeholder="مقدار..."
+                  placeholder={t("memory.valuePlaceholder")}
                   maxLength={255}
                 />
               </div>
               <div className="flex gap-2">
                 <Button onClick={handleAddMemory} className="gap-2">
                   <Save className="h-4 w-4" />
-                  ذخیره
+                  {t("memory.save")}
                 </Button>
                 <Button
                   onClick={() => {
@@ -273,7 +273,7 @@ const MemoryManagement = () => {
                   className="gap-2"
                 >
                   <X className="h-4 w-4" />
-                  انصراف
+                  {t("memory.cancel")}
                 </Button>
               </div>
             </CardContent>
@@ -284,19 +284,19 @@ const MemoryManagement = () => {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">در حال بارگذاری...</p>
+            <p className="mt-4 text-muted-foreground">{t("memory.loading")}</p>
           </div>
         ) : memories.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center">
               <Brain className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">هیچ حافظه‌ای ذخیره نشده</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("memory.noMemories")}</h3>
               <p className="text-muted-foreground mb-4">
-                وقتی در چت اطلاعات شخصی خود را به اشتراک بگذارید، آن‌ها اینجا ذخیره می‌شوند
+                {t("memory.noMemoriesDesc")}
               </p>
               <Button onClick={() => setIsAdding(true)} className="gap-2">
                 <Plus className="h-4 w-4" />
-                افزودن اولین حافظه
+                {t("memory.addFirst")}
               </Button>
             </CardContent>
           </Card>
@@ -308,7 +308,7 @@ const MemoryManagement = () => {
                   {editingId === memory.id ? (
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label>کلید</Label>
+                        <Label>{t("memory.keyLabel")}</Label>
                         <Input
                           value={editKey}
                           onChange={(e) => setEditKey(e.target.value)}
@@ -316,7 +316,7 @@ const MemoryManagement = () => {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>مقدار</Label>
+                        <Label>{t("memory.valueLabel")}</Label>
                         <Input
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
@@ -330,7 +330,7 @@ const MemoryManagement = () => {
                           className="gap-2"
                         >
                           <Save className="h-4 w-4" />
-                          ذخیره
+                          {t("memory.save")}
                         </Button>
                         <Button
                           onClick={handleCancelEdit}
@@ -339,7 +339,7 @@ const MemoryManagement = () => {
                           className="gap-2"
                         >
                           <X className="h-4 w-4" />
-                          انصراف
+                          {t("memory.cancel")}
                         </Button>
                       </div>
                     </div>
