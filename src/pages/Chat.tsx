@@ -476,7 +476,7 @@ const Chat = () => {
               setMessages([]);
               if (isMobile) setSidebarOpen(false);
             }}
-            className="w-full justify-start gap-2"
+            className="w-full justify-center"
             variant="default"
           >
             <Plus className="h-5 w-5" />
