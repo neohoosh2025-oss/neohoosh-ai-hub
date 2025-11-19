@@ -15,6 +15,11 @@ const translations = {
     nav: { home: "خانه", about: "درباره ما", services: "خدمات", articles: "مقالات", products: "محصولات", contact: "تماس با ما", chat: "چت با هوش مصنوعی", profile: "پروفایل", dashboard: "داشبورد", admin: "مدیریت", login: "ورود", logout: "خروج" },
     home: "خانه",
     articles: "مقالات",
+    articleDetail: {
+      backToArticles: "بازگشت به مقالات",
+      author: "نویسنده",
+      notFound: "مقاله یافت نشد"
+    },
     products: "فروشگاه",
     services: "خدمات",
     chatbot: "چت‌بات",
@@ -99,7 +104,7 @@ const translations = {
     }
   },
   ar: {
-    home: "الرئيسية", articles: "المقالات", products: "المتجر", services: "الخدمات", chatbot: "المساعد الذكي", about: "من نحن", contact: "اتصل بنا", logout: "تسجيل الخروج", login: "تسجيل الدخول",
+    home: "الرئيسية", articles: "المقالات", articleDetail: { backToArticles: "العودة إلى المقالات", author: "الكاتب", notFound: "المقالة غير موجودة" }, products: "المتجر", services: "الخدمات", chatbot: "المساعد الذكي", about: "من نحن", contact: "اتصل بنا", logout: "تسجيل الخروج", login: "تسجيل الدخول",
     profile: { title: "الملف الشخصي", description: "إدارة معلومات حسابك", email: "البريد الإلكتروني", emailNote: "لا يمكن تغيير البريد الإلكتروني", displayName: "الاسم المعروض", displayNamePlaceholder: "أدخل اسمك", save: "حفظ التغييرات", updateSuccess: "تم تحديث الملف الشخصي بنجاح", quickAccess: "وصول سريع", userDashboard: "لوحة تحكم المستخدم", dashboardDescription: "عرض الأنشطة والمقالات المحفوظة", memoryManagement: "إدارة ذاكرة الشات بوت", memoryDescription: "عرض المعلومات المخزنة في الشات بوت" },
     dashboard: { title: "لوحة تحكم المستخدم", welcome: "مرحباً", subtitle: "نظرة عامة على أنشطتك وإحصائياتك", overview: "ملخص الأنشطة", savedArticles: "المقالات المحفوظة", savedArticlesCount: "المقالات المحفوظة", totalActivity: "إجمالي الأنشطة", memberSince: "عضو منذ", recentlySaved: "المحفوظ مؤخراً", savedDesc: "مقالاتك المحفوظة", noSaved: "لم تحفظ أي مقالات بعد", noSavedArticles: "لا توجد مقالات محفوظة", noSavedArticlesDesc: "احفظ مقالاتك المفضلة للوصول إليها لاحقاً", recentActivity: "النشاط الأخير", activityDesc: "أحدث أنشطتك", noActivity: "لا يوجد نشاط حتى الآن", noActivityDesc: "سيتم عرض أنشطتك هنا", viewedArticle: "شاهد مقالاً", savedArticle: "حفظ مقالاً", savedOn: "تم الحفظ في" },
     memory: { title: "إدارة الذاكرة", description: "المعلومات المخزنة في الشات بوت", addMemory: "إضافة ذاكرة", clearAll: "مسح الكل", addNewTitle: "إضافة ذاكرة جديدة", addNewDesc: "معلومات جديدة تريد تخزينها", keyLabel: "المفتاح (مثلاً: name, age, job)", keyPlaceholder: "اسم المفتاح...", valueLabel: "القيمة", valuePlaceholder: "القيمة...", save: "حفظ", cancel: "إلغاء", edit: "تعديل", delete: "حذف", loading: "جارٍ التحميل...", noMemories: "لا توجد ذاكرة مخزنة", noMemoriesDesc: "عندما تشارك معلومات شخصية في الدردشة، سيتم تخزينها هنا", addFirst: "إضافة أول ذاكرة", deleteConfirm: "هل أنت متأكد من حذف هذه الذاكرة؟", clearAllConfirm: "هل أنت متأكد من حذف جميع الذكريات؟ لا يمكن التراجع عن هذا الإجراء!", updateSuccess: "تم تحديث الذاكرة بنجاح", deleteSuccess: "تم حذف الذاكرة بنجاح", addSuccess: "تمت إضافة ذاكرة جديدة", clearSuccess: "تم مسح جميع الذكريات", emptyError: "المفتاح والقيمة لا يمكن أن يكونا فارغين", duplicateError: "هذا المفتاح مستخدم بالفعل", error: "خطأ في العملية" },
