@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -85,6 +85,7 @@ const Chat = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [typingContent, setTypingContent] = useState<string>("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isStopRequested, setIsStopRequested] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -242,6 +243,15 @@ const Chat = () => {
     }
   };
 
+  const stopTyping = () => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+    setIsTyping(false);
+    setIsStopRequested(true);
+  };
+
   const typewriterEffect = (text: string, onComplete: () => void) => {
     if (!text || typeof text !== 'string') {
       console.error('Invalid text for typewriter effect:', text);
@@ -251,6 +261,7 @@ const Chat = () => {
     
     setIsTyping(true);
     setTypingContent("");
+    setIsStopRequested(false);
     let currentIndex = 0;
     
     if (typingIntervalRef.current) {
@@ -258,6 +269,17 @@ const Chat = () => {
     }
     
     typingIntervalRef.current = setInterval(() => {
+      if (isStopRequested) {
+        if (typingIntervalRef.current) {
+          clearInterval(typingIntervalRef.current);
+          typingIntervalRef.current = null;
+        }
+        setIsTyping(false);
+        setTypingContent(text);
+        onComplete();
+        return;
+      }
+      
       if (currentIndex < text.length) {
         setTypingContent(text.slice(0, currentIndex + 1));
         currentIndex++;
@@ -269,7 +291,7 @@ const Chat = () => {
         setIsTyping(false);
         onComplete();
       }
-    }, 20); // سرعت تایپ (میلی‌ثانیه)
+    }, 10);
   };
 
   const handleSend = async () => {
@@ -570,9 +592,9 @@ const Chat = () => {
           ) : (
             <div className="max-w-3xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-4">
               {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0`}>
+                 <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0`}>
                   <div className={`max-w-[85%] md:max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-3 md:px-4 py-2.5 md:py-3`}>
-                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-base whitespace-pre-wrap">{msg.content}</p>
                     {msg.imageUrl && (
                       <div className="mt-3">
                         <img 
@@ -600,9 +622,9 @@ const Chat = () => {
               
               {/* Typing indicator */}
               {isTyping && (
-                <div className="flex justify-start px-2 md:px-0 animate-fade-in">
+                 <div className="flex justify-start px-2 md:px-0 animate-fade-in">
                   <div className="max-w-[85%] md:max-w-[80%] bg-secondary rounded-2xl px-3 md:px-4 py-2.5 md:py-3">
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="text-base whitespace-pre-wrap">
                       {typingContent}
                       <span className="inline-block w-0.5 h-4 bg-primary mr-0.5 animate-pulse"></span>
                     </p>
@@ -662,26 +684,37 @@ const Chat = () => {
                 >
                   <Upload className="h-4 w-4" />
                 </Button>
-                <Input
+                <Textarea
                   placeholder={selectedModel === "image" ? "توضیح تصویر..." : uploadedImage ? "سوالی درباره تصویر بپرسید..." : "پیام خود را بنویسید..."}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => {
+                  onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey && !isLoading) {
                       e.preventDefault();
                       handleSend();
                     }
                   }}
                   disabled={isLoading}
-                  className="flex-1 min-w-0 text-base"
+                  className="flex-1 min-w-0 text-base resize-none min-h-[44px] max-h-[120px]"
+                  rows={1}
                 />
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isLoading || (!message.trim() && !uploadedImage)}
-                  size="icon"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                {isTyping ? (
+                  <Button 
+                    onClick={stopTyping}
+                    size="icon"
+                    variant="destructive"
+                  >
+                    <Square className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleSend} 
+                    disabled={isLoading || (!message.trim() && !uploadedImage)}
+                    size="icon"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
