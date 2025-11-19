@@ -411,14 +411,23 @@ const Chat = () => {
     }
   };
 
-  const downloadImage = (imageUrl: string) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `neohoosh-${Date.now()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("تصویر دانلود شد");
+  const downloadImage = async (imageUrl: string) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `neohoosh-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("تصویر دانلود شد");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("خطا در دانلود تصویر");
+    }
   };
 
   return (
