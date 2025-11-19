@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AdminArticles } from "./AdminArticles";
 import { AdminProducts } from "./AdminProducts";
 import { AdminComments } from "./AdminComments";
-import { LogOut } from "lucide-react";
+import { LogOut, Languages } from "lucide-react";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -69,10 +69,18 @@ const Admin = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-foreground">پنل مدیریت</h1>
-          <Button onClick={handleLogout} variant="outline">
-            <LogOut className="h-4 w-4 ml-2" />
-            خروج
-          </Button>
+          <div className="flex gap-2">
+            <Link to="/admin/translate">
+              <Button variant="default" className="gap-2">
+                <Languages className="h-4 w-4" />
+                ترجمه خودکار مقالات
+              </Button>
+            </Link>
+            <Button onClick={handleLogout} variant="outline">
+              <LogOut className="h-4 w-4 ml-2" />
+              خروج
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="articles" dir="rtl">
