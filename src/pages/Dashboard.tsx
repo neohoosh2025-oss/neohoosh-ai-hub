@@ -157,10 +157,10 @@ const Dashboard = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            {t("dashboard.welcome") || "خوش آمدید"}، {user?.email}
+            {t("dashboard.welcome")}، {user?.user_metadata?.display_name || user?.email}
           </h1>
           <p className="text-muted-foreground">
-            {t("dashboard.subtitle") || "نمای کلی فعالیت‌ها و آمار شما"}
+            {t("dashboard.overview")}
           </p>
         </div>
 
@@ -169,7 +169,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                {t("dashboard.savedArticles") || "مقالات ذخیره شده"}
+                {t("dashboard.savedArticlesCount")}
               </CardTitle>
               <BookMarked className="h-5 w-5 text-primary" />
             </CardHeader>
@@ -181,7 +181,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                {t("dashboard.totalActivity") || "کل فعالیت‌ها"}
+                {t("dashboard.totalActivity")}
               </CardTitle>
               <Activity className="h-5 w-5 text-primary" />
             </CardHeader>
@@ -193,7 +193,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">
-                {t("dashboard.memberSince") || "عضویت از"}
+                {t("dashboard.memberSince")}
               </CardTitle>
               <TrendingUp className="h-5 w-5 text-primary" />
             </CardHeader>
@@ -209,15 +209,15 @@ const Dashboard = () => {
           {/* Saved Articles */}
           <Card>
             <CardHeader>
-              <CardTitle>{t("dashboard.recentlySaved") || "اخیراً ذخیره شده"}</CardTitle>
+              <CardTitle>{t("dashboard.savedArticles")}</CardTitle>
               <CardDescription>
-                {t("dashboard.savedDesc") || "مقالات ذخیره شده شما"}
+                {t("dashboard.savedDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {savedArticles.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  {t("dashboard.noSaved") || "هنوز مقاله‌ای ذخیره نکرده‌اید"}
+                  {t("dashboard.noSaved")}
                 </p>
               ) : (
                 <div className="space-y-4">
@@ -234,9 +234,14 @@ const Dashboard = () => {
                         <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                           {saved.articles.excerpt}
                         </p>
-                        <span className="text-xs text-primary mt-2 inline-block">
-                          {saved.articles.category}
-                        </span>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded">
+                            {saved.articles.category}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(new Date(saved.created_at), "MMM d")}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -248,15 +253,15 @@ const Dashboard = () => {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle>{t("dashboard.recentActivity") || "فعالیت‌های اخیر"}</CardTitle>
+              <CardTitle>{t("dashboard.recentActivity")}</CardTitle>
               <CardDescription>
-                {t("dashboard.activityDesc") || "آخرین فعالیت‌های شما"}
+                {t("dashboard.activityDesc")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {recentActivity.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  {t("dashboard.noActivity") || "هنوز فعالیتی ثبت نشده"}
+                  {t("dashboard.noActivity")}
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -265,13 +270,13 @@ const Dashboard = () => {
                       key={activity.id}
                       className="flex items-start gap-3 p-3 rounded-lg border"
                     >
-                      <div className="mt-1 text-primary">
+                      <div className="p-2 rounded-full bg-primary/10 text-primary">
                         {getActivityIcon(activity.activity_type)}
                       </div>
                       <div className="flex-1">
                         <p className="text-sm">{getActivityText(activity)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {format(new Date(activity.created_at), "PPp")}
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(activity.created_at), "MMM d, h:mm a")}
                         </p>
                       </div>
                     </div>
