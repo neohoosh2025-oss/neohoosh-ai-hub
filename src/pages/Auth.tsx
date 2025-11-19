@@ -17,7 +17,7 @@ const Auth = () => {
   const [showReset, setShowReset] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -165,7 +165,7 @@ const Auth = () => {
           </p>
 
           {!showReset ? (
-            <Tabs defaultValue="signin" dir="rtl">
+            <Tabs defaultValue="signin" dir={language === "en" ? "ltr" : "rtl"}>
               <TabsList className="grid w-full grid-cols-2 mb-8">
                 <TabsTrigger value="signin">{t("login") || "ورود"}</TabsTrigger>
                 <TabsTrigger value="signup">{t("auth.signup") || "ثبت‌نام"}</TabsTrigger>

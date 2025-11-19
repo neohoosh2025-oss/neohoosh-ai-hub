@@ -8,12 +8,14 @@ import { AdminArticles } from "./AdminArticles";
 import { AdminProducts } from "./AdminProducts";
 import { AdminComments } from "./AdminComments";
 import { LogOut, Languages } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Admin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { language } = useLanguage();
 
   useEffect(() => {
     checkAuth();
@@ -83,7 +85,7 @@ const Admin = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="articles" dir="rtl">
+        <Tabs defaultValue="articles" dir={language === "en" ? "ltr" : "rtl"}>
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="articles">مقالات</TabsTrigger>
             <TabsTrigger value="products">محصولات</TabsTrigger>
