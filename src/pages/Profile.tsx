@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Mail, LogOut, Loader2 } from "lucide-react";
+import { User, Mail, LogOut, Loader2, Brain } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Profile = () => {
@@ -137,6 +137,16 @@ const Profile = () => {
                 <LogOut className="h-4 w-4" />
                 {t("logout")}
               </Button>
+            </div>
+
+            {/* Memory Management Link */}
+            <div className="pt-4 border-t">
+              <Link to="/memory">
+                <Button variant="outline" className="w-full gap-2">
+                  <Brain className="h-4 w-4" />
+                  مدیریت حافظه چت‌بات
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

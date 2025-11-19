@@ -22,6 +22,7 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
+import MemoryManagement from "./pages/MemoryManagement";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/chat" element={<Chat />} />
+                  <Route path="/memory" element={<MemoryManagement />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/profile" element={<Profile />} />
