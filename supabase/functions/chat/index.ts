@@ -178,8 +178,13 @@ serve(async (req) => {
       ];
     }
 
+    // Use vision-capable model if image is present
+    const selectedModel = imageData 
+      ? "google/gemini-2.0-flash-exp:free" 
+      : (model || "kwaipilot/kat-coder-pro:free");
+    
     const requestBody: any = {
-      model: model || "kwaipilot/kat-coder-pro:free",
+      model: selectedModel,
       messages: apiMessages,
     };
     
