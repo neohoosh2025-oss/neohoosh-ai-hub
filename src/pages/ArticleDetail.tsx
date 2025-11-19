@@ -6,6 +6,13 @@ import { ArrowRight, Calendar, User } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+interface ArticleTranslation {
+  language: string;
+  title: string;
+  excerpt: string;
+  content: string;
+}
+
 interface Article {
   id: string;
   title: string;
@@ -15,13 +22,14 @@ interface Article {
   image_url: string | null;
   created_at: string;
   author_id: string;
+  article_translations?: ArticleTranslation[];
 }
 
 const ArticleDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -29,7 +37,15 @@ const ArticleDetail = () => {
       
       const { data, error } = await supabase
         .from("articles")
-        .select("*")
+        .select(`
+          *,
+          article_translations (
+            language,
+            title,
+            excerpt,
+            content
+          )
+        `)
         .eq("id", id)
         .maybeSingle();
 
@@ -43,6 +59,12 @@ const ArticleDetail = () => {
 
     fetchArticle();
   }, [id]);
+
+  const getArticleText = (field: 'title' | 'excerpt' | 'content') => {
+    if (!article) return '';
+    const translation = article.article_translations?.find(t => t.language === language);
+    return translation ? translation[field] : article[field];
+  };
 
   if (loading) {
     return (
@@ -94,7 +116,7 @@ const ArticleDetail = () => {
 
           {/* Title */}
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            {article.title}
+            {getArticleText('title')}
           </h1>
 
           {/* Meta Info */}
@@ -114,7 +136,7 @@ const ArticleDetail = () => {
             <div className="mb-8 rounded-2xl overflow-hidden">
               <img
                 src={article.image_url}
-                alt={article.title}
+                alt={getArticleText('title')}
                 className="w-full h-auto object-cover"
               />
             </div>
@@ -122,13 +144,13 @@ const ArticleDetail = () => {
 
           {/* Excerpt */}
           <div className="text-xl text-muted-foreground mb-8 p-6 bg-card/50 rounded-2xl border border-border">
-            {article.excerpt}
+            {getArticleText('excerpt')}
           </div>
 
           {/* Content */}
           <div className="prose prose-lg max-w-none">
             <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-              {article.content}
+              {getArticleText('content')}
             </div>
           </div>
         </article>
