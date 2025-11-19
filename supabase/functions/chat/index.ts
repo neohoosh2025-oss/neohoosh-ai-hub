@@ -149,7 +149,7 @@ serve(async (req) => {
     }
 
     const requestBody: any = {
-      model: model || "deepseek/deepseek-r1-0528-qwen3-8b",
+      model: model || "kwaipilot/kat-coder-pro:free",
       messages: apiMessages,
     };
     
