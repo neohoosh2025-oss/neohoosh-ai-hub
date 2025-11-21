@@ -6,8 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { User, Mail, LogOut, Loader2, Brain, Activity } from "lucide-react";
+import { User, Mail, LogOut, Loader2, Brain, Activity, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+
+interface UserComment {
+  id: string;
+  message: string;
+  reply: string | null;
+  replied_at: string | null;
+  created_at: string;
+  approved: boolean;
+}
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -17,6 +26,7 @@ const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [comments, setComments] = useState<UserComment[]>([]);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -30,6 +40,18 @@ const Profile = () => {
       setUser(user);
       setEmail(user.email || "");
       setDisplayName(user.user_metadata?.display_name || "");
+      
+      // Fetch user's comments
+      const { data: commentsData } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("email", user.email)
+        .order("created_at", { ascending: false });
+      
+      if (commentsData) {
+        setComments(commentsData);
+      }
+      
       setLoading(false);
     };
 
@@ -78,7 +100,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen py-20">
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className="container mx-auto px-4 max-w-2xl space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -173,6 +195,62 @@ const Profile = () => {
                 </Link>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* User Comments Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              پیام‌های شما
+            </CardTitle>
+            <CardDescription>
+              پیام‌هایی که برای ما ارسال کرده‌اید و پاسخ‌های دریافتی
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {comments.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                شما هنوز هیچ پیامی ارسال نکرده‌اید
+              </p>
+            ) : (
+              comments.map((comment) => (
+                <Card key={comment.id} className="p-4">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(comment.created_at).toLocaleDateString("fa-IR")}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            comment.approved
+                              ? "bg-green-500/10 text-green-500"
+                              : "bg-yellow-500/10 text-yellow-500"
+                          }`}
+                        >
+                          {comment.approved ? "تایید شده" : "در انتظار تایید"}
+                        </span>
+                      </div>
+                      <p className="text-base">{comment.message}</p>
+                    </div>
+                    
+                    {comment.reply && (
+                      <div className="pr-4 border-r-2 border-primary/50 bg-primary/5 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-sm font-semibold text-primary">پاسخ ادمین:</span>
+                          <span className="text-xs text-muted-foreground">
+                            {comment.replied_at && new Date(comment.replied_at).toLocaleDateString("fa-IR")}
+                          </span>
+                        </div>
+                        <p className="text-base">{comment.reply}</p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

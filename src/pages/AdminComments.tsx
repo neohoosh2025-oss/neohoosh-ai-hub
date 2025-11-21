@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Send } from "lucide-react";
+import { Trash2, Send, CheckCircle } from "lucide-react";
 
 interface Comment {
   id: string;
@@ -15,6 +15,7 @@ interface Comment {
   reply: string | null;
   replied_at: string | null;
   created_at: string;
+  approved: boolean;
 }
 
 export const AdminComments = () => {
@@ -71,6 +72,27 @@ export const AdminComments = () => {
     }
   };
 
+  const handleApprove = async (commentId: string) => {
+    const { error } = await supabase
+      .from("comments")
+      .update({ approved: true })
+      .eq("id", commentId);
+
+    if (error) {
+      toast({
+        title: "خطا",
+        description: "تایید نظر انجام نشد",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "موفق",
+        description: "نظر تایید شد و در صفحه اصلی نمایش داده می‌شود",
+      });
+      fetchComments();
+    }
+  };
+
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from("comments").delete().eq("id", id);
 
@@ -102,6 +124,15 @@ export const AdminComments = () => {
                   <div className="flex items-center gap-4 mb-2">
                     <h3 className="font-semibold">{comment.name}</h3>
                     <span className="text-sm text-muted-foreground">{comment.email}</span>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        comment.approved
+                          ? "bg-green-500/10 text-green-500"
+                          : "bg-yellow-500/10 text-yellow-500"
+                      }`}
+                    >
+                      {comment.approved ? "تایید شده" : "در انتظار تایید"}
+                    </span>
                   </div>
                   <p className="text-muted-foreground mb-2">{comment.message}</p>
                   <p className="text-xs text-muted-foreground">
@@ -147,6 +178,17 @@ export const AdminComments = () => {
                     </Button>
                   </div>
                 </div>
+              )}
+
+              {!comment.approved && (
+                <Button
+                  onClick={() => handleApprove(comment.id)}
+                  className="w-full gap-2"
+                  variant="default"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  تایید و انتشار در صفحه اصلی
+                </Button>
               )}
             </div>
           </Card>

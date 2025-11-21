@@ -18,11 +18,22 @@ interface Article {
   created_at: string;
 }
 
+interface Comment {
+  id: string;
+  name: string;
+  message: string;
+  reply: string | null;
+  replied_at: string | null;
+  created_at: string;
+}
+
 const Home = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const featuresAnimation = useScrollAnimation({ threshold: 0.2 });
   const articlesAnimation = useScrollAnimation({ threshold: 0.1 });
+  const commentsAnimation = useScrollAnimation({ threshold: 0.1 });
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -38,6 +49,22 @@ const Home = () => {
       } else {
         setArticles(data || []);
       }
+
+      // Fetch approved comments
+      const { data: commentsData, error: commentsError } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("approved", true)
+        .not("reply", "is", null)
+        .order("replied_at", { ascending: false })
+        .limit(3);
+
+      if (commentsError) {
+        console.error("Error fetching comments:", commentsError);
+      } else {
+        setComments(commentsData || []);
+      }
+
       setLoading(false);
     };
 
@@ -227,6 +254,51 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Comments Section */}
+      {comments.length > 0 && (
+        <section className="py-20 bg-card/50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                نظرات کاربران
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                تجربیات و بازخوردهای کاربران نئوهوش
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8" ref={commentsAnimation.ref}>
+              {comments.map((comment, index) => (
+                <Card
+                  key={comment.id}
+                  className={`p-6 scroll-fade-in ${
+                    index === 1 ? "scroll-fade-in-delay-1" : index === 2 ? "scroll-fade-in-delay-2" : ""
+                  } ${commentsAnimation.isVisible ? "visible" : ""}`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold">{comment.name}</p>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(comment.created_at).toLocaleDateString("fa-IR")}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-base leading-relaxed">
+                      {comment.message}
+                    </p>
+                    {comment.reply && (
+                      <div className="pr-3 border-r-2 border-primary/50 bg-primary/5 p-3 rounded-lg">
+                        <p className="text-sm font-medium text-primary mb-1">پاسخ:</p>
+                        <p className="text-base">{comment.reply}</p>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="relative py-20">
