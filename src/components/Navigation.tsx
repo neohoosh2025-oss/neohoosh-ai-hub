@@ -41,6 +41,7 @@ const Navigation = () => {
     { path: "/products", label: t("products") },
     { path: "/services", label: t("services") },
     { path: "/chat", label: t("chatbot") },
+    { path: "/neohi", label: "نئوهای", highlight: true },
     { path: "/about", label: t("about") },
     { path: "/contact", label: t("contact") },
   ];
@@ -64,10 +65,14 @@ const Navigation = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === link.path
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                className={`text-sm font-medium transition-all ${
+                  link.highlight
+                    ? "bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent hover:scale-105 px-3 py-1 rounded-md hover:bg-primary/10"
+                    : `hover:text-primary ${
+                        location.pathname === link.path
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`
                 }`}
               >
                 {link.label}
@@ -125,7 +130,9 @@ const Navigation = () => {
                 to={link.path}
                 onClick={() => setIsOpen(false)}
                 className={`block py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                  location.pathname === link.path
+                  link.highlight
+                    ? "bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent bg-primary/10"
+                    : location.pathname === link.path
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-secondary"
                 }`}
