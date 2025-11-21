@@ -93,6 +93,7 @@ export type Database = {
       }
       comments: {
         Row: {
+          approved: boolean
           created_at: string
           email: string
           id: string
@@ -102,6 +103,7 @@ export type Database = {
           reply: string | null
         }
         Insert: {
+          approved?: boolean
           created_at?: string
           email: string
           id?: string
@@ -111,6 +113,7 @@ export type Database = {
           reply?: string | null
         }
         Update: {
+          approved?: boolean
           created_at?: string
           email?: string
           id?: string
