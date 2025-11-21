@@ -186,6 +186,389 @@ export type Database = {
           },
         ]
       }
+      neohi_chat_members: {
+        Row: {
+          chat_id: string
+          id: string
+          is_muted: boolean | null
+          joined_at: string | null
+          last_read_at: string | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          is_muted?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          is_muted?: boolean | null
+          joined_at?: string | null
+          last_read_at?: string | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_chat_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_chats: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          last_message_at: string | null
+          name: string | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_message_at?: string | null
+          name?: string | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_message_at?: string | null
+          name?: string | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_chats_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_contacts: {
+        Row: {
+          added_at: string | null
+          contact_name: string | null
+          contact_user_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          contact_name?: string | null
+          contact_user_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string | null
+          contact_name?: string | null
+          contact_user_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_contacts_contact_user_id_fkey"
+            columns: ["contact_user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_contacts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_message_status: {
+        Row: {
+          id: string
+          message_id: string
+          status: string
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          status: string
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          status?: string
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_message_status_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_message_status_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_messages: {
+        Row: {
+          chat_id: string
+          content: string | null
+          created_at: string | null
+          id: string
+          is_deleted: boolean | null
+          is_edited: boolean | null
+          media_url: string | null
+          message_type: string | null
+          reply_to: string | null
+          sender_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          chat_id: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          media_url?: string | null
+          message_type?: string | null
+          reply_to?: string | null
+          sender_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          chat_id?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_edited?: boolean | null
+          media_url?: string | null
+          message_type?: string | null
+          reply_to?: string | null
+          sender_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_messages_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "neohi_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_stories: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type: string
+          media_url: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_stories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string | null
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string | null
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string | null
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_story_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_typing_indicators: {
+        Row: {
+          chat_id: string
+          id: string
+          is_typing: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          is_typing?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_typing_indicators_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_typing_indicators_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_users: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+          is_online: boolean | null
+          last_seen: string | null
+          phone: string | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           author_id: string
