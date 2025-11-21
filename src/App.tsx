@@ -36,31 +36,38 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex flex-col">
-              <Navigation />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/articles" element={<Articles />} />
-                  <Route path="/articles/:id" element={<ArticleDetail />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/services" element={<Services />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/chat" element={<Chat />} />
-                  <Route path="/neohi" element={<NeoHi />} />
-                  <Route path="/memory" element={<MemoryManagement />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="/admin/translate" element={<AdminTranslate />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
+            <Routes>
+              {/* Full-screen route without Navigation/Footer */}
+              <Route path="/neohi" element={<NeoHi />} />
+              
+              {/* Regular routes with Navigation/Footer */}
+              <Route path="*" element={
+                <div className="min-h-screen flex flex-col">
+                  <Navigation />
+                  <main className="flex-1">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/articles" element={<Articles />} />
+                      <Route path="/articles/:id" element={<ArticleDetail />} />
+                      <Route path="/products" element={<Products />} />
+                      <Route path="/products/:id" element={<ProductDetail />} />
+                      <Route path="/services" element={<Services />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/chat" element={<Chat />} />
+                      <Route path="/memory" element={<MemoryManagement />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="/admin/translate" element={<AdminTranslate />} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </div>
+              } />
+            </Routes>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
