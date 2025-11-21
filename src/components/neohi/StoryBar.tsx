@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -23,7 +22,6 @@ export function StoryBar() {
   const [stories, setStories] = useState<Story[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
-  const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
@@ -110,15 +108,14 @@ export function StoryBar() {
       if (insertError) throw insertError;
 
       toast({
-        title: "استوری آپلود شد",
-        description: "استوری شما با موفقیت منتشر شد",
+        title: "Story uploaded",
+        description: "Your story has been published successfully",
       });
-      setShowUpload(false);
     } catch (error) {
       console.error("Upload error:", error);
       toast({
-        title: "خطا در آپلود",
-        description: "آپلود استوری با خطا مواجه شد",
+        title: "Upload error",
+        description: "Failed to upload story",
         variant: "destructive",
       });
     } finally {
@@ -154,7 +151,7 @@ export function StoryBar() {
                 disabled={uploading}
               />
               <span className="text-xs text-gray-400 max-w-[70px] truncate">
-                استوری شما
+                Your Story
               </span>
             </div>
 
