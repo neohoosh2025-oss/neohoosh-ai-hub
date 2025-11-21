@@ -1,34 +1,27 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  ArrowLeft, 
-  Phone, 
-  Video, 
-  MoreVertical,
-  Check,
-  CheckCheck
-} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ArrowLeft, MoreVertical, Phone, Video, CheckCheck } from "lucide-react";
 import { MessageInput } from "./MessageInput";
+
+interface Message {
+  id: string;
+  content: string | null;
+  created_at: string;
+  sender_id: string;
+  message_type: string | null;
+  media_url: string | null;
+  sender?: {
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+}
 
 interface ChatViewProps {
   chatId: string;
   onBack: () => void;
-}
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-  media_url: string | null;
-  message_type: string;
-  sender: {
-    display_name: string;
-    avatar_url: string | null;
-  };
 }
 
 export function ChatView({ chatId, onBack }: ChatViewProps) {
@@ -156,7 +149,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden">
+    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
       {/* Header */}
       <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
         <div className="flex items-center justify-between h-11">
@@ -164,10 +157,10 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={onBack}
               className="text-[#0a84ff] hover:bg-transparent"
+              onClick={onBack}
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-6 w-6 scale-x-[-1]" />
             </Button>
             
             <Avatar className="h-9 w-9">
@@ -179,9 +172,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
             <div>
               <h2 className="text-white font-semibold text-[15px]">
-                {chat.name || "چت"}
+                {chat.name || "Chat"}
               </h2>
-              <p className="text-gray-400 text-xs">آنلاین</p>
+              <p className="text-gray-400 text-xs">Online</p>
             </div>
           </div>
 
@@ -204,13 +197,13 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         <div className="p-4 space-y-3 pb-4">
           {loading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500">در حال بارگذاری پیام‌ها...</div>
+              <div className="text-gray-500">Loading messages...</div>
             </div>
           ) : messages.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-gray-500 text-center">
-                <p>هنوز پیامی ارسال نشده</p>
-                <p className="text-sm mt-1">اولین پیام را ارسال کنید</p>
+                <p>No messages yet</p>
+                <p className="text-sm mt-1">Send the first message</p>
               </div>
             </div>
           ) : (

@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
 import { ChatView } from "@/components/neohi/ChatView";
 import { StoryBar } from "@/components/neohi/StoryBar";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
@@ -65,8 +64,8 @@ export default function NeoHi() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "ورود نیاز است",
-          description: "برای استفاده از نئوهای لطفا وارد شوید",
+          title: "Login Required",
+          description: "Please login to use NeoHi",
           variant: "destructive",
         });
         navigate("/auth");
@@ -84,7 +83,7 @@ export default function NeoHi() {
         await supabase.from("neohi_users").insert({
           id: user.id,
           username: user.email?.split("@")[0] || "user",
-          display_name: user.email?.split("@")[0] || "کاربر",
+          display_name: user.email?.split("@")[0] || "User",
         });
       }
     } catch (error) {
@@ -230,7 +229,7 @@ export default function NeoHi() {
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden">
+    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
       {/* Telegram Header */}
       <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
         <div className="flex items-center justify-between h-11">
@@ -239,8 +238,8 @@ export default function NeoHi() {
             className="text-[#0a84ff] hover:bg-transparent text-base px-0"
             onClick={() => navigate("/")}
           >
-            <ArrowLeft className="h-5 w-5 ml-1" />
-            بازگشت
+            <ArrowLeft className="h-5 w-5 mr-1" />
+            Back
           </Button>
           
           <div className="flex items-center gap-2">
@@ -274,12 +273,12 @@ export default function NeoHi() {
         {/* Search Bar */}
         <div className="mt-2 mb-1">
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500 pr-10 h-9 rounded-lg"
+              className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500 pl-10 h-9 rounded-lg"
             />
           </div>
         </div>
@@ -293,8 +292,8 @@ export default function NeoHi() {
         {filteredChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
             <MessageCircle className="h-16 w-16 text-gray-600 mb-4" />
-            <p className="text-gray-400 text-lg">هنوز چتی ندارید</p>
-            <p className="text-gray-500 text-sm mt-2">برای شروع چت جدید روی + کلیک کنید</p>
+            <p className="text-gray-400 text-lg">No chats yet</p>
+            <p className="text-gray-500 text-sm mt-2">Click + to start a new chat</p>
           </div>
         ) : (
           <div className="divide-y divide-[#2c2c2e]">
@@ -336,7 +335,7 @@ export default function NeoHi() {
                         <CheckCheck className="h-3.5 w-3.5 text-[#0a84ff] shrink-0 mt-0.5" />
                       )}
                       <p className="text-gray-400 text-[14px] line-clamp-2 leading-tight">
-                        {chat.last_message?.content || "هنوز پیامی ارسال نشده"}
+                        {chat.last_message?.content || "No messages yet"}
                       </p>
                     </div>
                     
