@@ -15,21 +15,27 @@ import {
   Settings,
   ArrowLeft,
   VolumeX,
-  CheckCheck,
-  Check
+  CheckCheck
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { formatDistanceToNow } from "date-fns";
+import { ar } from "date-fns/locale";
+import { ChatView } from "@/components/neohi/ChatView";
+import { StoryBar } from "@/components/neohi/StoryBar";
+import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 
 interface Chat {
   id: string;
-  name: string;
-  avatar: string;
-  lastMessage: string;
-  time: string;
-  unreadCount?: number;
-  isMuted?: boolean;
-  isRead?: boolean;
-  isPinned?: boolean;
+  type: string;
+  name: string | null;
+  avatar_url: string | null;
+  last_message_at: string | null;
+  last_message?: {
+    content: string;
+    is_read: boolean;
+  };
+  unread_count?: number;
+  is_muted?: boolean;
 }
 
 export default function NeoHi() {
@@ -39,59 +45,20 @@ export default function NeoHi() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("chats");
-
-  // Sample data - این رو بعداً از دیتابیس می‌گیریم
-  const [chats] = useState<Chat[]>([
-    {
-      id: "1",
-      name: "MILAD MAN",
-      avatar: "",
-      lastMessage: "ای گبرم دهنت مدد 😂😂",
-      time: "02:29",
-      unreadCount: 121,
-      isMuted: true,
-      isPinned: true
-    },
-    {
-      id: "2",
-      name: "Moez M",
-      avatar: "",
-      lastMessage: "الکیه",
-      time: "01:55",
-      isRead: true,
-      isMuted: true
-    },
-    {
-      id: "3",
-      name: "FutNews | فوتنیوز",
-      avatar: "",
-      lastMessage: "📋 FutNewsCH@ ❤️ شنبون بخیر",
-      time: "01:53",
-      unreadCount: 56,
-      isMuted: true
-    },
-    {
-      id: "4",
-      name: "اخبار فوری / مهم",
-      avatar: "",
-      lastMessage: "🖊 تغییر لحن قابل توجه ترامپ درباره مذاکرات...",
-      time: "01:35",
-      isMuted: true
-    },
-    {
-      id: "5",
-      name: "Music Connection",
-      avatar: "",
-      lastMessage: "Arash\nRise Of The Longship KINGOFTHENORTH —...",
-      time: "01:23",
-      unreadCount: 817,
-      isMuted: true
-    }
-  ]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [showNewChat, setShowNewChat] = useState(false);
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadChats();
+      subscribeToChats();
+    }
+  }, [user]);
 
   const checkUser = async () => {
     try {
@@ -127,6 +94,119 @@ export default function NeoHi() {
     }
   };
 
+  const loadChats = async () => {
+    if (!user) return;
+
+    const { data: chatMembers } = await supabase
+      .from("neohi_chat_members")
+      .select(`
+        chat_id,
+        is_muted,
+        chats:neohi_chats(
+          id,
+          type,
+          name,
+          avatar_url,
+          last_message_at
+        )
+      `)
+      .eq("user_id", user.id)
+      .order("last_read_at", { ascending: false });
+
+    if (chatMembers) {
+      const chatsData = await Promise.all(
+        chatMembers
+          .map((cm: any) => cm.chats)
+          .filter(Boolean)
+          .map(async (chat: any) => {
+            // Get last message
+            const { data: lastMessage } = await supabase
+              .from("neohi_messages")
+              .select("content, sender_id")
+              .eq("chat_id", chat.id)
+              .eq("is_deleted", false)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            // Get unread count
+            const { count: unreadCount } = await supabase
+              .from("neohi_messages")
+              .select("*", { count: "exact", head: true })
+              .eq("chat_id", chat.id)
+              .neq("sender_id", user.id)
+              .eq("is_deleted", false);
+
+            return {
+              ...chat,
+              last_message: lastMessage
+                ? {
+                    content: lastMessage.content,
+                    is_read: lastMessage.sender_id === user.id,
+                  }
+                : null,
+              unread_count: unreadCount || 0,
+              is_muted: chatMembers.find((cm: any) => cm.chat_id === chat.id)?.is_muted || false,
+            };
+          })
+      );
+
+      setChats(
+        chatsData.sort((a: any, b: any) => {
+          const aTime = a.last_message_at ? new Date(a.last_message_at).getTime() : 0;
+          const bTime = b.last_message_at ? new Date(b.last_message_at).getTime() : 0;
+          return bTime - aTime;
+        })
+      );
+    }
+  };
+
+  const subscribeToChats = () => {
+    const channel = supabase
+      .channel("chat-updates")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "neohi_messages",
+        },
+        () => {
+          loadChats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const getChatName = (chat: Chat) => {
+    if (chat.name) return chat.name;
+    if (chat.type === "dm") return "چت خصوصی";
+    if (chat.type === "group") return "گروه";
+    if (chat.type === "channel") return "کانال";
+    return "چت";
+  };
+
+  const getTimeDisplay = (timestamp: string | null) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    } else {
+      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+  };
+
   if (loading) {
     return (
       <div className="h-screen w-full bg-black flex items-center justify-center">
@@ -136,8 +216,18 @@ export default function NeoHi() {
   }
 
   const filteredChats = chats.filter((chat) =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    getChatName(chat).toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // If a chat is selected, show the chat view
+  if (selectedChatId) {
+    return (
+      <ChatView
+        chatId={selectedChatId}
+        onBack={() => setSelectedChatId(null)}
+      />
+    );
+  }
 
   return (
     <div className="h-screen w-full bg-black flex flex-col overflow-hidden">
@@ -167,7 +257,12 @@ export default function NeoHi() {
             <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-[#0a84ff] hover:bg-transparent"
+              onClick={() => setShowNewChat(true)}
+            >
               <Plus className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
@@ -190,65 +285,72 @@ export default function NeoHi() {
         </div>
       </header>
 
+      {/* Stories */}
+      <StoryBar />
+
       {/* Chat List */}
       <ScrollArea className="flex-1 bg-black">
-        <div className="divide-y divide-[#2c2c2e]">
-          {filteredChats.map((chat) => (
-            <button
-              key={chat.id}
-              className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#1c1c1d] transition-colors active:bg-[#2c2c2e]"
-            >
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <Avatar className="h-[52px] w-[52px]">
-                  <AvatarImage src={chat.avatar} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
-                    {chat.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                {chat.isPinned && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-[#2c2c2e] border-2 border-black flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-gray-500" />
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                    {chat.isMuted && (
-                      <VolumeX className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                    )}
-                    <h3 className="text-white font-medium text-[15px] truncate">
-                      {chat.name}
-                    </h3>
-                  </div>
-                  <span className="text-gray-500 text-[13px] shrink-0">
-                    {chat.time}
-                  </span>
+        {filteredChats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center p-8">
+            <MessageCircle className="h-16 w-16 text-gray-600 mb-4" />
+            <p className="text-gray-400 text-lg">هنوز چتی ندارید</p>
+            <p className="text-gray-500 text-sm mt-2">برای شروع چت جدید روی + کلیک کنید</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#2c2c2e]">
+            {filteredChats.map((chat) => (
+              <button
+                key={chat.id}
+                onClick={() => setSelectedChatId(chat.id)}
+                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#1c1c1d] transition-colors active:bg-[#2c2c2e]"
+              >
+                {/* Avatar */}
+                <div className="relative shrink-0">
+                  <Avatar className="h-[52px] w-[52px]">
+                    <AvatarImage src={chat.avatar_url || undefined} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
+                      {getChatName(chat).charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
 
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-start gap-1.5 min-w-0 flex-1">
-                    {chat.isRead && (
-                      <CheckCheck className="h-3.5 w-3.5 text-[#0a84ff] shrink-0 mt-0.5" />
-                    )}
-                    <p className="text-gray-400 text-[14px] line-clamp-2 leading-tight">
-                      {chat.lastMessage}
-                    </p>
-                  </div>
-                  
-                  {chat.unreadCount && chat.unreadCount > 0 && (
-                    <div className="bg-[#2c2c2e] text-gray-400 rounded-full px-2 py-0.5 text-xs font-medium shrink-0 min-w-[24px] text-center">
-                      {chat.unreadCount > 999 ? "999+" : chat.unreadCount}
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                      {chat.is_muted && (
+                        <VolumeX className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+                      )}
+                      <h3 className="text-white font-medium text-[15px] truncate">
+                        {getChatName(chat)}
+                      </h3>
                     </div>
-                  )}
+                    <span className="text-gray-500 text-[13px] shrink-0">
+                      {getTimeDisplay(chat.last_message_at)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-start gap-1.5 min-w-0 flex-1">
+                      {chat.last_message?.is_read && (
+                        <CheckCheck className="h-3.5 w-3.5 text-[#0a84ff] shrink-0 mt-0.5" />
+                      )}
+                      <p className="text-gray-400 text-[14px] line-clamp-2 leading-tight">
+                        {chat.last_message?.content || "هنوز پیامی ارسال نشده"}
+                      </p>
+                    </div>
+                    
+                    {chat.unread_count && chat.unread_count > 0 && (
+                      <div className="bg-[#2c2c2e] text-gray-400 rounded-full px-2 py-0.5 text-xs font-medium shrink-0 min-w-[24px] text-center">
+                        {chat.unread_count > 999 ? "999+" : chat.unread_count}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
-        </div>
+              </button>
+            ))}
+          </div>
+        )}
       </ScrollArea>
 
       {/* Bottom Tab Bar */}
@@ -280,9 +382,11 @@ export default function NeoHi() {
           >
             <div className="relative">
               <MessageCircle className={`h-6 w-6 ${activeTab === "chats" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-              {activeTab === "chats" && (
+              {chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0) > 0 && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                  <span className="text-white text-[10px] font-bold">64</span>
+                  <span className="text-white text-[10px] font-bold">
+                    {Math.min(99, chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0))}
+                  </span>
                 </div>
               )}
             </div>
@@ -293,20 +397,25 @@ export default function NeoHi() {
 
           <button
             onClick={() => setActiveTab("settings")}
-            className="flex flex-col items-center justify-center flex-1 gap-0.5 relative"
+            className="flex flex-col items-center justify-center flex-1 gap-0.5"
           >
-            <div className="relative">
-              <Settings className={`h-6 w-6 ${activeTab === "settings" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
-                <span className="text-white text-[9px] font-bold">1</span>
-              </div>
-            </div>
+            <Settings className={`h-6 w-6 ${activeTab === "settings" ? "text-[#0a84ff]" : "text-gray-500"}`} />
             <span className={`text-[10px] ${activeTab === "settings" ? "text-[#0a84ff]" : "text-gray-500"}`}>
               Settings
             </span>
           </button>
         </div>
       </div>
+
+      {/* New Chat Dialog */}
+      <NewChatDialog
+        open={showNewChat}
+        onOpenChange={setShowNewChat}
+        onChatCreated={(chatId) => {
+          setSelectedChatId(chatId);
+          setShowNewChat(false);
+        }}
+      />
     </div>
   );
 }

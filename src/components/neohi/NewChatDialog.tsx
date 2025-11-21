@@ -106,7 +106,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         .from("neohi_chats")
         .insert({
           type,
-          name: type === "dm" ? null : chatName || `${type === "group" ? "گروه" : "کانال"} جدید`,
+          name: type === "dm" ? null : chatName || (type === "group" ? "گروه جدید" : "کانال جدید"),
           description: type === "dm" ? null : chatDescription,
           created_by: user.id,
         })
@@ -160,25 +160,25 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md bg-[#1c1c1d] border-[#2c2c2e] text-white">
         <DialogHeader>
-          <DialogTitle>گفتگوی جدید</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-white">گفتگوی جدید</DialogTitle>
+          <DialogDescription className="text-gray-400">
             یک گفتگوی خصوصی، گروه یا کانال ایجاد کنید
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="dm" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dm">
+          <TabsList className="grid w-full grid-cols-3 bg-[#2c2c2e]">
+            <TabsTrigger value="dm" className="data-[state=active]:bg-[#0a84ff]">
               <MessageSquare className="h-4 w-4 ml-2" />
               خصوصی
             </TabsTrigger>
-            <TabsTrigger value="group">
+            <TabsTrigger value="group" className="data-[state=active]:bg-[#0a84ff]">
               <Users className="h-4 w-4 ml-2" />
               گروه
             </TabsTrigger>
-            <TabsTrigger value="channel">
+            <TabsTrigger value="channel" className="data-[state=active]:bg-[#0a84ff]">
               <Radio className="h-4 w-4 ml-2" />
               کانال
             </TabsTrigger>
@@ -191,17 +191,19 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
                   <button
                     key={user.id}
                     onClick={() => setSelectedUsers([user.id])}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors ${
-                      selectedUsers.includes(user.id) ? "bg-accent" : ""
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                      selectedUsers.includes(user.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
                     }`}
                   >
                     <Avatar>
                       <AvatarImage src={user.avatar_url || undefined} />
-                      <AvatarFallback>{user.display_name?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600">
+                        {user.display_name?.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 text-right">
-                      <p className="font-medium">{user.display_name}</p>
-                      <p className="text-sm text-muted-foreground">@{user.username}</p>
+                      <p className="font-medium text-white">{user.display_name}</p>
+                      <p className="text-sm text-gray-400">@{user.username}</p>
                     </div>
                   </button>
                 ))}
@@ -210,7 +212,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
             <Button
               onClick={() => createChat("dm")}
               disabled={loading || selectedUsers.length !== 1}
-              className="w-full"
+              className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90"
             >
               شروع گفتگو
             </Button>
@@ -219,21 +221,23 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
           <TabsContent value="group" className="space-y-4">
             <div className="space-y-3">
               <div>
-                <Label htmlFor="group-name">نام گروه</Label>
+                <Label htmlFor="group-name" className="text-gray-300">نام گروه</Label>
                 <Input
                   id="group-name"
                   value={chatName}
                   onChange={(e) => setChatName(e.target.value)}
                   placeholder="نام گروه را وارد کنید"
+                  className="bg-[#2c2c2e] border-[#2c2c2e] text-white"
                 />
               </div>
               <div>
-                <Label htmlFor="group-desc">توضیحات (اختیاری)</Label>
+                <Label htmlFor="group-desc" className="text-gray-300">توضیحات (اختیاری)</Label>
                 <Input
                   id="group-desc"
                   value={chatDescription}
                   onChange={(e) => setChatDescription(e.target.value)}
                   placeholder="توضیحات گروه"
+                  className="bg-[#2c2c2e] border-[#2c2c2e] text-white"
                 />
               </div>
             </div>
@@ -244,15 +248,17 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
                   <button
                     key={user.id}
                     onClick={() => toggleUser(user.id)}
-                    className={`w-full flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors ${
-                      selectedUsers.includes(user.id) ? "bg-accent" : ""
+                    className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                      selectedUsers.includes(user.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
                     }`}
                   >
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatar_url || undefined} />
-                      <AvatarFallback>{user.display_name?.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xs">
+                        {user.display_name?.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
-                    <p className="text-sm">{user.display_name}</p>
+                    <p className="text-sm text-white">{user.display_name}</p>
                   </button>
                 ))}
               </div>
@@ -261,7 +267,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
             <Button
               onClick={() => createChat("group")}
               disabled={loading || selectedUsers.length === 0}
-              className="w-full"
+              className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90"
             >
               ایجاد گروه
             </Button>
@@ -270,21 +276,23 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
           <TabsContent value="channel" className="space-y-4">
             <div className="space-y-3">
               <div>
-                <Label htmlFor="channel-name">نام کانال</Label>
+                <Label htmlFor="channel-name" className="text-gray-300">نام کانال</Label>
                 <Input
                   id="channel-name"
                   value={chatName}
                   onChange={(e) => setChatName(e.target.value)}
                   placeholder="نام کانال را وارد کنید"
+                  className="bg-[#2c2c2e] border-[#2c2c2e] text-white"
                 />
               </div>
               <div>
-                <Label htmlFor="channel-desc">توضیحات (اختیاری)</Label>
+                <Label htmlFor="channel-desc" className="text-gray-300">توضیحات (اختیاری)</Label>
                 <Input
                   id="channel-desc"
                   value={chatDescription}
                   onChange={(e) => setChatDescription(e.target.value)}
                   placeholder="توضیحات کانال"
+                  className="bg-[#2c2c2e] border-[#2c2c2e] text-white"
                 />
               </div>
             </div>
@@ -292,7 +300,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
             <Button
               onClick={() => createChat("channel")}
               disabled={loading}
-              className="w-full"
+              className="w-full bg-[#0a84ff] hover:bg-[#0a84ff]/90"
             >
               ایجاد کانال
             </Button>

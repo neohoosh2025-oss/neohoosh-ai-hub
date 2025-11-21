@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Image, Paperclip, Mic, Smile } from "lucide-react";
+import { Plus, Send, Image as ImageIcon, Smile, Mic } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -39,16 +39,15 @@ export function MessageInput({ onSend }: MessageInputProps) {
 
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      const bucket = file.type.startsWith("image/") ? "neohi-media" : "neohi-media";
 
-      const { data, error } = await supabase.storage
-        .from(bucket)
+      const { error } = await supabase.storage
+        .from("neohi-media")
         .upload(fileName, file);
 
       if (error) throw error;
 
       const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
+        .from("neohi-media")
         .getPublicUrl(fileName);
 
       const messageType = file.type.startsWith("image/")
@@ -59,11 +58,6 @@ export function MessageInput({ onSend }: MessageInputProps) {
 
       onSend(message.trim() || "", publicUrl, messageType);
       setMessage("");
-      
-      toast({
-        title: "فایل آپلود شد",
-        description: "فایل با موفقیت ارسال شد",
-      });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
@@ -80,50 +74,62 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   return (
-    <div className="border-t border-border bg-card/30 backdrop-blur-sm p-4 shrink-0">
+    <div className="bg-[#1c1c1d] border-t border-[#2c2c2e] p-2 shrink-0">
       <div className="flex items-end gap-2">
-        {/* Action Buttons */}
-        <div className="flex gap-1">
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileUpload}
-            accept="image/*,video/*"
-            className="hidden"
-          />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            <Image className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Paperclip className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <Smile className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Text Input */}
-        <Textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="پیام خود را بنویسید..."
-          className="min-h-[44px] max-h-32 resize-none"
-          rows={1}
+        {/* Add Button */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept="image/*,video/*"
+          className="hidden"
         />
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="text-[#0a84ff] hover:bg-[#2c2c2e] shrink-0"
+        >
+          <Plus className="h-5 w-5" />
+        </Button>
+
+        {/* Text Input Container */}
+        <div className="flex-1 bg-[#2c2c2e] rounded-[20px] px-4 py-2">
+          <div className="flex items-center gap-2">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="پیام"
+              className="min-h-[24px] max-h-24 resize-none bg-transparent border-none text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
+              rows={1}
+            />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-400 hover:bg-transparent shrink-0 h-6 w-6"
+            >
+              <Smile className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
 
         {/* Send/Voice Button */}
         {message.trim() ? (
-          <Button onClick={handleSend} size="icon" className="shrink-0">
+          <Button
+            onClick={handleSend}
+            size="icon"
+            className="bg-[#0a84ff] hover:bg-[#0a84ff]/90 text-white rounded-full shrink-0"
+          >
             <Send className="h-5 w-5" />
           </Button>
         ) : (
-          <Button variant="ghost" size="icon" className="shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[#0a84ff] hover:bg-[#2c2c2e] shrink-0"
+          >
             <Mic className="h-5 w-5" />
           </Button>
         )}
