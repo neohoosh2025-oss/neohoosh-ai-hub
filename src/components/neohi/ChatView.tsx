@@ -20,7 +20,8 @@ export function ChatView({ chatId, onShowProfile }: ChatViewProps) {
     if (chatId) {
       loadChat();
       loadMessages();
-      subscribeToMessages();
+      const cleanup = subscribeToMessages();
+      return cleanup;
     }
   }, [chatId]);
 

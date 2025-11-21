@@ -35,7 +35,8 @@ export function ChatList({ selectedChatId, onSelectChat, onNewChat }: ChatListPr
 
   useEffect(() => {
     loadChats();
-    subscribeToChats();
+    const cleanup = subscribeToChats();
+    return cleanup;
   }, []);
 
   const loadChats = async () => {
