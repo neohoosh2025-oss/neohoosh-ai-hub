@@ -179,15 +179,24 @@ serve(async (req) => {
       ];
     }
 
-    // Use vision-capable model if image is present
+    // Use Grok with reasoning for vision or standard chat
     const selectedModel = imageData 
       ? "qwen/qwen2.5-vl-32b-instruct:free" 
-      : (model || "kwaipilot/kat-coder-pro:free");
+      : "x-ai/grok-4.1-fast:free";
+    
+    // Check if we need to preserve reasoning from previous message
+    const lastAssistantMsg = [...apiMessages].reverse().find(m => m.role === 'assistant');
+    const hasReasoningDetails = lastAssistantMsg?.reasoning_details;
     
     const requestBody: any = {
       model: selectedModel,
       messages: apiMessages,
     };
+    
+    // Enable reasoning for Grok model (but not for vision model)
+    if (!imageData) {
+      requestBody.reasoning = { enabled: true };
+    }
     
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
@@ -230,7 +239,9 @@ serve(async (req) => {
     const data = await response.json();
     console.log("OpenRouter response:", JSON.stringify(data, null, 2));
     
-    let assistantResponse = data.choices?.[0]?.message?.content || "متاسفانه پاسخی دریافت نشد.";
+    const assistantMessage = data.choices?.[0]?.message;
+    let assistantResponse = assistantMessage?.content || "متاسفانه پاسخی دریافت نشد.";
+    const reasoningDetails = assistantMessage?.reasoning_details;
 
     // Extract and save memory items
     if (userId) {
@@ -261,7 +272,10 @@ serve(async (req) => {
       assistantResponse = assistantResponse.trim();
     }
 
-    return new Response(JSON.stringify({ text: assistantResponse }), {
+    return new Response(JSON.stringify({ 
+      text: assistantResponse,
+      reasoning_details: reasoningDetails 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
