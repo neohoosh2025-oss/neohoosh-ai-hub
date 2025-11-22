@@ -73,26 +73,37 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      // Check if DM already exists
-      const { data: existing } = await supabase
+      // Check if DM already exists between these two users
+      const { data: myChats } = await supabase
         .from("neohi_chat_members")
-        .select("chat_id, chats:neohi_chats!inner(*)")
+        .select("chat_id")
         .eq("user_id", user.id);
 
-      if (existing) {
-        for (const member of existing) {
-          const { data: otherMembers } = await supabase
+      if (myChats && myChats.length > 0) {
+        // Check each chat to see if it's a DM with the selected user
+        for (const { chat_id } of myChats) {
+          const { data: chatMembers } = await supabase
             .from("neohi_chat_members")
             .select("user_id")
-            .eq("chat_id", member.chat_id);
+            .eq("chat_id", chat_id);
 
-          if (
-            otherMembers?.length === 2 &&
-            otherMembers.some((m) => m.user_id === selectedUsers[0])
-          ) {
-            onChatCreated(member.chat_id);
-            onOpenChange(false);
-            return;
+          // If this is a DM (2 members) and includes the selected user
+          if (chatMembers?.length === 2) {
+            const memberIds = chatMembers.map(m => m.user_id);
+            if (memberIds.includes(selectedUsers[0])) {
+              // Get chat details to verify it's a DM
+              const { data: chatData } = await supabase
+                .from("neohi_chats")
+                .select("type")
+                .eq("id", chat_id)
+                .single();
+              
+              if (chatData?.type === "dm") {
+                onChatCreated(chat_id);
+                onOpenChange(false);
+                return;
+              }
+            }
           }
         }
       }
