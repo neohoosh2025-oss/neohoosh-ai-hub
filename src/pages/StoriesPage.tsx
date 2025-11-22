@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Camera, Plus, X, Send } from "lucide-react";
+import { Camera, Plus, X, Send, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -26,7 +26,7 @@ interface Story {
   };
 }
 
-export default function StoriesPage() {
+export default function StoriesPage({ onBack }: { onBack?: () => void }) {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [stories, setStories] = useState<Story[]>([]);
@@ -189,7 +189,14 @@ export default function StoriesPage() {
       {/* Header */}
       <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="w-16" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[#0a84ff] hover:bg-transparent"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
