@@ -10,10 +10,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Phone, Cpu, Orbit, Sparkles } from "lucide-react";
 
 const Auth = () => {
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [otp, setOtp] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -28,59 +28,47 @@ const Auth = () => {
     checkUser();
   }, [navigate]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Format phone number to E.164 format if needed
-    let formattedPhone = phoneNumber.trim();
-    if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+98' + formattedPhone; // Default Iran country code
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-    });
-
-    if (error) {
-      toast({
-        title: t("contact.error") || "خطا",
-        description: error.message,
-        variant: "destructive",
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
+
+      if (error) {
+        toast({
+          title: t("contact.error") || "خطا",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: t("contact.success") || "موفق",
+          description: "حساب شما ایجاد شد. در حال ورود...",
+        });
+        navigate("/dashboard");
+      }
     } else {
-      setOtpSent(true);
-      toast({
-        title: t("contact.success") || "موفق",
-        description: "کد تایید به شماره شما ارسال شد",
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-    }
-    setLoading(false);
-  };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    let formattedPhone = phoneNumber.trim();
-    if (!formattedPhone.startsWith('+')) {
-      formattedPhone = '+98' + formattedPhone;
-    }
-
-    const { error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token: otp,
-      type: 'sms',
-    });
-
-    if (error) {
-      toast({
-        title: t("contact.error") || "خطا",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      navigate("/dashboard");
+      if (error) {
+        toast({
+          title: t("contact.error") || "خطا",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };
@@ -131,76 +119,49 @@ const Auth = () => {
             {t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید"}
           </p>
 
-          {!otpSent ? (
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  شماره تلفن
-                </Label>
-                <div className="flex gap-2" dir="ltr">
-                  <div className="flex items-center px-3 py-2 bg-muted rounded-md border border-input">
-                    <span className="text-sm text-muted-foreground">+98</span>
-                  </div>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
-                    placeholder="9123456789"
-                    required
-                    disabled={loading}
-                    className="bg-background/50 flex-1"
-                    maxLength={10}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground" dir="rtl">
-                  شماره تلفن همراه خود را بدون صفر وارد کنید
-                </p>
-              </div>
-              <Button type="submit" className="w-full" disabled={loading || phoneNumber.length !== 10}>
-                {loading ? "در حال ارسال..." : "ارسال کد تایید"}
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="otp" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  کد تایید
-                </Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                  placeholder="123456"
-                  required
-                  disabled={loading}
-                  className="bg-background/50 text-center text-2xl tracking-widest"
-                  maxLength={6}
-                  dir="ltr"
-                />
-                <p className="text-xs text-muted-foreground text-center" dir="rtl">
-                  کد 6 رقمی ارسال شده به شماره +98{phoneNumber} را وارد کنید
-                </p>
-              </div>
-              <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
-                {loading ? "در حال تایید..." : "تایید و ورود"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => {
-                  setOtpSent(false);
-                  setOtp("");
-                }}
-              >
-                ویرایش شماره تلفن
-              </Button>
-            </form>
-          )}
+          <form onSubmit={handleAuth} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">ایمیل</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                disabled={loading}
+                className="bg-background/50"
+                dir="ltr"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">رمز عبور</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                disabled={loading}
+                className="bg-background/50"
+                dir="ltr"
+                minLength={6}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "در حال پردازش..." : (isSignUp ? "ثبت نام" : "ورود")}
+            </Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="w-full"
+              onClick={() => setIsSignUp(!isSignUp)}
+              disabled={loading}
+            >
+              {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
+            </Button>
+          </form>
         </div>
       </div>
 
