@@ -221,12 +221,12 @@ export default function NeoHi() {
 
   // If Contacts tab is active, show Contacts Page
   if (activeTab === "contacts") {
-    return <ContactsPage />;
+    return <ContactsPage onBack={() => navigate("/neohi")} />;
   }
 
   // If Stories tab is active, show Stories Page
   if (activeTab === "stories") {
-    return <StoriesPage />;
+    return <StoriesPage onBack={() => navigate("/neohi")} />;
   }
 
   // If Settings tab is active, show Profile Settings

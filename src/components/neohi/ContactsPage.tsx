@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, UserPlus, X, Users } from "lucide-react";
+import { Search, UserPlus, X, Users, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -32,7 +32,7 @@ interface SearchUser {
   avatar_url: string | null;
 }
 
-export function ContactsPage() {
+export function ContactsPage({ onBack }: { onBack?: () => void }) {
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -201,7 +201,14 @@ export function ContactsPage() {
       {/* Header */}
       <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
         <div className="flex items-center justify-between h-11">
-          <div className="w-16" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-[#0a84ff] hover:bg-transparent"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
