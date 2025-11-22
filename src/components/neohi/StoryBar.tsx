@@ -252,7 +252,7 @@ export function StoryBar() {
                 <div>
                   <p className="text-foreground font-semibold">{selectedStory.user.display_name}</p>
                   <p className="text-muted-foreground text-xs">
-                    {new Date(selectedStory.created_at).toLocaleTimeString("fa-IR", {
+                    {new Date(selectedStory.created_at).toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
