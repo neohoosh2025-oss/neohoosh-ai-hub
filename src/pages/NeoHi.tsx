@@ -259,7 +259,7 @@ export default function NeoHi() {
             </Button>
           </motion.div>
           
-          <div className="flex items-center gap-2">
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
             <motion.div 
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
