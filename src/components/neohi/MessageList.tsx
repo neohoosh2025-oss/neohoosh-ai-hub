@@ -38,7 +38,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="text-muted-foreground">در حال بارگذاری پیام‌ها...</div>
+        <div className="text-muted-foreground">Loading messages...</div>
       </div>
     );
   }
@@ -148,13 +148,13 @@ export function MessageList({ messages, loading }: MessageListProps) {
                         })}
                       </span>
                       {isOwn && (
-                        <div className="mr-1">
-                          {message.is_edited ? (
-                            <span className="text-xs">(ویرایش شده)</span>
-                          ) : (
-                            <CheckCheck className="h-3 w-3" />
-                          )}
-                        </div>
+                      <div className="mr-1">
+                        {message.is_edited ? (
+                          <span className="text-xs">(edited)</span>
+                        ) : (
+                          <CheckCheck className="h-3 w-3" />
+                        )}
+                      </div>
                       )}
                     </div>
                   </motion.div>

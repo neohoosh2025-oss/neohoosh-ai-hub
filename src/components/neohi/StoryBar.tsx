@@ -162,7 +162,7 @@ export function StoryBar() {
                 disabled={uploading}
               />
               <span className="text-xs text-muted-foreground max-w-[70px] truncate">
-                استوری شما
+                Your Story
               </span>
             </motion.div>
 

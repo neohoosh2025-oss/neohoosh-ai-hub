@@ -267,7 +267,7 @@ export default function NeoHi() {
             >
               <MessageCircle className="h-5 w-5 text-primary" />
             </motion.div>
-            <span className="text-foreground font-bold text-lg">نئوهای</span>
+            <span className="text-foreground font-bold text-lg">NeoHi</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ export default function NeoHi() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="جستجو..."
+              placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="bg-muted/50 border-none text-foreground placeholder:text-muted-foreground pl-11 h-11 rounded-xl"
@@ -353,10 +353,10 @@ export default function NeoHi() {
                   ease: "easeInOut"
                 }}
               >
-                <MessageCircle className="h-20 w-20 text-muted-foreground/30 mb-4" />
+              <MessageCircle className="h-20 w-20 text-muted-foreground/30 mb-4" />
               </motion.div>
-              <p className="text-muted-foreground text-lg font-medium">هنوز چتی وجود ندارد</p>
-              <p className="text-muted-foreground/70 text-sm mt-2">برای شروع، روی + کلیک کنید</p>
+              <p className="text-muted-foreground text-lg font-medium">No chats yet</p>
+              <p className="text-muted-foreground/70 text-sm mt-2">Click + to start</p>
             </motion.div>
           ) : (
             <motion.div
