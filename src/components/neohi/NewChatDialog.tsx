@@ -73,6 +73,8 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      console.log("Creating DM for user:", user.id);
+
       // Check if DM already exists between these two users
       const { data: myChats } = await supabase
         .from("neohi_chat_members")
@@ -109,6 +111,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       }
 
       // Create new DM
+      console.log("Creating new chat with created_by:", user.id);
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
@@ -118,7 +121,12 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         .select()
         .single();
 
-      if (chatError) throw chatError;
+      if (chatError) {
+        console.error("Chat creation error:", chatError);
+        throw chatError;
+      }
+
+      console.log("Chat created successfully:", chat.id);
 
       // Add members
       const members = [
@@ -130,20 +138,23 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         .from("neohi_chat_members")
         .insert(members);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("Members error:", membersError);
+        throw membersError;
+      }
 
       toast({
-        title: "Success",
-        description: "Chat created successfully",
+        title: "موفق",
+        description: "چت با موفقیت ساخته شد",
       });
 
       onChatCreated(chat.id);
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create chat error:", error);
       toast({
-        title: "Error",
-        description: "Failed to create chat",
+        title: "خطا",
+        description: error.message || "ساخت چت ناموفق بود",
         variant: "destructive",
       });
     } finally {
