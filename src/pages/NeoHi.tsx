@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { StoryBar } from "@/components/neohi/StoryBar";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
+import StoriesPage from "@/pages/StoriesPage";
 import BottomNavigation from "@/components/neohi/BottomNavigation";
 import ChatListItem from "@/components/neohi/ChatListItem";
 import { ChatListSkeleton } from "@/components/neohi/SkeletonLoader";
@@ -38,11 +39,12 @@ interface Chat {
 
 export default function NeoHi() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("chats");
+  const activeTab = searchParams.get("tab") || "chats";
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
@@ -222,10 +224,15 @@ export default function NeoHi() {
     return <ContactsPage />;
   }
 
+  // If Stories tab is active, show Stories Page
+  if (activeTab === "stories") {
+    return <StoriesPage />;
+  }
+
   // If Settings tab is active, show Profile Settings
   if (activeTab === "settings") {
     return (
-      <ProfileSettings onBack={() => setActiveTab("chats")} />
+      <ProfileSettings onBack={() => navigate("/neohi")} />
     );
   }
 
