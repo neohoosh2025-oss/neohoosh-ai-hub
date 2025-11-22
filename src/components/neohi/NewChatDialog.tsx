@@ -33,6 +33,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
   useEffect(() => {
     if (open) {
       loadUsers();
+      // Reset form state
       setSelectedUsers([]);
       setSearchQuery("");
       setGroupName("");
@@ -42,20 +43,20 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
   }, [open]);
 
   const loadUsers = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) return;
 
     const { data } = await supabase
       .from("neohi_users")
       .select("*")
-      .neq("id", user.id);
+      .neq("id", currentUser.id);
 
     if (data) setUsers(data);
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.display_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users.filter((listUser) =>
+    (listUser.display_name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (listUser.username || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleCreateDM = async () => {
@@ -70,52 +71,52 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("Not authenticated");
 
-      console.log("Creating DM for user:", user.id);
+      const targetUserId = selectedUsers[0];
 
-      // Check if DM already exists between these two users
-      const { data: myChats } = await supabase
+      // Check if DM already exists with optimized single query using RPC or joins
+      // Get all chats where current user is member
+      const { data: existingDMs } = await supabase
         .from("neohi_chat_members")
-        .select("chat_id")
-        .eq("user_id", user.id);
+        .select(`
+          chat_id,
+          chats:neohi_chats!inner(id, type)
+        `)
+        .eq("user_id", currentUser.id);
 
-      if (myChats && myChats.length > 0) {
-        // Check each chat to see if it's a DM with the selected user
-        for (const { chat_id } of myChats) {
-          const { data: chatMembers } = await supabase
+      // Filter DM type chats
+      const dmChatIds = existingDMs
+        ?.filter((member: any) => member.chats?.type === "dm")
+        .map((member: any) => member.chat_id) || [];
+
+      if (dmChatIds.length > 0) {
+        // Check which of these DM chats has exactly the target user
+        for (const chatId of dmChatIds) {
+          const { data: members } = await supabase
             .from("neohi_chat_members")
             .select("user_id")
-            .eq("chat_id", chat_id);
+            .eq("chat_id", chatId);
 
-          // If this is a DM (2 members) and includes the selected user
-          if (chatMembers?.length === 2) {
-            const memberIds = chatMembers.map(m => m.user_id);
-            if (memberIds.includes(selectedUsers[0])) {
-              // Get chat details to verify it's a DM
-              const { data: chatData } = await supabase
-                .from("neohi_chats")
-                .select("type")
-                .eq("id", chat_id)
-                .single();
-              
-              if (chatData?.type === "dm") {
-                onChatCreated(chat_id);
-                onOpenChange(false);
-                return;
-              }
+          if (members?.length === 2) {
+            const memberIds = members.map(m => m.user_id);
+            if (memberIds.includes(targetUserId) && memberIds.includes(currentUser.id)) {
+              // Found existing DM
+              onChatCreated(chatId);
+              onOpenChange(false);
+              setCreating(false);
+              return;
             }
           }
         }
       }
 
-      // Create new DM with created_by explicitly set
+      // Create new DM - DO NOT send created_by, let RLS/trigger handle it
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
           type: "dm",
-          created_by: user.id,
         })
         .select()
         .single();
@@ -125,12 +126,10 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         throw chatError;
       }
 
-      console.log("Chat created successfully:", chat.id);
-
       // Add members
       const members = [
-        { chat_id: chat.id, user_id: user.id, role: "owner" },
-        { chat_id: chat.id, user_id: selectedUsers[0], role: "member" },
+        { chat_id: chat.id, user_id: currentUser.id, role: "owner" },
+        { chat_id: chat.id, user_id: targetUserId, role: "member" },
       ];
 
       const { error: membersError } = await supabase
@@ -173,15 +172,15 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("Not authenticated");
 
+      // DO NOT send created_by, let RLS/trigger handle it
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
           type: "group",
           name: groupName,
-          created_by: user.id,
         })
         .select()
         .single();
@@ -189,7 +188,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       if (chatError) throw chatError;
 
       const members = [
-        { chat_id: chat.id, user_id: user.id, role: "owner" },
+        { chat_id: chat.id, user_id: currentUser.id, role: "owner" },
         ...selectedUsers.map((userId) => ({
           chat_id: chat.id,
           user_id: userId,
@@ -234,16 +233,16 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
     setCreating(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error("Not authenticated");
 
+      // DO NOT send created_by, let RLS/trigger handle it
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
           type: "channel",
           name: channelName,
           description: channelDescription || null,
-          created_by: user.id,
         })
         .select()
         .single();
@@ -254,7 +253,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         .from("neohi_chat_members")
         .insert({
           chat_id: chat.id,
-          user_id: user.id,
+          user_id: currentUser.id,
           role: "owner",
         });
 
@@ -318,23 +317,23 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
                   <p className="text-center text-gray-500 py-8">No users found</p>
                 ) : (
                   <div className="space-y-2">
-                    {filteredUsers.map((user) => (
+                    {filteredUsers.map((listUser) => (
                       <button
-                        key={user.id}
-                        onClick={() => setSelectedUsers([user.id])}
+                        key={listUser.id}
+                        onClick={() => setSelectedUsers([listUser.id])}
                         className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                          selectedUsers.includes(user.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
+                          selectedUsers.includes(listUser.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
                         }`}
                       >
                         <Avatar>
-                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarImage src={listUser.avatar_url || undefined} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600">
-                            {user.display_name?.charAt(0)}
+                            {(listUser.display_name || "?").charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 text-left">
-                          <p className="font-medium text-white">{user.display_name}</p>
-                          <p className="text-sm text-gray-400">@{user.username}</p>
+                          <p className="font-medium text-white">{listUser.display_name || "Unknown"}</p>
+                          <p className="text-sm text-gray-400">@{listUser.username || "unknown"}</p>
                         </div>
                       </button>
                     ))}
@@ -376,21 +375,21 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
                   <p className="text-center text-gray-500 py-8">No users found</p>
                 ) : (
                   <div className="space-y-2">
-                    {filteredUsers.map((user) => (
+                    {filteredUsers.map((listUser) => (
                       <button
-                        key={user.id}
-                        onClick={() => toggleUser(user.id)}
+                        key={listUser.id}
+                        onClick={() => toggleUser(listUser.id)}
                         className={`w-full flex items-center gap-3 p-2 rounded-lg transition-colors ${
-                          selectedUsers.includes(user.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
+                          selectedUsers.includes(listUser.id) ? "bg-[#0a84ff]/20" : "hover:bg-[#2c2c2e]"
                         }`}
                       >
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar_url || undefined} />
+                          <AvatarImage src={listUser.avatar_url || undefined} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xs">
-                            {user.display_name?.charAt(0)}
+                            {(listUser.display_name || "?").charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <p className="text-sm text-white">{user.display_name}</p>
+                        <p className="text-sm text-white">{listUser.display_name || "Unknown"}</p>
                       </button>
                     ))}
                   </div>
