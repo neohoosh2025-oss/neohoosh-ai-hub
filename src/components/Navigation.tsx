@@ -31,7 +31,7 @@ const Navigation = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success("با موفقیت خارج شدید");
+    toast.success("Logged out successfully");
     navigate("/");
   };
 
@@ -41,7 +41,7 @@ const Navigation = () => {
     { path: "/products", label: t("products") },
     { path: "/services", label: t("services") },
     { path: "/chat", label: t("chatbot") },
-    { path: "/neohi", label: "نئوهای", highlight: true },
+    { path: "/neohi", label: "NeoHi", highlight: true },
     { path: "/about", label: t("about") },
     { path: "/contact", label: t("contact") },
   ];
@@ -148,13 +148,13 @@ const Navigation = () => {
                 className="w-full justify-start gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                خروج
+                Logout
               </Button>
             ) : (
               <Link to="/auth?from=chat" onClick={() => setIsOpen(false)} className="block">
                 <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
                   <User className="h-4 w-4" />
-                  ورود
+                  Login
                 </Button>
               </Link>
             )}
