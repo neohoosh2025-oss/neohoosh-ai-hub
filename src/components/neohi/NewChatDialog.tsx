@@ -142,8 +142,8 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       }
 
       toast({
-        title: "موفق",
-        description: "چت با موفقیت ساخته شد",
+        title: "Success",
+        description: "Chat created successfully",
       });
 
       onChatCreated(chat.id);
@@ -151,8 +151,8 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
     } catch (error: any) {
       console.error("Create chat error:", error);
       toast({
-        title: "خطا",
-        description: error.message || "ساخت چت ناموفق بود",
+        title: "Error",
+        description: error.message || "Failed to create chat",
         variant: "destructive",
       });
     } finally {

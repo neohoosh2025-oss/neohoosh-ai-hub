@@ -26,11 +26,11 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
   const handleDragEnd = async (_event: any, info: PanInfo) => {
     if (info.offset.x < -100) {
       // Archive action
-      toast({ title: "چت آرشیو شد" });
+      toast({ title: "Chat archived" });
       x.set(0);
     } else if (info.offset.x > 100) {
       // Pin action
-      toast({ title: "چت پین شد" });
+      toast({ title: "Chat pinned" });
       x.set(0);
     } else {
       x.set(0);
@@ -45,14 +45,14 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
 
     if (error) {
       toast({
-        title: "خطا در حذف چت",
+        title: "Error deleting chat",
         description: error.message,
         variant: "destructive",
       });
       return;
     }
 
-    toast({ title: "چت حذف شد" });
+    toast({ title: "Chat deleted" });
     onDelete?.();
   };
 
@@ -65,11 +65,11 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
       >
         <motion.div className="flex items-center gap-2 text-primary">
           <Pin className="h-5 w-5" />
-          <span className="text-sm font-medium">سنجاق</span>
+          <span className="text-sm font-medium">Pin</span>
         </motion.div>
         
         <motion.div className="flex items-center gap-2 text-destructive">
-          <span className="text-sm font-medium">آرشیو</span>
+          <span className="text-sm font-medium">Archive</span>
           <Archive className="h-5 w-5" />
         </motion.div>
       </motion.div>
@@ -108,7 +108,7 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h3 className="font-semibold text-sm truncate">
-                {chat.name || "بدون نام"}
+                {chat.name || "Unnamed"}
               </h3>
               {chat.last_message_at && (
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -120,7 +120,7 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
               )}
             </div>
             <p className="text-xs text-muted-foreground truncate mt-1">
-              {chat.type === "dm" ? "گفتگوی خصوصی" : chat.type === "group" ? "گروه" : "کانال"}
+              {chat.type === "dm" ? "Direct Message" : chat.type === "group" ? "Group" : "Channel"}
             </p>
           </div>
 

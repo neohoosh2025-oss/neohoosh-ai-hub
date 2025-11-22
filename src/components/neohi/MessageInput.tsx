@@ -61,8 +61,8 @@ export function MessageInput({ onSend }: MessageInputProps) {
     } catch (error) {
       console.error("Upload error:", error);
       toast({
-        title: "خطا در آپلود",
-        description: "آپلود فایل با خطا مواجه شد",
+        title: "Upload error",
+        description: "File upload failed",
         variant: "destructive",
       });
     } finally {
@@ -101,7 +101,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="پیام"
+              placeholder="Message"
               className="min-h-[24px] max-h-24 resize-none bg-transparent border-none text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 p-0"
               rows={1}
             />
