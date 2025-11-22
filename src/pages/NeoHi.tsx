@@ -1,29 +1,25 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Search, 
   Plus, 
   Edit3, 
-  Users, 
-  Phone, 
   MessageCircle, 
-  Settings,
-  ArrowLeft,
-  VolumeX,
-  CheckCheck
+  ArrowLeft
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { formatDistanceToNow } from "date-fns";
 import { ChatView } from "@/components/neohi/ChatView";
 import { StoryBar } from "@/components/neohi/StoryBar";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
+import BottomNavigation from "@/components/neohi/BottomNavigation";
+import ChatListItem from "@/components/neohi/ChatListItem";
+import { ChatListSkeleton } from "@/components/neohi/SkeletonLoader";
+import { Button } from "@/components/ui/button";
 
 interface Chat {
   id: string;
@@ -243,56 +239,60 @@ export default function NeoHi() {
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
-      {/* Telegram Header */}
-      <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
-        <div className="flex items-center justify-between h-11">
+    <div className="h-screen w-full bg-background flex flex-col overflow-hidden safe-area-inset">
+      {/* Header */}
+      <header className="bg-card border-b border-border px-4 py-3 safe-area-top shrink-0">
+        <div className="flex items-center justify-between h-12">
           <Button
             variant="ghost"
-            className="text-[#0a84ff] hover:bg-transparent text-base px-0"
+            className="text-primary hover:bg-transparent px-0 h-auto min-h-[44px] min-w-[44px]"
             onClick={() => navigate("/")}
           >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            Back
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                <MessageCircle className="h-5 w-5 text-white" fill="currentColor" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gray-600 border-2 border-[#1c1c1d]" />
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-primary" />
             </div>
-            <span className="text-white font-semibold text-lg">Chats</span>
+            <span className="text-foreground font-bold text-lg">نئوهای</span>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-primary hover:bg-muted min-h-[44px] min-w-[44px] rounded-xl"
+            >
               <Search className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              className="text-[#0a84ff] hover:bg-transparent"
+              className="text-primary hover:bg-muted min-h-[44px] min-w-[44px] rounded-xl"
               onClick={() => setShowNewChat(true)}
             >
               <Plus className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-primary hover:bg-muted min-h-[44px] min-w-[44px] rounded-xl"
+            >
               <Edit3 className="h-5 w-5" />
             </Button>
           </div>
         </div>
 
         {/* Search Bar */}
-        <div className="mt-2 mb-1">
+        <div className="mt-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
-              placeholder="Search"
+              placeholder="جستجو..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500 pl-10 h-9 rounded-lg"
+              className="bg-muted/50 border-none text-foreground placeholder:text-muted-foreground pl-11 h-11 rounded-xl"
             />
           </div>
         </div>
@@ -302,123 +302,28 @@ export default function NeoHi() {
       <StoryBar />
 
       {/* Chat List */}
-      <ScrollArea className="flex-1 bg-black">
+      <ScrollArea className="flex-1 bg-background pb-16">
         {filteredChats.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <MessageCircle className="h-16 w-16 text-gray-600 mb-4" />
-            <p className="text-gray-400 text-lg">No chats yet</p>
-            <p className="text-gray-500 text-sm mt-2">Click + to start a new chat</p>
+            <MessageCircle className="h-20 w-20 text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground text-lg font-medium">هنوز چتی وجود ندارد</p>
+            <p className="text-muted-foreground/70 text-sm mt-2">برای شروع، روی + کلیک کنید</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#2c2c2e]">
+          <div className="divide-y divide-border/30">
             {filteredChats.map((chat) => (
-              <button
+              <ChatListItem
                 key={chat.id}
-                onClick={() => setSelectedChatId(chat.id)}
-                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[#1c1c1d] transition-colors active:bg-[#2c2c2e]"
-              >
-                {/* Avatar */}
-                <div className="relative shrink-0">
-                  <Avatar className="h-[52px] w-[52px]">
-                    <AvatarImage src={chat.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-lg">
-                      {getChatName(chat).charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                      {chat.is_muted && (
-                        <VolumeX className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-                      )}
-                      <h3 className="text-white font-medium text-[15px] truncate">
-                        {getChatName(chat)}
-                      </h3>
-                    </div>
-                    <span className="text-gray-500 text-[13px] shrink-0">
-                      {getTimeDisplay(chat.last_message_at)}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-start gap-1.5 min-w-0 flex-1">
-                      {chat.last_message?.is_read && (
-                        <CheckCheck className="h-3.5 w-3.5 text-[#0a84ff] shrink-0 mt-0.5" />
-                      )}
-                      <p className="text-gray-400 text-[14px] line-clamp-2 leading-tight">
-                        {chat.last_message?.content || "No messages yet"}
-                      </p>
-                    </div>
-                    
-                    {chat.unread_count && chat.unread_count > 0 && (
-                      <div className="bg-[#2c2c2e] text-gray-400 rounded-full px-2 py-0.5 text-xs font-medium shrink-0 min-w-[24px] text-center">
-                        {chat.unread_count > 999 ? "999+" : chat.unread_count}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </button>
+                chat={chat}
+                onDelete={() => loadChats()}
+              />
             ))}
           </div>
         )}
       </ScrollArea>
 
-      {/* Bottom Tab Bar */}
-      <div className="bg-[#1c1c1d] border-t border-[#2c2c2e] pb-safe">
-        <div className="flex items-center justify-around h-12">
-          <button
-            onClick={() => setActiveTab("contacts")}
-            className="flex flex-col items-center justify-center flex-1 gap-0.5"
-          >
-            <Users className={`h-6 w-6 ${activeTab === "contacts" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-            <span className={`text-[10px] ${activeTab === "contacts" ? "text-[#0a84ff]" : "text-gray-500"}`}>
-              Contacts
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("calls")}
-            className="flex flex-col items-center justify-center flex-1 gap-0.5"
-          >
-            <Phone className={`h-6 w-6 ${activeTab === "calls" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-            <span className={`text-[10px] ${activeTab === "calls" ? "text-[#0a84ff]" : "text-gray-500"}`}>
-              Calls
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("chats")}
-            className="flex flex-col items-center justify-center flex-1 gap-0.5 relative"
-          >
-            <div className="relative">
-              <MessageCircle className={`h-6 w-6 ${activeTab === "chats" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-              {chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0) > 0 && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#0a84ff] flex items-center justify-center">
-                  <span className="text-white text-[10px] font-bold">
-                    {Math.min(99, chats.reduce((sum, chat) => sum + (chat.unread_count || 0), 0))}
-                  </span>
-                </div>
-              )}
-            </div>
-            <span className={`text-[10px] ${activeTab === "chats" ? "text-[#0a84ff]" : "text-gray-500"}`}>
-              Chats
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("settings")}
-            className="flex flex-col items-center justify-center flex-1 gap-0.5"
-          >
-            <Settings className={`h-6 w-6 ${activeTab === "settings" ? "text-[#0a84ff]" : "text-gray-500"}`} />
-            <span className={`text-[10px] ${activeTab === "settings" ? "text-[#0a84ff]" : "text-gray-500"}`}>
-              Settings
-            </span>
-          </button>
-        </div>
-      </div>
+      {/* Bottom Navigation */}
+      <BottomNavigation />
 
       {/* New Chat Dialog */}
       <NewChatDialog
