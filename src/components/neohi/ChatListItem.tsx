@@ -112,7 +112,7 @@ const ChatListItem = ({ chat, onDelete }: ChatListItemProps) => {
               </h3>
               {chat.last_message_at && (
                 <span className="text-xs text-muted-foreground whitespace-nowrap">
-                  {new Date(chat.last_message_at).toLocaleDateString("fa-IR", {
+                  {new Date(chat.last_message_at).toLocaleDateString("en-US", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
