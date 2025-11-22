@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Search, Users, Radio } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ar } from "date-fns/locale";
+import { Plus, Search, RefreshCw } from "lucide-react";
+import ChatListItem from "./ChatListItem";
+import { ChatListSkeleton } from "./SkeletonLoader";
+import { cn } from "@/lib/utils";
 
 interface Chat {
   id: string;
@@ -32,6 +32,10 @@ export function ChatList({ selectedChatId, onSelectChat, onNewChat }: ChatListPr
   const [chats, setChats] = useState<Chat[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const startY = useRef(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     loadChats();
@@ -39,11 +43,12 @@ export function ChatList({ selectedChatId, onSelectChat, onNewChat }: ChatListPr
     return cleanup;
   }, []);
 
-  const loadChats = async () => {
+  const loadChats = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get user's chats
     const { data: chatMembers } = await supabase
       .from("neohi_chat_members")
       .select(`
@@ -65,7 +70,38 @@ export function ChatList({ selectedChatId, onSelectChat, onNewChat }: ChatListPr
       setChats(chatsData);
     }
     setLoading(false);
+    setRefreshing(false);
   };
+
+  const handlePullToRefresh = useCallback(async () => {
+    await loadChats(true);
+    setPullDistance(0);
+  }, []);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (scrollRef.current?.scrollTop === 0) {
+      startY.current = e.touches[0].clientY;
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (scrollRef.current?.scrollTop === 0 && !refreshing) {
+      const currentY = e.touches[0].clientY;
+      const distance = currentY - startY.current;
+      
+      if (distance > 0) {
+        setPullDistance(Math.min(distance, 100));
+      }
+    }
+  }, [refreshing]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (pullDistance > 60) {
+      handlePullToRefresh();
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, handlePullToRefresh]);
 
   const subscribeToChats = () => {
     const channel = supabase
@@ -99,97 +135,77 @@ export function ChatList({ selectedChatId, onSelectChat, onNewChat }: ChatListPr
     };
   };
 
-  const getChatName = (chat: Chat) => {
-    if (chat.name) return chat.name;
-    if (chat.type === "dm") return "گفتگوی خصوصی";
-    if (chat.type === "group") return "گروه";
-    if (chat.type === "channel") return "کانال";
-    return "چت";
-  };
-
-  const getChatIcon = (type: string) => {
-    if (type === "channel") return <Radio className="h-4 w-4" />;
-    if (type === "group") return <Users className="h-4 w-4" />;
-    return null;
-  };
-
   const filteredChats = chats.filter((chat) =>
-    getChatName(chat).toLowerCase().includes(searchQuery.toLowerCase())
+    (chat.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
+      {/* Pull to Refresh Indicator */}
+      <div 
+        className={cn(
+          "overflow-hidden transition-all duration-200 flex items-center justify-center bg-muted/30",
+          pullDistance > 0 ? "opacity-100" : "opacity-0"
+        )}
+        style={{ height: `${pullDistance}px` }}
+      >
+        <RefreshCw 
+          className={cn(
+            "w-5 h-5 text-primary transition-transform duration-200",
+            refreshing && "animate-spin",
+            pullDistance > 60 && !refreshing && "rotate-180"
+          )} 
+        />
+      </div>
+
       {/* Search Bar */}
-      <div className="p-3 border-b border-border space-y-2 shrink-0">
+      <div className="p-4 border-b border-border/50 space-y-3 shrink-0">
         <div className="relative">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             placeholder="جستجوی چت..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pr-10"
+            className="pr-11 h-11 text-base rounded-xl"
           />
         </div>
-        <Button onClick={onNewChat} className="w-full gap-2" size="sm">
-          <Plus className="h-4 w-4" />
+        <Button onClick={onNewChat} className="w-full gap-2 h-11 text-base rounded-xl" size="lg">
+          <Plus className="h-5 w-5" />
           گفتگوی جدید
         </Button>
       </div>
 
       {/* Chat List */}
-      <ScrollArea className="flex-1">
-        <div className="divide-y divide-border/50">
-          {loading ? (
-            <div className="p-8 text-center text-muted-foreground">
-              در حال بارگذاری...
-            </div>
-          ) : filteredChats.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
+      <ScrollArea 
+        className="flex-1"
+        ref={scrollRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {loading ? (
+          <ChatListSkeleton />
+        ) : filteredChats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <Search className="w-16 h-16 text-muted-foreground/50 mb-4" />
+            <p className="text-muted-foreground text-lg font-medium">
               هیچ گفتگویی یافت نشد
-            </div>
-          ) : (
-            filteredChats.map((chat) => (
-              <button
+            </p>
+            <p className="text-muted-foreground/70 text-sm mt-2">
+              برای شروع، روی دکمه "گفتگوی جدید" کلیک کنید
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/30">
+            {filteredChats.map((chat) => (
+              <ChatListItem
                 key={chat.id}
-                onClick={() => onSelectChat(chat.id)}
-                className={`w-full p-3 flex items-start gap-3 hover:bg-accent/50 transition-colors ${
-                  selectedChatId === chat.id ? "bg-accent" : ""
-                }`}
-              >
-                <Avatar className="h-12 w-12 shrink-0">
-                  <AvatarImage src={chat.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {getChatName(chat).charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0 text-right">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <h3 className="font-semibold truncate flex items-center gap-1.5">
-                      {getChatIcon(chat.type)}
-                      {getChatName(chat)}
-                    </h3>
-                    {chat.last_message_at && (
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {formatDistanceToNow(new Date(chat.last_message_at), {
-                          addSuffix: true,
-                          locale: ar,
-                        })}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {chat.last_message?.content || "هنوز پیامی ارسال نشده"}
-                  </p>
-                </div>
-                {chat.unread_count && chat.unread_count > 0 && (
-                  <div className="bg-primary text-primary-foreground rounded-full h-5 w-5 flex items-center justify-center text-xs shrink-0">
-                    {chat.unread_count}
-                  </div>
-                )}
-              </button>
-            ))
-          )}
-        </div>
+                chat={chat}
+                onDelete={() => loadChats()}
+              />
+            ))}
+          </div>
+        )}
       </ScrollArea>
     </div>
   );

@@ -81,6 +81,16 @@ export default {
             height: "0",
           },
         },
+        scaleIn: {
+          from: {
+            transform: "scale(0.9)",
+            opacity: "0",
+          },
+          to: {
+            transform: "scale(1)",
+            opacity: "1",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -88,6 +98,19 @@ export default {
         "fade-in": "fadeIn 0.5s ease-in",
         "slide-up": "slideUp 0.5s ease-out",
         "slide-in-right": "slideInRight 0.5s ease-out",
+        "scale-in": "scaleIn 0.2s ease-out",
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+      },
+      minHeight: {
+        '44': '44px', // Minimum touch target size
+        '48': '48px',
+      },
+      minWidth: {
+        '44': '44px', // Minimum touch target size
+        '48': '48px',
       },
     },
   },
