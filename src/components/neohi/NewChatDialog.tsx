@@ -110,12 +110,11 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         }
       }
 
-      // Create new DM
+      // Create new DM - trigger will set created_by to auth.uid()
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
           type: "dm",
-          created_by: user.id,
         })
         .select()
         .single();
@@ -181,7 +180,6 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         .insert({
           type: "group",
           name: groupName,
-          created_by: user.id,
         })
         .select()
         .single();
@@ -243,7 +241,6 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
           type: "channel",
           name: channelName,
           description: channelDescription || null,
-          created_by: user.id,
         })
         .select()
         .single();
