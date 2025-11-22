@@ -57,7 +57,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Vazirmatn', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+        vazir: ['Vazirmatn', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
