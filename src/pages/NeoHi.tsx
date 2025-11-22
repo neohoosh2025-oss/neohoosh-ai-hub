@@ -22,6 +22,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ChatView } from "@/components/neohi/ChatView";
 import { StoryBar } from "@/components/neohi/StoryBar";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
+import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 
 interface Chat {
   id: string;
@@ -217,6 +218,13 @@ export default function NeoHi() {
   const filteredChats = chats.filter((chat) =>
     getChatName(chat).toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // If Settings tab is active, show Profile Settings
+  if (activeTab === "settings") {
+    return (
+      <ProfileSettings onBack={() => setActiveTab("chats")} />
+    );
+  }
 
   // If a chat is selected, show the chat view
   if (selectedChatId) {
