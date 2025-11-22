@@ -184,10 +184,10 @@ export default function NeoHi() {
 
   const getChatName = (chat: Chat) => {
     if (chat.name) return chat.name;
-    if (chat.type === "dm") return "چت خصوصی";
-    if (chat.type === "group") return "گروه";
-    if (chat.type === "channel") return "کانال";
-    return "چت";
+    if (chat.type === "dm") return "Private Chat";
+    if (chat.type === "group") return "Group";
+    if (chat.type === "channel") return "Channel";
+    return "Chat";
   };
 
   const getTimeDisplay = (timestamp: string | null) => {
