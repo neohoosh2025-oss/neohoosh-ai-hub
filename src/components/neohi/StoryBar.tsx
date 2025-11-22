@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { motion } from "framer-motion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Plus } from "lucide-react";
@@ -127,15 +128,25 @@ export function StoryBar() {
 
   return (
     <>
-      <div className="border-b border-[#2c2c2e] bg-black shrink-0">
+      <div className="border-b border-border bg-card shrink-0">
         <ScrollArea className="w-full">
           <div className="flex gap-3 p-3">
             {/* Add Story Button */}
-            <div className="flex flex-col items-center gap-1.5 shrink-0">
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400 }}
+              className="flex flex-col items-center gap-1.5 shrink-0"
+            >
               <label htmlFor="story-upload" className="cursor-pointer">
-                <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 p-[2px]">
-                  <div className="h-full w-full rounded-full bg-black flex items-center justify-center">
-                    <Plus className="h-6 w-6 text-[#0a84ff]" />
+                <div className="relative h-16 w-16 rounded-full bg-gradient-to-br from-primary to-primary/60 p-[2px]">
+                  <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
+                    <motion.div
+                      whileHover={{ rotate: 90 }}
+                      transition={{ type: "spring", stiffness: 300 }}
+                    >
+                      <Plus className="h-6 w-6 text-primary" />
+                    </motion.div>
                   </div>
                 </div>
               </label>
@@ -150,33 +161,56 @@ export function StoryBar() {
                 }}
                 disabled={uploading}
               />
-              <span className="text-xs text-gray-400 max-w-[70px] truncate">
-                Your Story
+              <span className="text-xs text-muted-foreground max-w-[70px] truncate">
+                استوری شما
               </span>
-            </div>
+            </motion.div>
 
             {/* Stories */}
-            {stories.map((story) => (
-              <div
+            {stories.map((story, index) => (
+              <motion.div
                 key={story.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: index * 0.05,
+                  type: "spring",
+                  stiffness: 300,
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedStory(story)}
                 className="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group"
               >
                 <div className="relative">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-yellow-400 via-pink-500 to-purple-500 p-[2px]">
-                    <div className="h-full w-full rounded-full bg-black" />
-                  </div>
-                  <Avatar className="h-16 w-16 relative border-2 border-black group-hover:scale-105 transition-transform">
+                  <motion.div
+                    animate={{
+                      boxShadow: [
+                        "0 0 0 2px hsl(var(--primary))",
+                        "0 0 0 3px hsl(var(--primary) / 0.5)",
+                        "0 0 0 2px hsl(var(--primary))",
+                      ],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                    className="absolute inset-0 rounded-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 p-[2px]"
+                  >
+                    <div className="h-full w-full rounded-full bg-card" />
+                  </motion.div>
+                  <Avatar className="h-16 w-16 relative border-2 border-card group-hover:scale-105 transition-transform">
                     <AvatarImage src={story.user.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <AvatarFallback className="bg-primary/10 text-primary">
                       {story.user.display_name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </div>
-                <span className="text-xs text-gray-400 max-w-[70px] truncate">
+                <span className="text-xs text-muted-foreground max-w-[70px] truncate">
                   {story.user.display_name}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
           <ScrollBar orientation="horizontal" />
@@ -185,41 +219,47 @@ export function StoryBar() {
 
       {/* Story Viewer */}
       <Dialog open={!!selectedStory} onOpenChange={() => setSelectedStory(null)}>
-        <DialogContent className="max-w-md p-0 bg-black border-none">
+        <DialogContent className="max-w-md p-0 bg-background border-border">
           {selectedStory && (
-            <div className="relative w-full aspect-[9/16]">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="relative w-full aspect-[9/16]"
+            >
               {selectedStory.media_type === "image" ? (
                 <img
                   src={selectedStory.media_url}
                   alt="Story"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-lg"
                 />
               ) : (
                 <video
                   src={selectedStory.media_url}
                   controls
                   autoPlay
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain rounded-lg"
                 />
               )}
               <div className="absolute top-4 left-4 right-4 flex items-center gap-3">
-                <Avatar className="h-10 w-10 border-2 border-white">
+                <Avatar className="h-10 w-10 border-2 border-primary">
                   <AvatarImage src={selectedStory.user.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <AvatarFallback className="bg-primary/10 text-primary">
                     {selectedStory.user.display_name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-white font-semibold">{selectedStory.user.display_name}</p>
-                  <p className="text-white/70 text-xs">
-                    {new Date(selectedStory.created_at).toLocaleTimeString("en-US", {
+                  <p className="text-foreground font-semibold">{selectedStory.user.display_name}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {new Date(selectedStory.created_at).toLocaleTimeString("fa-IR", {
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                   </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
         </DialogContent>
       </Dialog>
