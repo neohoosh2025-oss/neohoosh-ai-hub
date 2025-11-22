@@ -23,6 +23,7 @@ import { ChatView } from "@/components/neohi/ChatView";
 import { StoryBar } from "@/components/neohi/StoryBar";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
+import { ContactsPage } from "@/components/neohi/ContactsPage";
 
 interface Chat {
   id: string;
@@ -218,6 +219,11 @@ export default function NeoHi() {
   const filteredChats = chats.filter((chat) =>
     getChatName(chat).toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // If Contacts tab is active, show Contacts Page
+  if (activeTab === "contacts") {
+    return <ContactsPage />;
+  }
 
   // If Settings tab is active, show Profile Settings
   if (activeTab === "settings") {
