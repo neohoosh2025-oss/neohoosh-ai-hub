@@ -7,10 +7,10 @@ const BottomNavigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { icon: MessageCircle, path: "/neohi", isActive: location.pathname === "/neohi" },
-    { icon: Users, path: "/neohi/contacts", isActive: location.pathname === "/neohi/contacts" },
-    { icon: Camera, path: "/neohi/stories", isActive: location.pathname === "/neohi/stories" },
-    { icon: User, path: "/neohi/profile", isActive: location.pathname === "/neohi/profile" },
+    { icon: MessageCircle, path: "/neohi", tab: "chats", isActive: location.pathname === "/neohi" && !location.search },
+    { icon: Users, path: "/neohi?tab=contacts", tab: "contacts", isActive: location.search.includes("tab=contacts") },
+    { icon: Camera, path: "/neohi?tab=stories", tab: "stories", isActive: location.search.includes("tab=stories") },
+    { icon: User, path: "/neohi?tab=settings", tab: "settings", isActive: location.search.includes("tab=settings") },
   ];
 
   return (
