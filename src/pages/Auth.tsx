@@ -7,14 +7,13 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Mail, Lock, Cpu, Orbit, Sparkles, Chrome } from "lucide-react";
+import { Phone, Cpu, Orbit, Sparkles } from "lucide-react";
 
 const Auth = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [resetEmail, setResetEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showReset, setShowReset] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
@@ -29,16 +28,18 @@ const Auth = () => {
     checkUser();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
+    // Format phone number to E.164 format if needed
+    let formattedPhone = phoneNumber.trim();
+    if (!formattedPhone.startsWith('+')) {
+      formattedPhone = '+98' + formattedPhone; // Default Iran country code
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: formattedPhone,
     });
 
     if (error) {
@@ -48,21 +49,28 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
+      setOtpSent(true);
       toast({
         title: t("contact.success") || "موفق",
-        description: t("auth.signupSuccess") || "حساب شما ایجاد شد. لطفا وارد شوید.",
+        description: "کد تایید به شماره شما ارسال شد",
       });
     }
     setLoading(false);
   };
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    let formattedPhone = phoneNumber.trim();
+    if (!formattedPhone.startsWith('+')) {
+      formattedPhone = '+98' + formattedPhone;
+    }
+
+    const { error } = await supabase.auth.verifyOtp({
+      phone: formattedPhone,
+      token: otp,
+      type: 'sms',
     });
 
     if (error) {
@@ -73,47 +81,6 @@ const Auth = () => {
       });
     } else {
       navigate("/dashboard");
-    }
-    setLoading(false);
-  };
-
-  const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-
-    if (error) {
-      toast({
-        title: t("contact.error") || "خطا",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      toast({
-        title: t("contact.error") || "خطا",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: t("contact.success") || "موفق",
-        description: t("auth.resetSent") || "ایمیل بازیابی رمز عبور ارسال شد",
-      });
-      setShowReset(false);
     }
     setLoading(false);
   };
@@ -164,170 +131,73 @@ const Auth = () => {
             {t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید"}
           </p>
 
-          {!showReset ? (
-            <Tabs defaultValue="signin" dir={language === "en" ? "ltr" : "rtl"}>
-              <TabsList className="grid w-full grid-cols-2 mb-8">
-                <TabsTrigger value="signin">{t("login") || "ورود"}</TabsTrigger>
-                <TabsTrigger value="signup">{t("auth.signup") || "ثبت‌نام"}</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="signin">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                    {t("contactPage.email") || "ایمیل"}
-                    </Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="flex items-center gap-2">
-                      <Lock className="h-4 w-4" />
-                      {t("auth.password") || "رمز عبور"}
-                    </Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="bg-background/50"
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="button" 
-                    variant="link" 
-                    className="text-sm px-0"
-                    onClick={() => setShowReset(true)}
-                  >
-                    {t("auth.forgotPassword") || "رمز عبور را فراموش کرده‌اید"}
-                  </Button>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t("auth.signingIn") || "در حال ورود..." : t("login") || "ورود"}
-                  </Button>
-
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        {t("auth.orContinueWith") || "یا ادامه با"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handleGoogleSignIn}
-                  >
-                    <Chrome className="h-4 w-4" />
-                    Google
-                  </Button>
-                </form>
-              </TabsContent>
-
-              <TabsContent value="signup">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      {t("contactPage.email") || "ایمیل"}
-                    </Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="bg-background/50"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="flex items-center gap-2">
-                      <Lock className="h-4 w-4" />
-                      {t("auth.password") || "رمز عبور"}
-                    </Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={loading}
-                      className="bg-background/50"
-                      minLength={6}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? t("auth.signingUp") || "در حال ثبت‌نام..." : t("auth.signup") || "ثبت‌نام"}
-                  </Button>
-
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        {t("auth.orContinueWith") || "یا ادامه با"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full gap-2"
-                    onClick={handleGoogleSignIn}
-                  >
-                    <Chrome className="h-4 w-4" />
-                    Google
-                  </Button>
-                </form>
-              </TabsContent>
-            </Tabs>
-          ) : (
-            <form onSubmit={handleResetPassword} className="space-y-4">
+          {!otpSent ? (
+            <form onSubmit={handleSendOtp} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  {t("contactPage.email") || "ایمیل"}
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  شماره تلفن
+                </Label>
+                <div className="flex gap-2" dir="ltr">
+                  <div className="flex items-center px-3 py-2 bg-muted rounded-md border border-input">
+                    <span className="text-sm text-muted-foreground">+98</span>
+                  </div>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="9123456789"
+                    required
+                    disabled={loading}
+                    className="bg-background/50 flex-1"
+                    maxLength={10}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground" dir="rtl">
+                  شماره تلفن همراه خود را بدون صفر وارد کنید
+                </p>
+              </div>
+              <Button type="submit" className="w-full" disabled={loading || phoneNumber.length !== 10}>
+                {loading ? "در حال ارسال..." : "ارسال کد تایید"}
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="otp" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  کد تایید
                 </Label>
                 <Input
-                  id="reset-email"
-                  type="email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
+                  id="otp"
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456"
                   required
                   disabled={loading}
-                  className="bg-background/50"
-                  placeholder={t("auth.enterEmail") || "ایمیل خود را وارد کنید"}
+                  className="bg-background/50 text-center text-2xl tracking-widest"
+                  maxLength={6}
+                  dir="ltr"
                 />
+                <p className="text-xs text-muted-foreground text-center" dir="rtl">
+                  کد 6 رقمی ارسال شده به شماره +98{phoneNumber} را وارد کنید
+                </p>
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? t("auth.sending") || "در حال ارسال..." : t("auth.sendReset") || "ارسال لینک بازیابی"}
+              <Button type="submit" className="w-full" disabled={loading || otp.length !== 6}>
+                {loading ? "در حال تایید..." : "تایید و ورود"}
               </Button>
               <Button 
                 type="button" 
                 variant="ghost" 
                 className="w-full"
-                onClick={() => setShowReset(false)}
+                onClick={() => {
+                  setOtpSent(false);
+                  setOtp("");
+                }}
               >
-                {t("auth.backToLogin") || "بازگشت به ورود"}
+                ویرایش شماره تلفن
               </Button>
             </form>
           )}
