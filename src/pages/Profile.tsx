@@ -219,7 +219,40 @@ const Profile = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Set up Realtime subscription for new messages
+    const messagesChannel = supabase
+      .channel('profile-messages-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        async (payload) => {
+          console.log('New message received:', payload);
+          
+          // Check if this message belongs to the current user's conversations
+          if (user) {
+            const { data: conversation } = await supabase
+              .from('conversations')
+              .select('user_id')
+              .eq('id', payload.new.conversation_id)
+              .single();
+            
+            if (conversation?.user_id === user.id) {
+              // Refresh stats when user's message is added
+              checkUser();
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+      supabase.removeChannel(messagesChannel);
+    };
   }, [navigate]);
 
   const handleUpdateProfile = async () => {
