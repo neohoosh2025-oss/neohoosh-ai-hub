@@ -1,15 +1,23 @@
-import { useEffect, useState, useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Sparkles, BookOpen, MessageCircle, Calendar } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  BookOpen, 
+  MessageCircle, 
+  Zap,
+  Brain,
+  Rocket,
+  Shield,
+  Users,
+  TrendingUp,
+  Check,
+  Star
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useScrollAnimation } from "@/hooks/use-scroll-animation";
-import { ParallaxSection } from "@/components/ParallaxSection";
-import { staggerContainer, fadeInUp, scaleIn } from "@/components/PageTransition";
-import heroImage from "@/assets/hero-bg.jpg";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Article {
@@ -21,349 +29,329 @@ interface Article {
   created_at: string;
 }
 
-interface Comment {
-  id: string;
-  name: string;
-  message: string;
-  reply: string | null;
-  replied_at: string | null;
-  created_at: string;
-}
-
 const Home = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
-  const featuresAnimation = useScrollAnimation({ threshold: 0.2 });
-  const articlesAnimation = useScrollAnimation({ threshold: 0.1 });
-  const commentsAnimation = useScrollAnimation({ threshold: 0.1 });
   const { t } = useLanguage();
 
   useEffect(() => {
-    const fetchLatestArticles = async () => {
-      const { data, error } = await supabase
+    const fetchArticles = async () => {
+      const { data } = await supabase
         .from("articles")
-        .select("id, title, excerpt, category, image_url, created_at")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(3);
-
-      if (error) {
-        console.error("Error fetching articles:", error);
-      } else {
-        setArticles(data || []);
-      }
-
-      // Fetch approved comments
-      const { data: commentsData, error: commentsError } = await supabase
-        .from("comments")
-        .select("*")
-        .eq("approved", true)
-        .not("reply", "is", null)
-        .order("replied_at", { ascending: false })
-        .limit(3);
-
-      if (commentsError) {
-        console.error("Error fetching comments:", commentsError);
-      } else {
-        setComments(commentsData || []);
-      }
-
+      
+      setArticles(data || []);
       setLoading(false);
     };
 
-    fetchLatestArticles();
+    fetchArticles();
   }, []);
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Parallax */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Parallax Background */}
-        <ParallaxSection offset={100} className="absolute inset-0 z-0">
-          <div 
-            className="w-full h-full"
-            style={{
-              backgroundImage: `url(${heroImage})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
-          </div>
-        </ParallaxSection>
-
-        {/* Content with Stagger Animation */}
-        <div className="container mx-auto px-4 relative z-10 text-center">
+      {/* Hero Section - Modern & Clean */}
+      <section className="relative pt-32 pb-24 overflow-hidden">
+        {/* Background Gradient Mesh */}
+        <div className="absolute inset-0 -z-10" style={{ background: 'var(--gradient-mesh)' }} />
+        
+        <div className="container mx-auto px-4">
           <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            animate="show"
-            className="max-w-4xl mx-auto space-y-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-5xl mx-auto text-center space-y-8"
           >
-            <motion.div variants={fadeInUp} className="inline-block mb-4">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium glow-soft shimmer">
-                <Sparkles className="h-4 w-4" />
-                {t("hero.badge")}
-              </span>
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20"
+            >
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-primary">پلتفرم هوش مصنوعی نئوهوش</span>
             </motion.div>
             
-            <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent">
-                {t("hero.title")}
+            {/* Main Heading */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-5xl md:text-7xl font-bold leading-tight"
+            >
+              <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+                آینده را با AI
               </span>
               <br />
-              <span className="text-foreground">{t("hero.subtitle")}</span>
+              <span className="text-foreground">بسازید</span>
             </motion.h1>
             
-            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
-              {t("hero.description")}
+            {/* Description */}
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            >
+              ابزارهای پیشرفته هوش مصنوعی، آموزش جامع و پشتیبانی حرفه‌ای برای تحول کسب‌وکار شما
             </motion.p>
 
-            <motion.div variants={scaleIn} className="flex flex-wrap gap-4 justify-center pt-4">
-              <Link to="/articles">
-                <Button size="lg" className="gap-2 magnetic-hover">
-                  <BookOpen className="h-5 w-5" />
-                  {t("hero.cta")}
-                  <ArrowLeft className="h-4 w-4" />
+            {/* CTA Buttons */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-wrap gap-4 justify-center pt-4"
+            >
+              <Link to="/chat">
+                <Button size="lg" className="gap-2 shadow-glow group">
+                  <MessageCircle className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                  شروع رایگان
+                  <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </Link>
               
-              <Link to="/chat">
-                <Button size="lg" variant="glass" className="gap-2 magnetic-hover">
-                  <MessageCircle className="h-5 w-5" />
-                  {t("hero.smartAssistant")}
+              <Link to="/articles">
+                <Button size="lg" variant="outline" className="gap-2 border-border/50 hover:border-primary/50">
+                  <BookOpen className="h-5 w-5" />
+                  مطالعه مقالات
                 </Button>
               </Link>
             </motion.div>
+
+            {/* Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-12"
+            >
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">۱۰۰+</div>
+                <div className="text-sm text-muted-foreground mt-1">مقاله آموزشی</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-secondary">۲۴/۷</div>
+                <div className="text-sm text-muted-foreground mt-1">پشتیبانی</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-accent">۱۰۰٪</div>
+                <div className="text-sm text-muted-foreground mt-1">رضایت کاربران</div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
-
-        {/* Animated Scroll Indicator */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
-          className="absolute bottom-8 left-0 right-0 flex justify-center"
-        >
-          <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2">
-            <motion.div 
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-1.5 h-1.5 bg-primary rounded-full"
-            />
-          </div>
-        </motion.div>
       </section>
 
-      {/* Features Section with Scroll Reveal */}
-      <ParallaxSection offset={30}>
-        <section className="py-20 bg-card/50">
-          <div className="container mx-auto px-4">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                {t("features.title")}
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                {t("features.subtitle")}
-              </p>
-            </motion.div>
-
-            <motion.div 
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
-              className="grid md:grid-cols-3 gap-8"
-            >
-              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
-                  <BookOpen className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{t("features.learning")}</h3>
-                <p className="text-muted-foreground">
-                  {t("features.learningDesc")}
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
-                  <Sparkles className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{t("features.updated")}</h3>
-                <p className="text-muted-foreground">
-                  {t("features.updatedDesc")}
-                </p>
-              </motion.div>
-
-              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
-                  <MessageCircle className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold mb-3">{t("features.community")}</h3>
-                <p className="text-muted-foreground">
-                  {t("features.communityDesc")}
-                </p>
-              </motion.div>
-            </motion.div>
-          </div>
-        </section>
-      </ParallaxSection>
-
-      {/* Latest Articles Section */}
-      <section className="py-20">
+      {/* Features Section - Card Based */}
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {t("latestArticles.title")}
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t("latestArticles.subtitle")}
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">چرا نئوهوش؟</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              ابزارها و امکاناتی که کسب‌وکار شما را متحول می‌کند
             </p>
           </div>
 
-          {loading ? (
-            <div className="grid md:grid-cols-3 gap-8">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <CardHeader>
-                    <Skeleton className="h-6 w-3/4 mb-2" />
-                    <Skeleton className="h-4 w-full" />
-                  </CardHeader>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {[
+              {
+                icon: Brain,
+                title: "هوش مصنوعی پیشرفته",
+                desc: "دسترسی به جدیدترین مدل‌های AI مانند GPT-5، Gemini و Grok",
+                color: "primary"
+              },
+              {
+                icon: Zap,
+                title: "سرعت بالا",
+                desc: "پردازش فوری درخواست‌ها و پاسخ‌های لحظه‌ای",
+                color: "accent"
+              },
+              {
+                icon: Shield,
+                title: "امنیت تضمین‌شده",
+                desc: "حفاظت کامل از داده‌های شما با استانداردهای جهانی",
+                color: "secondary"
+              },
+              {
+                icon: Users,
+                title: "پشتیبانی ۲۴/۷",
+                desc: "تیم پشتیبانی حرفه‌ای همیشه در کنار شما",
+                color: "primary"
+              },
+              {
+                icon: Rocket,
+                title: "به‌روزرسانی مداوم",
+                desc: "دسترسی به آخرین فناوری‌ها و ابزارهای AI",
+                color: "accent"
+              },
+              {
+                icon: TrendingUp,
+                title: "گزارش‌های پیشرفته",
+                desc: "تحلیل و بررسی عملکرد با داشبوردهای کاربردی",
+                color: "secondary"
+              }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <Card className="p-6 h-full border-border/50 hover:border-primary/50 hover:shadow-lg transition-all group">
+                  <div className={`w-12 h-12 rounded-xl bg-${feature.color}/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                    <feature.icon className={`h-6 w-6 text-${feature.color}`} />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-3 gap-8" ref={articlesAnimation.ref}>
-              {articles.map((article, index) => (
-                <Link key={article.id} to={`/articles/${article.id}`}>
-                  <Card className={`h-full overflow-hidden hover:border-primary/50 transition-all group scroll-fade-in visible ${index === 1 ? 'scroll-fade-in-delay-1' : index === 2 ? 'scroll-fade-in-delay-2' : ''} ${articlesAnimation.isVisible ? 'visible' : ''}`}>
-                    {article.image_url && (
-                      <div className="aspect-video overflow-hidden">
-                        <img
-                          src={article.image_url}
-                          alt={article.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary">
-                          {article.category}
-                        </span>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(article.created_at).toLocaleDateString("fa-IR")}
-                        </div>
-                      </div>
-                      <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
-                        {article.title}
-                      </CardTitle>
-                      <CardDescription className="line-clamp-3">
-                        {article.excerpt}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-
-          <div className="text-center mt-12">
-            <Link to="/articles">
-              <Button variant="outline" size="lg" className="gap-2">
-                {t("cta.button")}
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Comments Section */}
-      {comments.length > 0 && (
-        <section className="py-20 bg-card/50">
+      {/* How It Works Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">چگونه کار می‌کند؟</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              تنها سه مرحله تا تحول کسب‌وکار شما
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { step: "۱", title: "ثبت‌نام رایگان", desc: "در چند ثانیه حساب کاربری خود را بسازید" },
+              { step: "۲", title: "انتخاب ابزار", desc: "از میان ابزارهای متنوع AI، ابزار موردنظر را انتخاب کنید" },
+              { step: "۳", title: "شروع کار", desc: "بلافاصله شروع به استفاده از قدرت هوش مصنوعی کنید" }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.2 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center mx-auto mb-6 shadow-glow">
+                  <span className="text-2xl font-bold text-white">{item.step}</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Articles Section */}
+      {!loading && articles.length > 0 && (
+        <section className="py-24 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                نظرات کاربران
-              </h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                تجربیات و بازخوردهای کاربران نئوهوش
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">آخرین مقالات</h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                با جدیدترین مطالب و آموزش‌های AI آشنا شوید
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8" ref={commentsAnimation.ref}>
-              {comments.map((comment, index) => (
-                <Card
-                  key={comment.id}
-                  className={`p-6 scroll-fade-in ${
-                    index === 1 ? "scroll-fade-in-delay-1" : index === 2 ? "scroll-fade-in-delay-2" : ""
-                  } ${commentsAnimation.isVisible ? "visible" : ""}`}
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {articles.map((article, i) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
                 >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <p className="font-semibold">{comment.name}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(comment.created_at).toLocaleDateString("fa-IR")}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground text-base leading-relaxed">
-                      {comment.message}
-                    </p>
-                    {comment.reply && (
-                      <div className="pr-3 border-r-2 border-primary/50 bg-primary/5 p-3 rounded-lg">
-                        <p className="text-sm font-medium text-primary mb-1">پاسخ:</p>
-                        <p className="text-base">{comment.reply}</p>
+                  <Link to={`/articles/${article.id}`}>
+                    <Card className="overflow-hidden h-full hover:shadow-xl transition-all group border-border/50 hover:border-primary/50">
+                      {article.image_url && (
+                        <div className="aspect-video overflow-hidden">
+                          <img
+                            src={article.image_url}
+                            alt={article.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium mb-3">
+                          {article.category}
+                        </span>
+                        <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h3>
+                        <p className="text-muted-foreground line-clamp-2 leading-relaxed">
+                          {article.excerpt}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                </Card>
+                    </Card>
+                  </Link>
+                </motion.div>
               ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to="/articles">
+                <Button size="lg" variant="outline" className="gap-2">
+                  مشاهده همه مقالات
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
       )}
 
       {/* CTA Section */}
-      <section className="relative py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 rounded-3xl p-12 border border-primary/20 glow-neon">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {t("cta.title")}
+          <Card className="max-w-4xl mx-auto p-12 text-center border-primary/20 shadow-glow" style={{ background: 'var(--gradient-mesh)' }}>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              آماده شروع هستید؟
             </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              {t("cta.description")}
+            <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
+              همین امروز به هزاران کاربر راضی بپیوندید و قدرت هوش مصنوعی را تجربه کنید
             </p>
-            <Link to="/articles">
-              <Button size="lg" className="gap-2 glow-neon-strong">
-                <BookOpen className="h-5 w-5" />
-                {t("cta.button")}
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Floating Smart Assistant Button */}
-        <div className="fixed bottom-8 left-8 z-40">
-          <Link to="/chat">
-            <Button 
-              size="icon"
-              className="h-16 w-16 rounded-full glow-neon-strong shadow-2xl hover:scale-110 transition-transform"
-            >
-              <MessageCircle className="h-8 w-8" />
-            </Button>
-          </Link>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Link to="/chat">
+                <Button size="lg" className="gap-2 shadow-glow-strong">
+                  <MessageCircle className="h-5 w-5" />
+                  شروع رایگان
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/contact">
+                <Button size="lg" variant="outline">
+                  تماس با ما
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
       </section>
+
+      {/* Floating Chat Button */}
+      <Link to="/chat">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 1 }}
+          className="fixed bottom-8 left-8 z-50"
+        >
+          <Button 
+            size="icon"
+            className="h-16 w-16 rounded-full shadow-glow-strong hover:shadow-glow-accent-strong transition-all"
+          >
+            <MessageCircle className="h-8 w-8" />
+          </Button>
+        </motion.div>
+      </Link>
     </div>
   );
 };

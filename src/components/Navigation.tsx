@@ -47,35 +47,36 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border">
+    <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img 
               src={neohooshLogo} 
               alt="NeoHoosh Logo" 
-              className="h-12 w-auto transition-all duration-300 group-hover:scale-110 group-hover:brightness-125 group-hover:drop-shadow-[0_0_20px_rgba(34,211,238,0.6)]"
+              className="h-14 w-auto transition-all duration-300 group-hover:scale-105"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8">
             {links.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-all ${
+                className={`text-sm font-medium transition-all relative group ${
                   link.highlight
-                    ? "bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent hover:scale-105 px-3 py-1 rounded-md hover:bg-primary/10"
-                    : `hover:text-primary ${
-                        location.pathname === link.path
-                          ? "text-primary"
-                          : "text-muted-foreground"
-                      }`
+                    ? "text-primary hover:text-primary/80"
+                    : location.pathname === link.path
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {link.label}
+                <span className={`absolute bottom-0 left-0 w-full h-0.5 bg-primary transform origin-left transition-transform duration-300 ${
+                  location.pathname === link.path ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                }`} />
               </Link>
             ))}
             <ThemeToggle />
