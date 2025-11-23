@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
+import { PageTransition } from "./components/PageTransition";
 
 import Home from "./pages/Home";
 import Articles from "./pages/Articles";
@@ -49,25 +50,27 @@ const App = () => (
                 <div className="min-h-screen flex flex-col">
                   <Navigation />
                   <main className="flex-1">
-                    <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/articles" element={<Articles />} />
-                      <Route path="/articles/:id" element={<ArticleDetail />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route path="/products/:id" element={<ProductDetail />} />
-                      <Route path="/services" element={<Services />} />
-                      <Route path="/pricing" element={<Pricing />} />
-                      <Route path="/about" element={<About />} />
-                      <Route path="/contact" element={<Contact />} />
-                      <Route path="/chat" element={<Chat />} />
-                      <Route path="/memory" element={<MemoryManagement />} />
-                      <Route path="/admin" element={<Admin />} />
-                      <Route path="/admin/translate" element={<AdminTranslate />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
+                    <PageTransition>
+                      <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/articles" element={<Articles />} />
+                        <Route path="/articles/:id" element={<ArticleDetail />} />
+                        <Route path="/products" element={<Products />} />
+                        <Route path="/products/:id" element={<ProductDetail />} />
+                        <Route path="/services" element={<Services />} />
+                        <Route path="/pricing" element={<Pricing />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/contact" element={<Contact />} />
+                        <Route path="/chat" element={<Chat />} />
+                        <Route path="/memory" element={<MemoryManagement />} />
+                        <Route path="/admin" element={<Admin />} />
+                        <Route path="/admin/translate" element={<AdminTranslate />} />
+                        <Route path="/auth" element={<Auth />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </PageTransition>
                   </main>
                   <Footer />
                 </div>
