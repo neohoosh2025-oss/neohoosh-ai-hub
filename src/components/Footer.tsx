@@ -52,7 +52,7 @@ const Footer = () => {
 
           {/* Services */}
           <div className="space-y-3 sm:space-y-4">
-            <h4 className="font-semibold text-sm sm:text-base">{t("footer.services")}</h4>
+            <h4 className="font-semibold text-sm sm:text-base">خدمات ویژه</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/tools" className="text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors">
