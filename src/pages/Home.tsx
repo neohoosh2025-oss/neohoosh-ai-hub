@@ -134,17 +134,7 @@ const Home = () => {
             variants={staggerContainer}
             className="max-w-6xl mx-auto text-center space-y-6 sm:space-y-8"
           >
-            {/* Logo - Smaller on Mobile */}
-            <motion.div variants={fadeInUp} className="flex justify-center mb-2 sm:mb-4">
-              <div className="relative">
-                <img 
-                  src={logo} 
-                  alt="NeoHoosh" 
-                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 drop-shadow-2xl"
-                />
-                <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse"></div>
-              </div>
-            </motion.div>
+            {/* Logo Removed - Clean Design */}
 
             {/* Badge - Responsive */}
             <motion.div variants={fadeInUp} className="flex justify-center">
