@@ -25,6 +25,7 @@ import Dashboard from "./pages/Dashboard";
 import MemoryManagement from "./pages/MemoryManagement";
 import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
+import DesignSystem from "./pages/DesignSystem";
 
 const queryClient = new QueryClient();
 
@@ -37,8 +38,10 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              {/* Full-screen route without Navigation/Footer */}
+              {/* Full-screen routes without Navigation/Footer */}
               <Route path="/neohi" element={<NeoHi />} />
+              <Route path="/design-system" element={<DesignSystem />} />
+              
               
               {/* Regular routes with Navigation/Footer */}
               <Route path="*" element={
