@@ -10,9 +10,8 @@ import { ContactsPage } from "@/components/neohi/ContactsPage";
 import { Sidebar } from "@/components/neohi/Sidebar";
 import StoriesPage from "@/pages/StoriesPage";
 import BottomNavigation from "@/components/neohi/BottomNavigation";
-import { ArrowLeft } from "lucide-react";
+import { Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import neohooshLogo from "@/assets/neohoosh-logo.png";
 
 interface Chat {
   id: string;
@@ -235,26 +234,52 @@ export default function NeoHi() {
   // Main View - Desktop: Sidebar + Chat Area / Mobile: Full Screen
   return (
     <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden">
-      {/* Back to NeoHoosh Button */}
-      <div className="flex items-center gap-3 p-3 sm:p-4 border-b border-[hsl(var(--neohi-border))] bg-[hsl(var(--neohi-bg-secondary))]/50 backdrop-blur-sm">
+      {/* Header */}
+      <motion.div 
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-[hsl(var(--neohi-border))] bg-[hsl(var(--neohi-bg-secondary))]/80 backdrop-blur-xl"
+      >
+        {/* Left Side - Empty for balance */}
+        <div className="w-10 sm:w-12"></div>
+        
+        {/* Center - NeoHi Title */}
+        <motion.div
+          animate={{ 
+            scale: [1, 1.05, 1],
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="flex items-center gap-2"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center shadow-lg"
+          >
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </motion.div>
+          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[hsl(var(--neohi-accent))] to-primary bg-clip-text text-transparent">
+            NeoHi
+          </h1>
+        </motion.div>
+        
+        {/* Right Side - Home Button */}
         <Link to="/">
           <Button 
             variant="ghost" 
-            size="sm"
-            className="gap-2 text-[hsl(var(--neohi-text-primary))] hover:text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+            size="icon"
+            className="text-[hsl(var(--neohi-text-primary))] hover:text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] rounded-full w-10 h-10 sm:w-12 sm:h-12"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">بازگشت به نئوهوش</span>
+            <Home className="h-5 w-5 sm:h-6 sm:w-6" />
           </Button>
         </Link>
-        <Link to="/" className="mr-auto">
-          <img 
-            src={neohooshLogo} 
-            alt="NeoHoosh Logo" 
-            className="h-8 sm:h-10 w-auto opacity-60 hover:opacity-100 transition-opacity"
-          />
-        </Link>
-      </div>
+      </motion.div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Desktop Sidebar */}
