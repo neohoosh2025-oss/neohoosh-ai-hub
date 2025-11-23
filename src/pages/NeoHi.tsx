@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,8 +10,6 @@ import { ContactsPage } from "@/components/neohi/ContactsPage";
 import { Sidebar } from "@/components/neohi/Sidebar";
 import StoriesPage from "@/pages/StoriesPage";
 import BottomNavigation from "@/components/neohi/BottomNavigation";
-import { Home } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface Chat {
   id: string;
@@ -233,114 +231,65 @@ export default function NeoHi() {
 
   // Main View - Desktop: Sidebar + Chat Area / Mobile: Full Screen
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden">
-      {/* Header */}
-      <motion.div 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-[hsl(var(--neohi-border))] bg-[hsl(var(--neohi-bg-secondary))]/80 backdrop-blur-xl"
-      >
-        {/* Left Side - Empty for balance */}
-        <div className="w-10 sm:w-12"></div>
-        
-        {/* Center - NeoHi Title */}
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex overflow-hidden">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar
+          chats={chats}
+          selectedChatId={selectedChatId}
+          onChatSelect={setSelectedChatId}
+          onNewChat={() => setShowNewChat(true)}
+          onSettings={() => navigate("/neohi?tab=settings")}
+        />
+      </div>
+
+      {/* Mobile View */}
+      <div className="flex-1 md:hidden flex flex-col">
+        <Sidebar
+          chats={chats}
+          selectedChatId={selectedChatId}
+          onChatSelect={setSelectedChatId}
+          onNewChat={() => setShowNewChat(true)}
+          onSettings={() => navigate("/neohi?tab=settings")}
+        />
+        <BottomNavigation />
+      </div>
+
+      {/* Desktop Empty State */}
+      <div className="hidden md:flex flex-1 items-center justify-center bg-[hsl(var(--neohi-bg-chat))]">
         <motion.div
-          animate={{ 
-            scale: [1, 1.05, 1],
-          }}
-          transition={{ 
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="flex items-center gap-2"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
         >
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center shadow-lg"
-          >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </motion.div>
-          <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[hsl(var(--neohi-accent))] to-primary bg-clip-text text-transparent">
-            NeoHi
-          </h1>
-        </motion.div>
-        
-        {/* Right Side - Home Button */}
-        <Link to="/">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="text-[hsl(var(--neohi-text-primary))] hover:text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] rounded-full w-10 h-10 sm:w-12 sm:h-12"
-          >
-            <Home className="h-5 w-5 sm:h-6 sm:w-6" />
-          </Button>
-        </Link>
-      </motion.div>
-
-      <div className="flex-1 flex overflow-hidden">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          <Sidebar
-            chats={chats}
-            selectedChatId={selectedChatId}
-            onChatSelect={setSelectedChatId}
-            onNewChat={() => setShowNewChat(true)}
-            onSettings={() => navigate("/neohi?tab=settings")}
-          />
-        </div>
-
-        {/* Mobile View */}
-        <div className="flex-1 md:hidden flex flex-col">
-          <Sidebar
-            chats={chats}
-            selectedChatId={selectedChatId}
-            onChatSelect={setSelectedChatId}
-            onNewChat={() => setShowNewChat(true)}
-            onSettings={() => navigate("/neohi?tab=settings")}
-          />
-          <BottomNavigation />
-        </div>
-
-        {/* Desktop Empty State */}
-        <div className="hidden md:flex flex-1 items-center justify-center bg-[hsl(var(--neohi-bg-chat))]">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center"
+            animate={{ 
+              scale: [1, 1.05, 1],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
           >
             <motion.div
-              animate={{ 
-                scale: [1, 1.05, 1],
-                rotate: [0, 5, -5, 0]
-              }}
-              transition={{ 
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              >
-                <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </motion.div>
+              <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
             </motion.div>
-            <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
-              Welcome to NeoHi
-            </h2>
-            <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
-              Select a chat from the sidebar to start messaging, or create a new conversation
-            </p>
           </motion.div>
-        </div>
+          <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
+            Welcome to NeoHi
+          </h2>
+          <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
+            Select a chat from the sidebar to start messaging, or create a new conversation
+          </p>
+        </motion.div>
       </div>
 
       {/* New Chat Dialog */}
