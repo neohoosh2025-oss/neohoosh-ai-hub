@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square, Copy, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -90,6 +90,7 @@ const Chat = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -493,6 +494,18 @@ const Chat = () => {
     }
   };
 
+  const handleCopyMessage = async (content: string, messageId: number) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(messageId);
+      toast.success("متن کپی شد");
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (error) {
+      console.error("Error copying message:", error);
+      toast.error("خطا در کپی کردن متن");
+    }
+  };
+
   return (
     <div className="fixed inset-0 pt-16 bg-background flex overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
       {/* Sidebar Overlay for Mobile */}
@@ -633,8 +646,21 @@ const Chat = () => {
           ) : (
             <div className="max-w-3xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-4">
               {messages.map((msg, idx) => (
-                 <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0`}>
-                  <div className={`max-w-[85%] md:max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-3 md:px-4 py-2.5 md:py-3`}>
+                 <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0 group`}>
+                  <div className={`relative max-w-[85%] md:max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-3 md:px-4 py-2.5 md:py-3`}>
+                    {msg.role === "assistant" && (
+                      <button
+                        onClick={() => handleCopyMessage(msg.content, idx)}
+                        className="absolute -top-2 -left-2 p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent shadow-sm"
+                        title="کپی کردن"
+                      >
+                        {copiedMessageId === idx ? (
+                          <Check className="w-3.5 h-3.5 text-green-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    )}
                     <p className="text-base whitespace-pre-wrap">{msg.content}</p>
                     {msg.imageUrl && (
                       <div className="mt-3">
