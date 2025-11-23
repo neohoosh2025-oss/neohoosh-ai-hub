@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
-import FloatingFeedbackButton from "./components/FloatingFeedbackButton";
 import { PageTransition } from "./components/PageTransition";
 
 import Home from "./pages/Home";
@@ -84,7 +83,6 @@ const App = () => (
                     </PageTransition>
                   </main>
                   <Footer />
-                  <FloatingFeedbackButton />
                 </div>
               } />
             </Routes>
