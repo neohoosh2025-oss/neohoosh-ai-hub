@@ -22,7 +22,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
-import Dashboard from "./pages/Dashboard";
+
 import MemoryManagement from "./pages/MemoryManagement";
 import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
@@ -77,7 +77,7 @@ const App = () => (
                         <Route path="/admin/translate" element={<AdminTranslate />} />
                         <Route path="/auth" element={<Auth />} />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
+                        
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </PageTransition>
