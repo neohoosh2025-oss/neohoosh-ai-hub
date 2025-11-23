@@ -1,165 +1,99 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { Mail, Send, Instagram } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { Mail, Send, MessageCircle, Sparkles, Instagram } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(2, "نام باید حداقل 2 کاراکتر باشد").max(100),
+  email: z.string().trim().email("ایمیل معتبر نیست").max(255),
+  message: z.string().trim().min(10, "پیام باید حداقل 10 کاراکتر باشد").max(2000),
+});
 
 const Contact = () => {
-  const { t } = useLanguage();
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const { error } = await supabase.from("comments").insert({
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-    });
-
-    if (error) {
-      toast({
-        title: t("contactPage.error"),
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: t("contactPage.success"),
-        description: t("contactPage.successDesc"),
-      });
+    setErrors({});
+    try {
+      contactSchema.parse(formData);
+      setIsSubmitting(true);
+      const { error } = await supabase.from("comments").insert(formData);
+      if (error) throw error;
+      toast({ title: "پیام ارسال شد!", description: "به زودی پاسخ خواهیم داد." });
       setFormData({ name: "", email: "", message: "" });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach((err) => { if (err.path[0]) newErrors[err.path[0] as string] = err.message; });
+        setErrors(newErrors);
+      }
+      toast({ title: "خطا", description: error.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen pt-20">
-      {/* Header */}
-      <section className="py-16 bg-gradient-to-b from-card/50 to-background">
-        <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            {t("contactPage.title")}
-          </h1>
-            <p className="text-lg text-muted-foreground">
-              {t("contactPage.subtitle")}
-            </p>
-          </div>
+    <div className="min-h-screen">
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="absolute inset-0 bg-[image:var(--gradient-mesh)] opacity-40"></div>
+        <div className="container mx-auto px-4 relative">
+          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto text-center space-y-6">
+            <Badge className="shadow-glow"><Sparkles className="w-4 h-4 ml-2" />تماس با ما</Badge>
+            <h1 className="text-4xl md:text-6xl font-bold font-display">با <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">تیم نئوهوش</span><br />در ارتباط باشید</h1>
+          </motion.div>
         </div>
       </section>
 
-      {/* Contact Form & Info */}
-      <section className="py-12">
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-            {/* Form */}
-            <Card className="p-8 border-border">
-              <h2 className="text-2xl font-bold mb-6">{t("contactPage.formTitle")}</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    {t("contactPage.name")}
-                  </label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    placeholder={t("contactPage.namePlaceholder")}
-                    required
-                  />
+          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            <Card className="border-2 border-primary/20 shadow-xl">
+              <CardHeader>
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+                  <MessageCircle className="w-7 h-7 text-primary" />
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    {t("contactPage.email")}
-                  </label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    placeholder="example@email.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    {t("contactPage.message")}
-                  </label>
-                  <Textarea
-                    value={formData.message}
-                    onChange={(e) =>
-                      setFormData({ ...formData, message: e.target.value })
-                    }
-                    placeholder={t("contactPage.messagePlaceholder")}
-                    rows={5}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" className="w-full gap-2 glow-neon">
-                  <Send className="h-4 w-4" />
-                  {t("contactPage.send")}
-                </Button>
-              </form>
+                <CardTitle className="text-3xl font-display">فرم تماس</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label>نام *</Label>
+                    <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={errors.name ? "border-destructive" : ""} />
+                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>ایمیل *</Label>
+                    <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={errors.email ? "border-destructive" : ""} />
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label>پیام *</Label>
+                    <Textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} rows={6} className={errors.message ? "border-destructive" : ""} />
+                    {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
+                  </div>
+                  <Button type="submit" size="lg" className="w-full shadow-glow" disabled={isSubmitting}>
+                    {isSubmitting ? "در حال ارسال..." : <><Send className="ml-2" />ارسال پیام</>}
+                  </Button>
+                </form>
+              </CardContent>
             </Card>
 
-            {/* Contact Info */}
             <div className="space-y-6">
-              <Card className="p-6 border-border">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
-                    <Mail className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{t("contactPage.emailLabel")}</h3>
-                    <a
-                      href="mailto:neohoosh.2025@gmail.com"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      neohoosh.2025@gmail.com
-                    </a>
-                  </div>
-                </div>
-              </Card>
-
-              <Card className="p-6 border-border">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center glow-neon">
-                    <Instagram className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">{t("contactPage.instagramLabel")}</h3>
-                    <a
-                      href={`https://www.instagram.com/${t("contactPage.instagramValue").replace('@', '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-muted-foreground hover:text-primary transition-colors"
-                    >
-                      {t("contactPage.instagramValue")}
-                    </a>
-                  </div>
-                </div>
-              </Card>
-
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
-                <h3 className="font-semibold mb-2">{t("contactPage.hoursLabel")}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t("contactPage.hoursValue")}
-                </p>
-              </div>
+              <Card><CardContent className="p-6 flex items-center gap-4"><Mail className="w-6 h-6 text-primary" /><div><h3 className="font-semibold">ایمیل</h3><a href="mailto:neohoosh.2025@gmail.com" className="text-muted-foreground hover:text-primary">neohoosh.2025@gmail.com</a></div></CardContent></Card>
+              <Card><CardContent className="p-6 flex items-center gap-4"><Instagram className="w-6 h-6 text-primary" /><div><h3 className="font-semibold">اینستاگرام</h3><a href="https://instagram.com/neohoosh.ai" target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary">@neohoosh.ai</a></div></CardContent></Card>
             </div>
           </div>
         </div>
