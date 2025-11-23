@@ -25,7 +25,9 @@ import {
   FileText,
   Wand2,
   Languages,
-  Send
+  Send,
+  Calendar,
+  Clock
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,83 +119,82 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Modern Futuristic */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      {/* Hero Section - Optimized for Mobile */}
+      <section className="relative pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-28 md:pb-32 overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(76,139,245,0.1),transparent_50%)]" />
         </div>
         
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4 sm:px-6 relative">
           <motion.div
             initial="initial"
             animate="animate"
             variants={staggerContainer}
-            className="max-w-6xl mx-auto text-center space-y-8"
+            className="max-w-6xl mx-auto text-center space-y-6 sm:space-y-8"
           >
-            {/* Logo */}
-            <motion.div variants={fadeInUp} className="flex justify-center mb-4">
+            {/* Logo - Smaller on Mobile */}
+            <motion.div variants={fadeInUp} className="flex justify-center mb-2 sm:mb-4">
               <div className="relative">
                 <img 
                   src={logo} 
                   alt="NeoHoosh" 
-                  className="w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl"
+                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-32 md:h-32 drop-shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse"></div>
               </div>
             </motion.div>
 
-            {/* Badge */}
+            {/* Badge - Responsive */}
             <motion.div variants={fadeInUp} className="flex justify-center">
-              <Badge className="px-6 py-2.5 text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
-                <Sparkles className="w-4 h-4 ml-2 animate-pulse" />
+              <Badge className="px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
+                <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-2 animate-pulse" />
                 نسل جدید هوش مصنوعی
               </Badge>
             </motion.div>
 
-            {/* Main Heading - Emotional & Powerful */}
+            {/* Main Heading - Mobile Optimized */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-tight font-display px-4"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-display px-2"
             >
-              <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent block mb-2">
                 نسل جدید هوش مصنوعی
               </span>
-              <br />
-              <span className="text-foreground">
+              <span className="text-foreground block">
                 در ایران، همیشه کنار تو
               </span>
             </motion.h1>
 
-            {/* Sub Heading */}
+            {/* Sub Heading - Readable on Mobile */}
             <motion.p 
               variants={fadeInUp}
-              className="text-base sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light px-4"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light px-2"
             >
-              ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد.
+              ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد
             </motion.p>
 
-            {/* Chat Bot Preview Mini */}
+            {/* Chat Preview - Compact on Mobile */}
             <motion.div 
               variants={fadeInUp}
-              className="max-w-md mx-auto"
+              className="max-w-md mx-auto px-2"
             >
               <Card className="bg-card/50 backdrop-blur-xl border-primary/20 shadow-glow">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex gap-3 items-start">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                      <MessageCircle className="w-4 h-4 text-primary" />
+                <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <div className="flex gap-2 sm:gap-3 items-start">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                      <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
-                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tr-sm p-3 text-sm text-right">
+                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tr-sm p-2.5 sm:p-3 text-xs sm:text-sm text-right">
                       سلام! چطور می‌تونم کمکت کنم؟
                     </div>
                   </div>
-                  <div className="flex gap-3 items-start flex-row-reverse">
-                    <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
-                      <Users className="w-4 h-4 text-accent" />
+                  <div className="flex gap-2 sm:gap-3 items-start flex-row-reverse">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent" />
                     </div>
-                    <div className="flex-1 bg-accent/5 rounded-2xl rounded-tl-sm p-3 text-sm text-right">
+                    <div className="flex-1 bg-accent/5 rounded-2xl rounded-tl-sm p-2.5 sm:p-3 text-xs sm:text-sm text-right">
                       می‌خوام یک استراتژی بازاریابی بنویسم
                     </div>
                   </div>
@@ -201,41 +202,41 @@ const Home = () => {
               </Card>
             </motion.div>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons - Mobile Friendly */}
             <motion.div 
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center pt-4 sm:pt-6 px-2"
             >
-              <Link to="/chat">
-                <Button size="lg" className="text-lg px-10 py-7 shadow-glow-strong hover:shadow-glow-accent-strong transition-all group">
-                  <MessageCircle className="ml-2 group-hover:rotate-12 transition-transform" />
+              <Link to="/chat" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-glow-strong hover:shadow-glow-accent-strong transition-all group">
+                  <MessageCircle className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
                   شروع گفتگو با AI
-                  <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                  <ArrowLeft className="mr-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/dashboard">
+              <Link to="/dashboard" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="text-lg px-10 py-7 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5"
+                  className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5"
                 >
-                  <Rocket className="ml-2" />
+                  <Rocket className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                   ورود به داشبورد
                 </Button>
               </Link>
             </motion.div>
 
-            {/* Stats */}
+            {/* Stats - Mobile Optimized Grid */}
             <motion.div 
               variants={fadeInUp}
-              className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-16 max-w-3xl mx-auto"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 md:gap-8 pt-12 sm:pt-16 max-w-3xl mx-auto px-2"
             >
               {stats.map((stat, i) => (
-                <div key={stat.stat_key} className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
-                  <div className={`text-4xl md:text-5xl font-bold ${i === 0 ? 'text-primary' : i === 1 ? 'text-secondary' : 'text-accent'} mb-2`}>
+                <div key={stat.stat_key} className="text-center p-4 sm:p-5 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
+                  <div className={`text-3xl sm:text-4xl md:text-5xl font-bold ${i === 0 ? 'text-primary' : i === 1 ? 'text-secondary' : 'text-accent'} mb-2`}>
                     {stat.stat_value}
                   </div>
-                  <div className="text-sm text-muted-foreground">{stat.stat_label}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">{stat.stat_label}</div>
                 </div>
               ))}
             </motion.div>
@@ -243,25 +244,25 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 3 Main Features - Clean Cards */}
-      <section className="py-24 relative">
-        <div className="container mx-auto px-4">
+      {/* Features Section - Mobile First */}
+      <section className="py-16 sm:py-20 md:py-24 relative">
+        <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16 px-4"
+            className="text-center mb-10 sm:mb-14 md:mb-16 px-2"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
-              امکانات NeoHoosh
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 font-display">
+              امکانات نئوهوش
             </h2>
-            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
               سه ستون اصلی پلتفرم هوش مصنوعی نئوهوش
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
             {features.map((item, i) => {
               const iconMap: { [key: string]: any } = {
                 'MessageCircle': MessageCircle,
@@ -282,21 +283,21 @@ const Home = () => {
                 viewport={{ once: true }}
               >
                 <Card className="h-full border-2 border-border/50 hover:border-primary/50 hover:shadow-xl transition-all group">
-                  <CardHeader>
-                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <Icon className="w-8 h-8 text-primary" />
+                  <CardHeader className="pb-4">
+                    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                      <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-primary" />
                     </div>
-                    <CardTitle className="text-2xl mb-3">{item.title}</CardTitle>
-                    <CardDescription className="text-base leading-relaxed">{item.description}</CardDescription>
+                    <CardTitle className="text-lg sm:text-xl md:text-2xl mb-2 sm:mb-3">{item.title}</CardTitle>
+                    <CardDescription className="text-sm sm:text-base leading-relaxed">{item.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-3">
+                    <ul className="space-y-2 sm:space-y-3">
                       {item.features_list?.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-3">
-                          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                            <Check className="w-3 h-3 text-primary" />
+                        <li key={idx} className="flex items-center gap-2 sm:gap-3">
+                          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <Check className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary" />
                           </div>
-                          <span className="text-sm text-muted-foreground">{feature}</span>
+                          <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                     </ul>
@@ -309,13 +310,12 @@ const Home = () => {
         </div>
       </section>
 
-      {/* NEOHI Community - SPECIAL HIGHLIGHT SECTION */}
-      <section className="py-32 relative overflow-hidden">
-        {/* Special Background for NEOHI */}
+      {/* NEOHI Section - Mobile Optimized */}
+      <section className="py-20 sm:py-28 md:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(76,139,245,0.15),transparent_70%)]" />
         
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-4 sm:px-6 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -323,35 +323,34 @@ const Home = () => {
             viewport={{ once: true }}
             className="max-w-6xl mx-auto"
           >
-            {/* Main NEOHI Card */}
             <Card className="border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
-                {/* Left Side - Content */}
-                <div className="p-12 lg:p-16 space-y-8">
+                {/* Content - Mobile First */}
+                <div className="p-6 sm:p-10 md:p-12 lg:p-16 space-y-6 sm:space-y-8 order-2 md:order-1">
                   <div>
-                    <Badge className="mb-6 text-base px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
-                      <Sparkles className="w-4 h-4 ml-2 animate-pulse" />
+                    <Badge className="mb-4 sm:mb-6 text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+                      <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-2 animate-pulse" />
                       معرفی NEOHI
                     </Badge>
                     
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
                       <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
                         NEOHI
                       </span>
                     </h2>
                     
-                    <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-4">
+                    <p className="text-lg sm:text-xl md:text-2xl font-semibold text-foreground mb-3 sm:mb-4">
                       جایی برای گفتگو، یادگیری و شبکه‌سازی
                     </p>
                     
-                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                    <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed">
                       کامیونیتی اختصاصی نئوهوش با تجربه کاربری سریع و روان؛
                       برای گفتگو، همکاری و رشد در دنیای هوش مصنوعی.
                     </p>
                   </div>
 
-                  {/* Features Grid */}
-                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {/* Features - Compact Mobile Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
                     {[
                       { icon: Users, label: "گروه‌های تخصصی" },
                       { icon: MessageSquare, label: "کانال‌ها" },
@@ -360,9 +359,9 @@ const Home = () => {
                       { icon: Globe, label: "دسترسی آسان" },
                       { icon: Video, label: "پخش زنده" }
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-background/50 border border-border/50">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                      <div key={i} className="flex items-center gap-2 p-2 sm:p-2.5 md:p-3 rounded-xl bg-background/50 border border-border/50">
+                        <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-primary" />
                         </div>
                         <span className="text-xs sm:text-sm font-medium leading-tight">{item.label}</span>
                       </div>
@@ -370,11 +369,11 @@ const Home = () => {
                   </div>
 
                   {/* CTA */}
-                  <Link to="/neohi">
-                    <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6 shadow-glow-strong group">
-                      <Send className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  <Link to="/neohi" className="block">
+                    <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-glow-strong group">
+                      <Send className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                       عضویت در NEOHI
-                      <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                      <ArrowLeft className="mr-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
                     </Button>
                   </Link>
                 </div>
@@ -435,25 +434,25 @@ const Home = () => {
         </div>
       </section>
 
-      {/* AI Tools Showcase */}
-      <section className="py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
+      {/* AI Tools - Mobile Grid */}
+      <section className="py-16 sm:py-20 md:py-24 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16 px-4"
+            className="text-center mb-10 sm:mb-14 md:mb-16 px-2"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
-              ابزارهای AI در NeoHoosh
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 font-display">
+              ابزارهای AI در نئوهوش
             </h2>
-            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
               مجموعه کاملی از ابزارهای هوش مصنوعی برای نیازهای مختلف
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 max-w-6xl mx-auto">
             {tools.map((tool, i) => {
               const iconMap: { [key: string]: any } = {
                 'MessageCircle': MessageCircle,
@@ -476,12 +475,12 @@ const Home = () => {
                 viewport={{ once: true }}
               >
                 <Link to={tool.link_url || "/tools"}>
-                  <Card className="p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all group border-border/50 hover:border-primary/50 cursor-pointer">
-                    <div className={`w-14 h-14 rounded-xl bg-${tool.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                      <ToolIcon className={`w-7 h-7 text-${tool.color}`} />
+                  <Card className="p-4 sm:p-5 md:p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all group border-border/50 hover:border-primary/50 cursor-pointer">
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-${tool.color}/10 flex items-center justify-center mx-auto mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
+                      <ToolIcon className={`w-6 h-6 sm:w-7 sm:h-7 text-${tool.color}`} />
                     </div>
-                    <h3 className="font-semibold text-sm">{tool.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">شروع کنید</p>
+                    <h3 className="font-semibold text-xs sm:text-sm mb-1">{tool.title}</h3>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">شروع کنید</p>
                   </Card>
                 </Link>
               </motion.div>
@@ -589,93 +588,95 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Latest Articles */}
+      {/* Articles - Mobile Optimized */}
       {!loading && articles.length > 0 && (
-        <section className="py-24 bg-muted/30">
-          <div className="container mx-auto px-4">
+        <section className="py-16 sm:py-20 md:py-24 bg-muted/30">
+          <div className="container mx-auto px-4 sm:px-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="text-center mb-16 px-4"
+              className="text-center mb-10 sm:mb-14 md:mb-16 px-2"
             >
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 font-display">
                 آخرین مقالات
               </h2>
-              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
                 با جدیدترین مطالب و آموزش‌های AI آشنا شوید
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
               {articles.map((article, i) => (
                 <motion.div
                   key={article.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: i * 0.1 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
                 >
                   <Link to={`/articles/${article.id}`}>
-                    <Card className="overflow-hidden h-full hover:shadow-xl hover:-translate-y-1 transition-all group border-2 border-border/50 hover:border-primary/50">
+                    <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-xl hover:shadow-primary/10 transition-all">
                       {article.image_url && (
-                        <div className="aspect-video overflow-hidden bg-muted">
+                        <div className="relative overflow-hidden h-44 sm:h-48">
                           <img
                             src={article.image_url}
                             alt={article.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
+                          <div className="absolute top-3 right-3">
+                            <span className="px-3 py-1.5 rounded-full bg-primary/90 backdrop-blur-sm text-primary-foreground text-xs font-semibold shadow-lg">
+                              {article.category}
+                            </span>
+                          </div>
                         </div>
                       )}
-                      <div className="p-6">
-                        <Badge className="mb-3 bg-primary/10 text-primary border-primary/30">
-                          {article.category}
-                        </Badge>
-                        <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+
+                      <div className="p-4 sm:p-5 space-y-3">
+                        <h3 className="text-base sm:text-lg font-bold group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                           {article.title}
                         </h3>
-                        <p className="text-muted-foreground line-clamp-2 leading-relaxed text-sm">
+                        
+                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-2">
                           {article.excerpt}
                         </p>
+
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-3 border-t border-border/50">
+                          <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(article.created_at).toLocaleDateString("fa-IR")}
+                          </span>
+                        </div>
                       </div>
                     </Card>
                   </Link>
                 </motion.div>
               ))}
             </div>
-
-            <div className="text-center mt-12">
-              <Link to="/articles">
-                <Button size="lg" variant="outline" className="gap-2 border-2">
-                  مشاهده همه مقالات
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
           </div>
         </section>
       )}
 
-      {/* Trust & Social Proof */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
+      {/* Testimonials - Mobile Cards */}
+      <section className="py-16 sm:py-20 md:py-24">
+        <div className="container mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16 px-4"
+            className="text-center mb-10 sm:mb-14 md:mb-16 px-2"
           >
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
-              کاربران راضی NeoHoosh
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 font-display">
+              کاربران راضی نئوهوش
             </h2>
-            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto">
               تجربه هزاران کاربر از استفاده پلتفرم هوش مصنوعی نئوهوش
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
             {testimonials.map((testimonial, i) => (
               <motion.div
                 key={testimonial.id}
@@ -684,36 +685,32 @@ const Home = () => {
                 transition={{ duration: 0.5, delay: i * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-all border-border/50">
-                  <CardHeader>
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(testimonial.rating)].map((_, idx) => (
-                        <Star key={idx} className="w-5 h-5 fill-warning text-warning" />
-                      ))}
-                    </div>
-                    <CardDescription className="text-base leading-relaxed">
-                      "{testimonial.content}"
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3">
-                      {testimonial.avatar_url ? (
-                        <img 
-                          src={testimonial.avatar_url} 
-                          alt={testimonial.name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
-                          {testimonial.name[0]}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-semibold">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                <Card className="h-full hover:shadow-lg transition-all border-border/50 p-5 sm:p-6">
+                  <div className="flex gap-1 mb-3 sm:mb-4">
+                    {[...Array(testimonial.rating)].map((_, idx) => (
+                      <Star key={idx} className="w-4 h-4 sm:w-5 sm:h-5 fill-warning text-warning" />
+                    ))}
+                  </div>
+                  <p className="text-sm sm:text-base leading-relaxed mb-4 sm:mb-5 text-muted-foreground">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center gap-3 pt-3 sm:pt-4 border-t border-border/50">
+                    {testimonial.avatar_url ? (
+                      <img 
+                        src={testimonial.avatar_url} 
+                        alt={testimonial.name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Users className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                       </div>
+                    )}
+                    <div>
+                      <div className="font-semibold text-sm sm:text-base">{testimonial.name}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">{testimonial.role}</div>
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               </motion.div>
             ))}
@@ -721,34 +718,33 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
-        
-        <div className="container mx-auto px-4 relative">
+      {/* Final CTA - Mobile Optimized */}
+      <section className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
+        <div className="container mx-auto px-4 sm:px-6 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Card className="max-w-4xl mx-auto p-8 sm:p-12 lg:p-16 text-center border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <Card className="max-w-4xl mx-auto p-6 sm:p-10 md:p-12 lg:p-16 text-center border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
                 آماده شروع هستید؟
               </h2>
-              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed">
                 همین امروز به هزاران کاربر راضی بپیوندید و قدرت هوش مصنوعی را تجربه کنید
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/chat">
-                  <Button size="lg" className="text-lg px-10 py-7 shadow-glow-strong group">
-                    <MessageCircle className="ml-2 group-hover:rotate-12 transition-transform" />
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                <Link to="/chat" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-glow-strong group">
+                    <MessageCircle className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-12 transition-transform" />
                     شروع رایگان
-                    <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                    <ArrowLeft className="mr-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
                   </Button>
                 </Link>
-                <Link to="/contact">
-                  <Button size="lg" variant="outline" className="text-lg px-10 py-7 border-2">
+                <Link to="/contact" className="w-full sm:w-auto">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 border-2">
                     تماس با ما
                   </Button>
                 </Link>
