@@ -49,19 +49,19 @@ const Navigation = () => {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
+          {/* Logo - Responsive */}
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
             <img 
               src={neohooshLogo} 
               alt="NeoHoosh Logo" 
-              className="h-14 w-auto transition-all duration-300 group-hover:scale-105"
+              className="h-10 sm:h-12 md:h-14 w-auto transition-all duration-300 group-hover:scale-105"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {links.map((link) => (
               <Link
                 key={link.path}
@@ -80,10 +80,12 @@ const Navigation = () => {
                 }`} />
               </Link>
             ))}
-            <ThemeToggle />
-            <LanguageToggle />
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <LanguageToggle />
+            </div>
             {user ? (
-              <>
+              <div className="flex items-center gap-2">
                 <Link to="/profile">
                   <Button variant="ghost" size="sm" className="gap-2">
                     <User className="h-4 w-4" />
@@ -98,19 +100,18 @@ const Navigation = () => {
                   <LogOut className="h-4 w-4" />
                   {t("logout")}
                 </Button>
-              </>
+              </div>
             ) : (
               <Link to="/auth?from=chat">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
+                <Button size="sm" className="shadow-md">
                   {t("login")}
                 </Button>
               </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Controls */}
+          <div className="flex lg:hidden items-center gap-2">
             <ThemeToggle />
             <LanguageToggle />
             <Button
@@ -123,40 +124,53 @@ const Navigation = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Menu - Optimized */}
         {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <div className="lg:hidden pb-4 sm:pb-6 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
             {links.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={() => setIsOpen(false)}
-                className={`block py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                className={`block py-3 px-4 rounded-xl text-sm sm:text-base font-medium transition-all ${
                   link.highlight
-                    ? "bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent bg-primary/10"
+                    ? "bg-primary/10 text-primary"
                     : location.pathname === link.path
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-secondary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
+            
+            <div className="border-t border-border/50 my-3" />
+            
             {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="w-full justify-start gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              <>
+                <Link to="/profile" onClick={() => setIsOpen(false)}>
+                  <Button variant="outline" className="w-full justify-start gap-3 py-6 text-base" size="lg">
+                    <User className="h-5 w-5" />
+                    {t("profile")}
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-3 py-6 text-base"
+                  size="lg"
+                  onClick={() => {
+                    handleLogout();
+                    setIsOpen(false);
+                  }}
+                >
+                  <LogOut className="h-5 w-5" />
+                  {t("logout")}
+                </Button>
+              </>
             ) : (
-              <Link to="/auth?from=chat" onClick={() => setIsOpen(false)} className="block">
-                <Button variant="ghost" size="sm" className="w-full justify-start gap-2">
-                  <User className="h-4 w-4" />
-                  Login
+              <Link to="/auth?from=chat" onClick={() => setIsOpen(false)}>
+                <Button className="w-full py-6 text-base shadow-md" size="lg">
+                  {t("login")}
                 </Button>
               </Link>
             )}
