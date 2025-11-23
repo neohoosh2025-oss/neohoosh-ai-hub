@@ -1,124 +1,63 @@
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Brain, Sparkles, Zap, Shield, Rocket, 
-  MessageCircle, Image, FileText, Check,
-  Star, ArrowRight, Users, TrendingUp
+  ArrowLeft, 
+  Sparkles, 
+  BookOpen, 
+  MessageCircle, 
+  Zap,
+  Brain,
+  Rocket,
+  Shield,
+  Users,
+  TrendingUp,
+  Check,
+  Star,
+  MessageSquare,
+  Share2,
+  Image as ImageIcon,
+  Video,
+  Globe,
+  Code,
+  FileText,
+  Wand2,
+  Languages,
+  Send
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/neohoosh-logo-new.png";
 
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+}
+
 const Index = () => {
-  const aiServices = [
-    {
-      icon: Brain,
-      title: "هوش مصنوعی مکالمه‌ای",
-      description: "چت‌بات‌های هوشمند با مدل‌های پیشرفته Grok و Gemini",
-      features: ["پاسخ‌های سریع", "درک زبان طبیعی", "حافظه مکالمه"],
-      color: "primary",
-    },
-    {
-      icon: Image,
-      title: "تولید تصویر",
-      description: "ساخت تصاویر حرفه‌ای با AI از روی متن",
-      features: ["کیفیت بالا", "سبک‌های متنوع", "ویرایش هوشمند"],
-      color: "secondary",
-    },
-    {
-      icon: FileText,
-      title: "تحلیل محتوا",
-      description: "تحلیل و خلاصه‌سازی اسناد و متون",
-      features: ["خلاصه‌سازی", "استخراج کلیدواژه", "ترجمه"],
-      color: "accent",
-    },
-  ];
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const features = [
-    {
-      icon: Zap,
-      title: "سرعت بالا",
-      description: "پاسخ‌گویی در کسری از ثانیه با بهترین مدل‌های AI",
-    },
-    {
-      icon: Shield,
-      title: "امنیت کامل",
-      description: "رمزنگاری end-to-end و حفاظت از داده‌های شما",
-    },
-    {
-      icon: Rocket,
-      title: "به‌روزرسانی مداوم",
-      description: "دسترسی به جدیدترین مدل‌های هوش مصنوعی",
-    },
-    {
-      icon: Users,
-      title: "پشتیبانی ۲۴/۷",
-      description: "تیم پشتیبانی همیشه در کنار شماست",
-    },
-  ];
+  useEffect(() => {
+    const fetchArticles = async () => {
+      const { data } = await supabase
+        .from("articles")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      
+      setArticles(data || []);
+      setLoading(false);
+    };
 
-  const testimonials = [
-    {
-      name: "علی محمدی",
-      role: "توسعه‌دهنده نرم‌افزار",
-      content: "نئوهوش کار من رو خیلی راحت‌تر کرده. از چت‌بات برای کدنویسی استفاده می‌کنم.",
-      rating: 5,
-    },
-    {
-      name: "سارا احمدی",
-      role: "طراح گرافیک",
-      content: "تولید تصویر با AI فوق‌العادست! کیفیت تصاویر حرفه‌ای و متنوع.",
-      rating: 5,
-    },
-    {
-      name: "رضا کریمی",
-      role: "بازاریاب دیجیتال",
-      content: "برای تولید محتوا و تحلیل داده‌ها از نئوهوش استفاده می‌کنم. عالیه!",
-      rating: 5,
-    },
-  ];
-
-  const pricingPlans = [
-    {
-      name: "رایگان",
-      price: "۰",
-      description: "برای شروع و آزمایش",
-      features: [
-        "۱۰۰ درخواست در ماه",
-        "دسترسی به مدل‌های پایه",
-        "پشتیبانی ایمیل",
-      ],
-      cta: "شروع رایگان",
-      popular: false,
-    },
-    {
-      name: "حرفه‌ای",
-      price: "۴۹۹,۰۰۰",
-      description: "برای کاربران حرفه‌ای",
-      features: [
-        "۵,۰۰۰ درخواست در ماه",
-        "دسترسی به تمام مدل‌ها",
-        "پشتیبانی اولویت‌دار",
-        "API اختصاصی",
-      ],
-      cta: "خرید اشتراک",
-      popular: true,
-    },
-    {
-      name: "سازمانی",
-      price: "تماس بگیرید",
-      description: "برای تیم‌ها و سازمان‌ها",
-      features: [
-        "درخواست نامحدود",
-        "مدل‌های اختصاصی",
-        "پشتیبانی ۲۴/۷",
-        "آموزش تیم",
-      ],
-      cta: "تماس با ما",
-      popular: false,
-    },
-  ];
+    fetchArticles();
+  }, []);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 30 },
@@ -136,25 +75,28 @@ const Index = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Background Gradient Mesh */}
-        <div className="absolute inset-0 bg-[image:var(--gradient-mesh)] opacity-60"></div>
+      {/* Hero Section - Modern Futuristic */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(76,139,245,0.1),transparent_50%)]" />
+        </div>
         
-        <div className="container mx-auto px-4 pt-20 pb-32 relative">
+        <div className="container mx-auto px-4 relative">
           <motion.div
             initial="initial"
             animate="animate"
             variants={staggerContainer}
-            className="max-w-5xl mx-auto text-center space-y-8"
+            className="max-w-6xl mx-auto text-center space-y-8"
           >
             {/* Logo */}
-            <motion.div variants={fadeInUp} className="flex justify-center mb-8">
+            <motion.div variants={fadeInUp} className="flex justify-center mb-4">
               <div className="relative">
                 <img 
                   src={logo} 
-                  alt="Neohoosh" 
-                  className="w-32 h-32 md:w-40 md:h-40 drop-shadow-2xl"
+                  alt="NeoHoosh" 
+                  className="w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse"></div>
               </div>
@@ -162,53 +104,81 @@ const Index = () => {
 
             {/* Badge */}
             <motion.div variants={fadeInUp} className="flex justify-center">
-              <Badge className="px-4 py-2 text-sm shadow-glow">
-                <Sparkles className="w-4 h-4 ml-2" />
-                جدیدترین مدل‌های AI در دسترس
+              <Badge className="px-6 py-2.5 text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
+                <Sparkles className="w-4 h-4 ml-2 animate-pulse" />
+                نسل جدید هوش مصنوعی
               </Badge>
             </motion.div>
 
-            {/* Main Heading */}
+            {/* Main Heading - Emotional & Powerful */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-5xl md:text-7xl font-bold font-display leading-tight"
+              className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight font-display"
             >
-              دنیای{" "}
-              <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                هوش مصنوعی
+              <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+                نسل جدید هوش مصنوعی
               </span>
               <br />
-              برای همه
+              <span className="text-foreground">
+                در ایران. همیشه کنار تو.
+              </span>
             </motion.h1>
 
-            {/* Description */}
+            {/* Sub Heading */}
             <motion.p 
               variants={fadeInUp}
-              className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+              className="text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light"
             >
-              دسترسی آسان به قدرتمندترین مدل‌های هوش مصنوعی.
-              از چت‌بات‌های هوشمند تا تولید تصویر و تحلیل محتوا.
+              ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد.
             </motion.p>
+
+            {/* Chat Bot Preview Mini */}
+            <motion.div 
+              variants={fadeInUp}
+              className="max-w-md mx-auto"
+            >
+              <Card className="bg-card/50 backdrop-blur-xl border-primary/20 shadow-glow">
+                <CardContent className="p-4 space-y-3">
+                  <div className="flex gap-3 items-start">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <MessageCircle className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 bg-primary/5 rounded-2xl rounded-tr-sm p-3 text-sm text-right">
+                      سلام! چطور می‌تونم کمکت کنم؟
+                    </div>
+                  </div>
+                  <div className="flex gap-3 items-start flex-row-reverse">
+                    <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                      <Users className="w-4 h-4 text-accent" />
+                    </div>
+                    <div className="flex-1 bg-accent/5 rounded-2xl rounded-tl-sm p-3 text-sm text-right">
+                      می‌خوام یک استراتژی بازاریابی بنویسم
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* CTA Buttons */}
             <motion.div 
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4"
+              className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-6"
             >
-              <Link to="/neohi">
-                <Button size="lg" className="text-lg px-8 py-6 shadow-glow hover:shadow-xl transition-all group">
-                  <MessageCircle className="ml-2 group-hover:scale-110 transition-transform" />
+              <Link to="/chat">
+                <Button size="lg" className="text-lg px-10 py-7 shadow-glow-strong hover:shadow-glow-accent-strong transition-all group">
+                  <MessageCircle className="ml-2 group-hover:rotate-12 transition-transform" />
                   شروع گفتگو با AI
-                  <ArrowRight className="mr-2" />
+                  <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/chat">
+              <Link to="/dashboard">
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="text-lg px-8 py-6 border-2 hover:bg-primary/5"
+                  className="text-lg px-10 py-7 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5"
                 >
-                  مشاهده امکانات
+                  <Rocket className="ml-2" />
+                  ورود به داشبورد
                 </Button>
               </Link>
             </motion.div>
@@ -216,30 +186,27 @@ const Index = () => {
             {/* Stats */}
             <motion.div 
               variants={fadeInUp}
-              className="grid grid-cols-3 gap-8 pt-12 max-w-2xl mx-auto"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-16 max-w-3xl mx-auto"
             >
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-primary">+۱۰k</div>
-                <div className="text-sm text-muted-foreground mt-1">کاربر فعال</div>
+              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
+                <div className="text-4xl md:text-5xl font-bold text-primary mb-2">+۶۰۰۰</div>
+                <div className="text-sm text-muted-foreground">گفتگو در ماه اخیر</div>
               </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-secondary">+۱M</div>
-                <div className="text-sm text-muted-foreground mt-1">درخواست پردازش</div>
+              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
+                <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">۲۴/۷</div>
+                <div className="text-sm text-muted-foreground">پشتیبانی آنلاین</div>
               </div>
-              <div>
-                <div className="text-3xl md:text-4xl font-bold text-accent">۹۹.۹%</div>
-                <div className="text-sm text-muted-foreground mt-1">آپتایم سرویس</div>
+              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
+                <div className="text-4xl md:text-5xl font-bold text-accent mb-2">۱۰۰٪</div>
+                <div className="text-sm text-muted-foreground">رضایت کاربران</div>
               </div>
             </motion.div>
           </motion.div>
         </div>
-
-        {/* Decorative gradient at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent"></div>
       </section>
 
-      {/* AI Services Section */}
-      <section className="py-20 relative">
+      {/* 3 Main Features - Clean Cards */}
+      <section className="py-24 relative">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -248,54 +215,200 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-4">خدمات هوش مصنوعی</Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
-              ابزارهای قدرتمند AI
+              امکانات NeoHoosh
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              از پیشرفته‌ترین مدل‌های هوش مصنوعی برای کسب‌وکار و پروژه‌های خود استفاده کنید
+              سه ستون اصلی پلتفرم هوش مصنوعی نئوهوش
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {aiServices.map((service, index) => {
-              const Icon = service.icon;
-              return (
-                <motion.div
-                  key={service.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/50 group">
-                    <CardHeader>
-                      <div className={`w-14 h-14 rounded-xl bg-${service.color}/10 flex items-center justify-center mb-4 group-hover:shadow-glow transition-all`}>
-                        <Icon className={`w-7 h-7 text-${service.color}`} />
-                      </div>
-                      <CardTitle className="text-2xl">{service.title}</CardTitle>
-                      <CardDescription className="text-base">{service.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {service.features.map((feature) => (
-                          <li key={feature} className="flex items-center gap-2">
-                            <Check className="w-5 h-5 text-success flex-shrink-0" />
-                            <span className="text-muted-foreground">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+            {[
+              {
+                icon: MessageCircle,
+                title: "چت‌بات هوشمند",
+                desc: "پاسخ سریع، حافظه مکالمه و شخصی‌سازی رفتار برای تجربه‌ای منحصربه‌فرد",
+                features: ["پاسخ سریع", "حافظه مکالمه", "شخصی‌سازی"],
+                gradient: "from-primary/20 to-primary/5"
+              },
+              {
+                icon: Wand2,
+                title: "ابزارهای قدرتمند AI",
+                desc: "تولید متن، خلاصه‌سازی، ترجمه و تحلیل با دقت و سرعت بالا",
+                features: ["تولید متن", "خلاصه‌سازی", "ترجمه و تحلیل"],
+                gradient: "from-secondary/20 to-secondary/5"
+              },
+              {
+                icon: BookOpen,
+                title: "آموزش‌های جامع",
+                desc: "مقالات تخصصی، راهنمای پرامپت و آموزش‌های حرفه‌ای هوش مصنوعی",
+                features: ["مقالات تخصصی", "راهنمای پرامپت", "آموزش حرفه‌ای"],
+                gradient: "from-accent/20 to-accent/5"
+              }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                viewport={{ once: true }}
+              >
+                <Card className="h-full border-2 border-border/50 hover:border-primary/50 hover:shadow-xl transition-all group">
+                  <CardHeader>
+                    <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                      <item.icon className="w-8 h-8 text-primary" />
+                    </div>
+                    <CardTitle className="text-2xl mb-3">{item.title}</CardTitle>
+                    <CardDescription className="text-base leading-relaxed">{item.desc}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="space-y-3">
+                      {item.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-3">
+                          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <Check className="w-3 h-3 text-primary" />
+                          </div>
+                          <span className="text-sm text-muted-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      {/* NEOHI Community - SPECIAL HIGHLIGHT SECTION */}
+      <section className="py-32 relative overflow-hidden">
+        {/* Special Background for NEOHI */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(76,139,245,0.15),transparent_70%)]" />
+        
+        <div className="container mx-auto px-4 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="max-w-6xl mx-auto"
+          >
+            {/* Main NEOHI Card */}
+            <Card className="border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Left Side - Content */}
+                <div className="p-12 lg:p-16 space-y-8">
+                  <div>
+                    <Badge className="mb-6 text-base px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white shadow-lg">
+                      <Sparkles className="w-4 h-4 ml-2 animate-pulse" />
+                      معرفی NEOHI
+                    </Badge>
+                    
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                      <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+                        NEOHI
+                      </span>
+                    </h2>
+                    
+                    <p className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
+                      جایی برای گفتگو، یادگیری و شبکه‌سازی
+                    </p>
+                    
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      کامیونیتی اختصاصی NeoHoosh، الهام‌گرفته از تجربه تلگرام؛
+                      سریع، سبک، گروه‌محور و مخصوص کاربران AI.
+                    </p>
+                  </div>
+
+                  {/* Features Grid */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {[
+                      { icon: Users, label: "گروه‌های تخصصی" },
+                      { icon: MessageSquare, label: "کانال‌های کاربردی" },
+                      { icon: Share2, label: "پرسش و پاسخ" },
+                      { icon: ImageIcon, label: "اشتراک رسانه" },
+                      { icon: Globe, label: "دسترسی چندپلتفرمی" },
+                      { icon: Video, label: "پخش زنده" }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-background/50 border border-border/50">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-5 h-5 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium">{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <Link to="/neohi">
+                    <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6 shadow-glow-strong group">
+                      <Send className="ml-2 group-hover:translate-x-1 transition-transform" />
+                      عضویت در NEOHI
+                      <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </div>
+
+                {/* Right Side - UI Mockup */}
+                <div className="bg-gradient-to-br from-primary/5 to-secondary/5 p-8 lg:p-12 flex items-center justify-center">
+                  <div className="w-full max-w-sm">
+                    {/* Chat Interface Mockup */}
+                    <div className="bg-background rounded-2xl shadow-2xl overflow-hidden border-2 border-border/50">
+                      {/* Header */}
+                      <div className="bg-primary p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                          <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-white font-semibold">گروه هوش مصنوعی</div>
+                          <div className="text-white/70 text-xs">۲۴۳ عضو آنلاین</div>
+                        </div>
+                      </div>
+                      
+                      {/* Messages */}
+                      <div className="p-4 space-y-3 h-64 bg-muted/30">
+                        <div className="flex gap-2 items-start">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex-shrink-0" />
+                          <div className="bg-card rounded-2xl rounded-tr-sm p-3 text-sm max-w-[70%] shadow-sm">
+                            آیا کسی تجربه کار با GPT-5 داره؟
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-start">
+                          <div className="w-8 h-8 rounded-full bg-secondary/20 flex-shrink-0" />
+                          <div className="bg-card rounded-2xl rounded-tr-sm p-3 text-sm max-w-[70%] shadow-sm">
+                            بله! من یک چت‌بات ساختم باهاش
+                          </div>
+                        </div>
+                        <div className="flex gap-2 items-start">
+                          <div className="w-8 h-8 rounded-full bg-accent/20 flex-shrink-0" />
+                          <div className="bg-card rounded-2xl rounded-tr-sm p-3 text-sm max-w-[70%] shadow-sm">
+                            می‌تونی کدشو به اشتراک بذاری؟
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Input */}
+                      <div className="p-3 bg-background border-t border-border/50 flex gap-2">
+                        <div className="flex-1 bg-muted/50 rounded-full px-4 py-2 text-sm text-muted-foreground">
+                          پیام خود را بنویسید...
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                          <Send className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* AI Tools Showcase */}
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -304,39 +417,215 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-4">چرا نئوهوش؟</Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
-              ویژگی‌های منحصر به فرد
+              ابزارهای AI در NeoHoosh
             </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              مجموعه کاملی از ابزارهای هوش مصنوعی برای نیازهای مختلف
+            </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="text-center hover:shadow-lg transition-all p-6 border-2 hover:border-primary/30">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-6 h-6 text-primary" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+            {[
+              { icon: MessageCircle, title: "چت‌بات", color: "primary" },
+              { icon: FileText, title: "تولید متن", color: "secondary" },
+              { icon: Wand2, title: "بازنویسی", color: "accent" },
+              { icon: Languages, title: "ترجمه", color: "primary" },
+              { icon: ImageIcon, title: "تولید تصویر", color: "secondary" },
+              { icon: Code, title: "کد نویسی", color: "accent" },
+              { icon: TrendingUp, title: "تحلیل مقاله", color: "primary" },
+              { icon: Sparkles, title: "ساخت پرامپت", color: "secondary" }
+            ].map((tool, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                viewport={{ once: true }}
+              >
+                <Link to="/tools">
+                  <Card className="p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all group border-border/50 hover:border-primary/50 cursor-pointer">
+                    <div className={`w-14 h-14 rounded-xl bg-${tool.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                      <tool.icon className={`w-7 h-7 text-${tool.color}`} />
                     </div>
-                    <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
+                    <h3 className="font-semibold text-sm">{tool.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">شروع کنید</p>
                   </Card>
-                </motion.div>
-              );
-            })}
+                </Link>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20">
+      {/* Chatbot Preview Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              {/* Left - Content */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="space-y-6"
+              >
+                <Badge className="bg-primary/10 text-primary border-primary/30">
+                  چت‌بات پیشرفته
+                </Badge>
+                
+                <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+                  هوش مصنوعی همراه
+                  <br />
+                  <span className="text-primary">همیشه کنار توست</span>
+                </h2>
+                
+                <div className="space-y-4">
+                  {[
+                    { icon: Zap, text: "سرعت بالا و پاسخ‌گویی فوری" },
+                    { icon: Languages, text: "پشتیبانی کامل از زبان فارسی" },
+                    { icon: Users, text: "قابلیت شخصی‌سازی و حافظه" },
+                    { icon: Brain, text: "دسترسی به مدل‌های مختلف AI" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <p className="text-lg">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <Link to="/chat">
+                  <Button size="lg" className="gap-2 shadow-glow">
+                    <MessageCircle className="w-5 h-5" />
+                    شروع گفتگو
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Right - Chat Preview */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Card className="border-2 border-border/50 shadow-xl">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex gap-3 items-start">
+                      <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                        <Users className="w-5 h-5 text-accent" />
+                      </div>
+                      <div className="flex-1 bg-accent/5 rounded-2xl rounded-tl-sm p-4">
+                        <p className="text-right">می‌خوام یک استراتژی بازاریابی برای محصول جدیدم بنویسم</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 items-start">
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Brain className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 bg-primary/5 rounded-2xl rounded-tr-sm p-4">
+                        <p className="text-right leading-relaxed">
+                          عالیه! برای نوشتن یک استراتژی بازاریابی موثر، بهتره اول محصولت رو بهتر بشناسیم. می‌تونی بهم بگی:
+                          <br />
+                          <br />
+                          ۱. محصول چیه؟
+                          <br />
+                          ۲. مخاطب هدفت کیه؟
+                          <br />
+                          ۳. بودجه‌ات چقدره؟
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground pr-14">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse delay-100" />
+                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse delay-200" />
+                      <span className="mr-2">در حال تایپ...</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Articles */}
+      {!loading && articles.length > 0 && (
+        <section className="py-24 bg-muted/30">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
+                آخرین مقالات
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                با جدیدترین مطالب و آموزش‌های AI آشنا شوید
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {articles.map((article, i) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Link to={`/articles/${article.id}`}>
+                    <Card className="overflow-hidden h-full hover:shadow-xl hover:-translate-y-1 transition-all group border-2 border-border/50 hover:border-primary/50">
+                      {article.image_url && (
+                        <div className="aspect-video overflow-hidden bg-muted">
+                          <img
+                            src={article.image_url}
+                            alt={article.title}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6">
+                        <Badge className="mb-3 bg-primary/10 text-primary border-primary/30">
+                          {article.category}
+                        </Badge>
+                        <h3 className="text-xl font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                          {article.title}
+                        </h3>
+                        <p className="text-muted-foreground line-clamp-2 leading-relaxed text-sm">
+                          {article.excerpt}
+                        </p>
+                      </div>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <Link to="/articles">
+                <Button size="lg" variant="outline" className="gap-2 border-2">
+                  مشاهده همه مقالات
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Trust & Social Proof */}
+      <section className="py-24">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -345,26 +634,47 @@ const Index = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <Badge className="mb-4">نظرات کاربران</Badge>
             <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
-              کاربران ما چه می‌گویند
+              کاربران راضی NeoHoosh
             </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              تجربه هزاران کاربر از استفاده پلتفرم هوش مصنوعی نئوهوش
+            </p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {testimonials.map((testimonial, index) => (
+            {[
+              {
+                name: "علی محمدی",
+                role: "توسعه‌دهنده نرم‌افزار",
+                content: "نئوهوش کار من رو خیلی راحت‌تر کرده. از چت‌بات برای کدنویسی و حل مشکلات استفاده می‌کنم.",
+                rating: 5
+              },
+              {
+                name: "سارا احمدی",
+                role: "طراح گرافیک",
+                content: "ابزارهای تولید محتوا و تصویر فوق‌العادست! کیفیت خروجی‌ها حرفه‌ای و متنوعه.",
+                rating: 5
+              },
+              {
+                name: "رضا کریمی",
+                role: "بازاریاب دیجیتال",
+                content: "برای تولید محتوا و تحلیل داده‌ها از نئوهوش استفاده می‌کنم. واقعاً عالیه!",
+                rating: 5
+              }
+            ].map((testimonial, i) => (
               <motion.div
-                key={testimonial.name}
+                key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full hover:shadow-lg transition-all">
+                <Card className="h-full hover:shadow-lg transition-all border-border/50">
                   <CardHeader>
                     <div className="flex gap-1 mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-warning text-warning" />
+                      {[...Array(testimonial.rating)].map((_, idx) => (
+                        <Star key={idx} className="w-5 h-5 fill-warning text-warning" />
                       ))}
                     </div>
                     <CardDescription className="text-base leading-relaxed">
@@ -373,7 +683,7 @@ const Index = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
                         {testimonial.name[0]}
                       </div>
                       <div>
@@ -389,123 +699,59 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      {/* Final CTA */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
+        
+        <div className="container mx-auto px-4 relative">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
           >
-            <Badge className="mb-4">قیمت‌گذاری</Badge>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
-              پلن مناسب خود را انتخاب کنید
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              با هر بودجه‌ای می‌توانید از قدرت هوش مصنوعی استفاده کنید
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card className={`h-full relative ${
-                  plan.popular 
-                    ? 'border-2 border-primary shadow-glow scale-105' 
-                    : 'hover:shadow-lg'
-                } transition-all`}>
-                  {plan.popular && (
-                    <div className="absolute -top-4 left-0 right-0 flex justify-center">
-                      <Badge className="bg-gradient-to-r from-primary to-secondary shadow-lg">
-                        <TrendingUp className="w-4 h-4 ml-1" />
-                        محبوب‌ترین
-                      </Badge>
-                    </div>
-                  )}
-                  <CardHeader className="text-center pb-8 pt-8">
-                    <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                    <div className="mb-4">
-                      <span className="text-4xl font-bold font-display">{plan.price}</span>
-                      {plan.price !== "تماس بگیرید" && (
-                        <span className="text-muted-foreground mr-2">تومان/ماه</span>
-                      )}
-                    </div>
-                    <CardDescription>{plan.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <ul className="space-y-3">
-                      {plan.features.map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <Link to="/auth" className="block">
-                      <Button 
-                        className={`w-full ${
-                          plan.popular 
-                            ? 'shadow-glow' 
-                            : ''
-                        }`}
-                        variant={plan.popular ? 'default' : 'outline'}
-                        size="lg"
-                      >
-                        {plan.cta}
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Card className="bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-2 border-primary/20 shadow-2xl max-w-4xl mx-auto">
-              <CardContent className="p-12 text-center">
-                <Sparkles className="w-16 h-16 mx-auto mb-6 text-primary" />
-                <h2 className="text-3xl md:text-4xl font-bold mb-4 font-display">
-                  آماده شروع هستید؟
-                </h2>
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  همین الان به هزاران کاربر نئوهوش بپیوندید و از قدرت هوش مصنوعی برای رسیدن به اهدافتان استفاده کنید.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link to="/auth">
-                    <Button size="lg" className="text-lg px-8 py-6 shadow-glow">
-                      <Rocket className="ml-2" />
-                      ثبت‌نام رایگان
-                    </Button>
-                  </Link>
-                  <Link to="/contact">
-                    <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2">
-                      تماس با تیم فروش
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
+            <Card className="max-w-4xl mx-auto p-12 lg:p-16 text-center border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                آماده شروع هستید؟
+              </h2>
+              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+                همین امروز به هزاران کاربر راضی بپیوندید و قدرت هوش مصنوعی را تجربه کنید
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/chat">
+                  <Button size="lg" className="text-lg px-10 py-7 shadow-glow-strong group">
+                    <MessageCircle className="ml-2 group-hover:rotate-12 transition-transform" />
+                    شروع رایگان
+                    <ArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link to="/contact">
+                  <Button size="lg" variant="outline" className="text-lg px-10 py-7 border-2">
+                    تماس با ما
+                  </Button>
+                </Link>
+              </div>
             </Card>
           </motion.div>
         </div>
       </section>
+
+      {/* Floating Chat Button */}
+      <Link to="/chat">
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 1, type: "spring" }}
+          className="fixed bottom-8 left-8 z-50"
+        >
+          <Button 
+            size="icon"
+            className="h-16 w-16 rounded-full shadow-glow-strong hover:shadow-glow-accent-strong hover:scale-110 transition-all"
+          >
+            <MessageCircle className="h-8 w-8" />
+          </Button>
+        </motion.div>
+      </Link>
     </div>
   );
 };
