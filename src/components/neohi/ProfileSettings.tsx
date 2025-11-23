@@ -1,12 +1,29 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Camera, Save } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { 
+  ArrowLeft, 
+  Camera, 
+  Save, 
+  User, 
+  AtSign,
+  Phone as PhoneIcon,
+  MessageSquare,
+  LogOut,
+  Shield,
+  Bell,
+  Palette,
+  Globe
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileSettingsProps {
   onBack: () => void;
@@ -14,6 +31,7 @@ interface ProfileSettingsProps {
 
 export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -24,6 +42,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [bio, setBio] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
 
   useEffect(() => {
     loadProfile();
@@ -48,6 +67,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         setBio(profile.bio || "");
         setPhone(profile.phone || "");
         setAvatarUrl(profile.avatar_url || "");
+        setCreatedAt(profile.created_at || "");
       }
     } catch (error) {
       console.error("Error loading profile:", error);
@@ -123,121 +143,236 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         description: "Failed to update profile",
         variant: "destructive",
       });
-    } finally {
-      setSaving(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
   };
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-10 h-10 border-3 border-[hsl(var(--neohi-accent))] border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden" dir="ltr">
       {/* Header */}
-      <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
-        <div className="flex items-center justify-between h-11">
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md"
+      >
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
-            className="text-[#0a84ff] hover:bg-transparent text-base px-0"
+            className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
             onClick={onBack}
           >
-            <ArrowLeft className="h-5 w-5 mr-1 scale-x-[-1]" />
+            <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </Button>
           
-          <span className="text-white font-semibold text-lg">Profile Settings</span>
+          <span className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">Profile Settings</span>
 
           <Button
-            variant="ghost"
-            className="text-[#0a84ff] hover:bg-transparent text-base px-0"
+            className="bg-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-accent))]/90 text-white shadow-lg transition-all"
             onClick={handleSave}
             disabled={saving}
           >
-            <Save className="h-5 w-5 mr-1" />
+            <Save className="h-4 w-4 mr-2" />
             {saving ? "Saving..." : "Save"}
           </Button>
         </div>
-      </header>
+      </motion.header>
 
       {/* Content */}
-      <ScrollArea className="flex-1 bg-black">
-        <div className="p-6 space-y-6">
+      <ScrollArea className="flex-1 bg-[hsl(var(--neohi-bg-main))]">
+        <div className="max-w-2xl mx-auto p-6 space-y-6">
           {/* Avatar Section */}
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl">
-                  {displayName?.charAt(0) || username?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 w-8 h-8 bg-[#0a84ff] rounded-full flex items-center justify-center cursor-pointer hover:bg-[#0066cc] transition-colors"
-              >
-                <Camera className="h-4 w-4 text-white" />
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                  disabled={uploading}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-8 border border-[hsl(var(--neohi-border))] shadow-lg"
+          >
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group">
+                <Avatar className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))]">
+                  <AvatarImage src={avatarUrl || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-4xl font-bold">
+                    {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-2 right-2 w-10 h-10 bg-[hsl(var(--neohi-accent))] rounded-full flex items-center justify-center cursor-pointer hover:bg-[hsl(var(--neohi-accent))]/90 transition-all shadow-lg group-hover:scale-110"
+                >
+                  <Camera className="h-5 w-5 text-white" />
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
+              {uploading && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[hsl(var(--neohi-accent))] text-sm font-medium"
+                >
+                  Uploading...
+                </motion.p>
+              )}
+              <div className="text-center">
+                <h3 className="text-[hsl(var(--neohi-text-primary))] font-bold text-2xl">
+                  {displayName || username}
+                </h3>
+                <p className="text-[hsl(var(--neohi-text-secondary))] text-sm mt-1">
+                  @{username}
+                </p>
+                {createdAt && (
+                  <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
+                    Joined {new Date(createdAt).toLocaleDateString()}
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Profile Information */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-6 border border-[hsl(var(--neohi-border))] shadow-lg space-y-6"
+          >
+            <h4 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg flex items-center gap-2">
+              <User className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
+              Profile Information
+            </h4>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
+                  <AtSign className="h-4 w-4" />
+                  Username
+                </Label>
+                <Input
+                  value={username}
+                  disabled
+                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-secondary))] cursor-not-allowed"
                 />
-              </label>
-            </div>
-            {uploading && (
-              <p className="text-gray-400 text-sm">Uploading...</p>
-            )}
-          </div>
+                <p className="text-[hsl(var(--neohi-text-secondary))] text-xs">Username cannot be changed</p>
+              </div>
 
-          {/* Form Fields */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-gray-400 text-sm">Username</label>
-              <Input
-                value={username}
-                disabled
-                className="bg-[#2c2c2e] border-none text-gray-500 cursor-not-allowed"
-              />
-              <p className="text-gray-500 text-xs">Username cannot be changed</p>
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
+                  <User className="h-4 w-4" />
+                  Display Name
+                </Label>
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Enter your display name"
+                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  Bio
+                </Label>
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Tell us about yourself..."
+                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] min-h-[120px] resize-none focus:border-[hsl(var(--neohi-accent))]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
+                  <PhoneIcon className="h-4 w-4" />
+                  Phone Number
+                </Label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 234 567 8900"
+                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
+                />
+              </div>
             </div>
+          </motion.div>
+
+          {/* Settings */}
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-6 border border-[hsl(var(--neohi-border))] shadow-lg space-y-4"
+          >
+            <h4 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg flex items-center gap-2">
+              <Shield className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
+              Settings & Privacy
+            </h4>
 
             <div className="space-y-2">
-              <label className="text-gray-400 text-sm">Display Name</label>
-              <Input
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Enter your display name"
-                className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500"
-              />
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+              >
+                <Bell className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
+                Notifications
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+              >
+                <Shield className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
+                Privacy & Security
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+              >
+                <Palette className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
+                Appearance
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+              >
+                <Globe className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
+                Language
+              </Button>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-gray-400 text-sm">Bio</label>
-              <Textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Add a bio..."
-                className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500 min-h-[100px] resize-none"
-              />
-            </div>
+            <Separator className="bg-[hsl(var(--neohi-border))]" />
 
-            <div className="space-y-2">
-              <label className="text-gray-400 text-sm">Phone Number</label>
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 234 567 8900"
-                className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500"
-              />
-            </div>
-          </div>
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="w-full justify-start text-red-500 hover:bg-red-500/10"
+            >
+              <LogOut className="h-5 w-5 mr-3" />
+              Log Out
+            </Button>
+          </motion.div>
         </div>
       </ScrollArea>
     </div>
