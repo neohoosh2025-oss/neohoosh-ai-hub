@@ -26,6 +26,7 @@ import MemoryManagement from "./pages/MemoryManagement";
 import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
 import DesignSystem from "./pages/DesignSystem";
+import Pricing from "./pages/Pricing";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
                       <Route path="/products" element={<Products />} />
                       <Route path="/products/:id" element={<ProductDetail />} />
                       <Route path="/services" element={<Services />} />
+                      <Route path="/pricing" element={<Pricing />} />
                       <Route path="/about" element={<About />} />
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/chat" element={<Chat />} />

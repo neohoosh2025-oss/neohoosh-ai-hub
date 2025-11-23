@@ -100,7 +100,7 @@ const ArticleDetail = () => {
     <div className="min-h-screen py-20">
       <div className="container mx-auto px-4">
         <Link to="/articles">
-          <Button variant="ghost" className="gap-2 mb-8">
+          <Button variant="ghost" className="gap-2 mb-8 hover-scale">
             <ArrowRight className="h-4 w-4" />
             {t("articleDetail.backToArticles")}
           </Button>
@@ -108,32 +108,36 @@ const ArticleDetail = () => {
 
         <article className="max-w-4xl mx-auto">
           {/* Category Badge */}
-          <div className="mb-4">
-            <span className="inline-block px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          <div className="mb-6 animate-fade-in">
+            <span className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 text-primary text-sm font-semibold border border-primary/20">
               {article.category}
             </span>
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+          <h1 className="text-display-lg md:text-display-xl font-bold mb-8 leading-tight bg-gradient-to-l from-foreground to-foreground/80 bg-clip-text animate-fade-in" style={{ animationDelay: "0.1s" }}>
             {getArticleText('title')}
           </h1>
 
           {/* Meta Info */}
-          <div className="flex items-center gap-6 text-muted-foreground mb-8">
+          <div className="flex items-center gap-6 text-muted-foreground mb-10 pb-8 border-b border-border/50 animate-fade-in" style={{ animationDelay: "0.2s" }}>
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{new Date(article.created_at).toLocaleDateString("fa-IR")}</span>
+              <div className="p-2 rounded-lg bg-muted/50">
+                <Calendar className="h-4 w-4" />
+              </div>
+              <span className="text-sm">{new Date(article.created_at).toLocaleDateString("fa-IR")}</span>
             </div>
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4" />
-              <span>{t("articleDetail.author")}</span>
+              <div className="p-2 rounded-lg bg-muted/50">
+                <User className="h-4 w-4" />
+              </div>
+              <span className="text-sm">{t("articleDetail.author")}</span>
             </div>
           </div>
 
           {/* Featured Image */}
           {article.image_url && (
-            <div className="mb-8 rounded-2xl overflow-hidden">
+            <div className="mb-12 rounded-2xl overflow-hidden shadow-xl shadow-primary/5 animate-fade-in" style={{ animationDelay: "0.3s" }}>
               <img
                 src={article.image_url}
                 alt={getArticleText('title')}
@@ -143,14 +147,31 @@ const ArticleDetail = () => {
           )}
 
           {/* Excerpt */}
-          <div className="text-xl text-muted-foreground mb-8 p-6 bg-card/50 rounded-2xl border border-border">
-            {getArticleText('excerpt')}
+          <div className="text-body-lg text-muted-foreground mb-12 p-8 bg-gradient-to-br from-card to-card/50 rounded-2xl border border-border/50 shadow-sm animate-fade-in" style={{ animationDelay: "0.4s" }}>
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded-lg bg-primary/10 text-primary mt-1">
+                <User className="h-5 w-5" />
+              </div>
+              <p className="flex-1 leading-relaxed">{getArticleText('excerpt')}</p>
+            </div>
           </div>
 
           {/* Content */}
-          <div className="prose prose-lg max-w-none">
-            <div className="whitespace-pre-wrap text-foreground leading-relaxed">
+          <div className="prose prose-lg max-w-none animate-fade-in" style={{ animationDelay: "0.5s" }}>
+            <div className="whitespace-pre-wrap text-foreground leading-relaxed space-y-6">
               {getArticleText('content')}
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-16 pt-8 border-t border-border/50 animate-fade-in" style={{ animationDelay: "0.6s" }}>
+            <div className="flex items-center justify-between">
+              <Link to="/articles">
+                <Button variant="outline" className="gap-2">
+                  <ArrowRight className="h-4 w-4" />
+                  {t("articleDetail.backToArticles")}
+                </Button>
+              </Link>
             </div>
           </div>
         </article>
