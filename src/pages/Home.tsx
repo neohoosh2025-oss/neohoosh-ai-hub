@@ -350,7 +350,7 @@ const Home = () => {
                   </div>
 
                   {/* Features - Compact Mobile Grid */}
-                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:gap-4">
+                  <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-6">
                     {[
                       { icon: Users, label: "گروه‌های تخصصی" },
                       { icon: MessageSquare, label: "کانال‌ها" },
@@ -359,9 +359,9 @@ const Home = () => {
                       { icon: Globe, label: "دسترسی آسان" },
                       { icon: Video, label: "پخش زنده" }
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-2 p-2 sm:p-2.5 md:p-3 rounded-xl bg-background/50 border border-border/50">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-primary" />
+                      <div key={i} className="flex items-center gap-3 p-3 sm:p-3.5 md:p-4 rounded-xl bg-background/50 border border-border/50">
+                        <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-5 h-5 sm:w-5.5 sm:h-5.5 md:w-6 md:h-6 text-primary" />
                         </div>
                         <span className="text-xs sm:text-sm font-medium leading-tight">{item.label}</span>
                       </div>
