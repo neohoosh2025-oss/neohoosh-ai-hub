@@ -46,23 +46,10 @@ const Profile = () => {
     memberSince: "",
     lastActivity: ""
   });
-
-  // Mock data for charts
-  const weeklyActivity = [
-    { day: 'شنبه', messages: 12 },
-    { day: 'یکشنبه', messages: 19 },
-    { day: 'دوشنبه', messages: 15 },
-    { day: 'سه‌شنبه', messages: 25 },
-    { day: 'چهارشنبه', messages: 22 },
-    { day: 'پنجشنبه', messages: 18 },
-    { day: 'جمعه', messages: 8 },
-  ];
-
-  const usageData = [
-    { month: 'فروردین', usage: 65 },
-    { month: 'اردیبهشت', usage: 78 },
-    { month: 'خرداد', usage: 92 },
-  ];
+  const [weeklyActivity, setWeeklyActivity] = useState<Array<{ day: string; messages: number }>>([]);
+  const [usageData, setUsageData] = useState<Array<{ month: string; usage: number }>>([]);
+  const [todayMessages, setTodayMessages] = useState(0);
+  const [weeklyGrowth, setWeeklyGrowth] = useState(0);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -91,25 +78,108 @@ const Profile = () => {
           }
 
           let messageCount = 0;
+          let allMessages: any[] = [];
           
           // Only fetch messages if we have conversations
           if (conversations && conversations.length > 0) {
-            const { count, error: msgError } = await supabase
+            const { data: messages, count, error: msgError } = await supabase
               .from("messages")
-              .select("id", { count: 'exact', head: true })
-              .in("conversation_id", conversations.map(c => c.id));
+              .select("id, created_at, conversation_id", { count: 'exact' })
+              .in("conversation_id", conversations.map(c => c.id))
+              .order('created_at', { ascending: false });
             
             if (msgError) {
               console.error('Error loading messages:', msgError);
             } else {
               messageCount = count || 0;
+              allMessages = messages || [];
             }
           }
+
+          // Calculate weekly activity (last 7 days)
+          const weekDays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+          const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - i));
+            return date;
+          });
+
+          const weeklyData = last7Days.map((date, index) => {
+            const dayStart = new Date(date.setHours(0, 0, 0, 0));
+            const dayEnd = new Date(date.setHours(23, 59, 59, 999));
+            
+            const messagesCount = allMessages.filter(msg => {
+              const msgDate = new Date(msg.created_at);
+              return msgDate >= dayStart && msgDate <= dayEnd;
+            }).length;
+
+            return {
+              day: weekDays[date.getDay()],
+              messages: messagesCount
+            };
+          });
+          setWeeklyActivity(weeklyData);
+
+          // Calculate today's messages
+          const today = new Date();
+          const todayStart = new Date(today.setHours(0, 0, 0, 0));
+          const todayEnd = new Date(today.setHours(23, 59, 59, 999));
+          const todayCount = allMessages.filter(msg => {
+            const msgDate = new Date(msg.created_at);
+            return msgDate >= todayStart && msgDate <= todayEnd;
+          }).length;
+          setTodayMessages(todayCount);
+
+          // Calculate weekly growth
+          const thisWeekStart = new Date();
+          thisWeekStart.setDate(thisWeekStart.getDate() - 7);
+          const lastWeekStart = new Date();
+          lastWeekStart.setDate(lastWeekStart.getDate() - 14);
+          
+          const thisWeekCount = allMessages.filter(msg => {
+            const msgDate = new Date(msg.created_at);
+            return msgDate >= thisWeekStart;
+          }).length;
+          
+          const lastWeekCount = allMessages.filter(msg => {
+            const msgDate = new Date(msg.created_at);
+            return msgDate >= lastWeekStart && msgDate < thisWeekStart;
+          }).length;
+          
+          const growth = lastWeekCount > 0 
+            ? Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100)
+            : 0;
+          setWeeklyGrowth(growth);
+
+          // Calculate monthly usage (last 3 months)
+          const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 
+                                 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+          const last3Months = Array.from({ length: 3 }, (_, i) => {
+            const date = new Date();
+            date.setMonth(date.getMonth() - (2 - i));
+            return date;
+          });
+
+          const monthlyData = last3Months.map(date => {
+            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            const messagesCount = allMessages.filter(msg => {
+              const msgDate = new Date(msg.created_at);
+              return msgDate >= monthStart && msgDate <= monthEnd;
+            }).length;
+
+            return {
+              month: persianMonths[date.getMonth()],
+              usage: messagesCount
+            };
+          });
+          setUsageData(monthlyData);
 
           setStats({
             totalMessages: messageCount,
             conversationsCount: conversations?.length || 0,
-            activeToday: true,
+            activeToday: todayCount > 0,
             memberSince: user.created_at,
             lastActivity: conversations?.[0]?.updated_at || user.created_at
           });
@@ -123,6 +193,8 @@ const Profile = () => {
             memberSince: user.created_at,
             lastActivity: user.created_at
           });
+          setWeeklyActivity([]);
+          setUsageData([]);
         }
       } catch (error) {
         console.error('Error in checkUser:', error);
@@ -415,12 +487,12 @@ const Profile = () => {
                   </div>
                   <div className="text-center p-3 rounded-lg bg-accent-50 dark:bg-accent-900/20">
                     <Activity className="w-5 h-5 text-accent-600 mx-auto mb-1" />
-                    <div className="text-lg font-bold">12</div>
+                    <div className="text-lg font-bold">{todayMessages}</div>
                     <div className="text-xs text-muted-foreground">امروز</div>
                   </div>
                   <div className="text-center p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
                     <TrendingUp className="w-5 h-5 text-secondary-600 mx-auto mb-1" />
-                    <div className="text-lg font-bold">+24%</div>
+                    <div className="text-lg font-bold">{weeklyGrowth > 0 ? '+' : ''}{weeklyGrowth}%</div>
                     <div className="text-xs text-muted-foreground">رشد هفتگی</div>
                   </div>
                 </div>
