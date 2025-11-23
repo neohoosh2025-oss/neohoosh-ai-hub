@@ -66,37 +66,71 @@ const Profile = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        
+        if (userError || !user) {
+          console.log('No user found, redirecting to auth');
+          navigate("/auth");
+          return;
+        }
+
+        setUser(user);
+        setEmail(user.email || "");
+        setDisplayName(user.user_metadata?.display_name || "");
+        
+        // Load user statistics with error handling
+        try {
+          const { data: conversations, error: convError } = await supabase
+            .from("conversations")
+            .select("id, created_at, updated_at")
+            .eq("user_id", user.id);
+          
+          if (convError) {
+            console.error('Error loading conversations:', convError);
+          }
+
+          let messageCount = 0;
+          
+          // Only fetch messages if we have conversations
+          if (conversations && conversations.length > 0) {
+            const { count, error: msgError } = await supabase
+              .from("messages")
+              .select("id", { count: 'exact', head: true })
+              .in("conversation_id", conversations.map(c => c.id));
+            
+            if (msgError) {
+              console.error('Error loading messages:', msgError);
+            } else {
+              messageCount = count || 0;
+            }
+          }
+
+          setStats({
+            totalMessages: messageCount,
+            conversationsCount: conversations?.length || 0,
+            activeToday: true,
+            memberSince: user.created_at,
+            lastActivity: conversations?.[0]?.updated_at || user.created_at
+          });
+        } catch (statsError) {
+          console.error('Error loading stats:', statsError);
+          // Set default stats even if there's an error
+          setStats({
+            totalMessages: 0,
+            conversationsCount: 0,
+            activeToday: false,
+            memberSince: user.created_at,
+            lastActivity: user.created_at
+          });
+        }
+      } catch (error) {
+        console.error('Error in checkUser:', error);
         navigate("/auth");
-        return;
+      } finally {
+        // Always set loading to false
+        setLoading(false);
       }
-
-      setUser(user);
-      setEmail(user.email || "");
-      setDisplayName(user.user_metadata?.display_name || "");
-      
-      // Load user statistics
-      const { data: conversations } = await supabase
-        .from("conversations")
-        .select("id, created_at, updated_at")
-        .eq("user_id", user.id);
-      
-      const { data: messages, count: messageCount } = await supabase
-        .from("messages")
-        .select("id", { count: 'exact' })
-        .in("conversation_id", conversations?.map(c => c.id) || []);
-
-      setStats({
-        totalMessages: messageCount || 0,
-        conversationsCount: conversations?.length || 0,
-        activeToday: true,
-        memberSince: user.created_at,
-        lastActivity: conversations?.[0]?.updated_at || user.created_at
-      });
-      
-      setLoading(false);
     };
 
     checkUser();
