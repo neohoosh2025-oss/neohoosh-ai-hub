@@ -57,14 +57,17 @@ const Articles = () => {
 
   return (
     <div className="min-h-screen pt-20">
-      {/* Header */}
-      <section className="py-16 bg-gradient-to-b from-card/50 to-background">
-        <div className="container mx-auto px-4">
+      {/* Hero Header */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsl(var(--primary)/0.1),transparent)]" />
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-display-xl font-bold mb-6 bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent animate-fade-in">
               {t("articlesPage.title")}
             </h1>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-body-lg text-muted-foreground animate-fade-in" style={{ animationDelay: "0.1s" }}>
               {t("articlesPage.subtitle")}
             </p>
           </div>
@@ -72,62 +75,76 @@ const Articles = () => {
       </section>
 
       {/* Articles Grid */}
-      <section className="py-12">
+      <section className="py-12 pb-20">
         <div className="container mx-auto px-4">
           {loading ? (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground">{t("latestArticles.loading")}</p>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i} className="overflow-hidden animate-pulse">
+                  <div className="h-48 bg-muted" />
+                  <div className="p-6 space-y-4">
+                    <div className="h-6 bg-muted rounded w-3/4" />
+                    <div className="h-4 bg-muted rounded w-full" />
+                    <div className="h-4 bg-muted rounded w-5/6" />
+                  </div>
+                </Card>
+              ))}
             </div>
           ) : articles.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground">{t("latestArticles.noArticles")}</p>
+              <div className="mx-auto mb-4 p-4 rounded-2xl bg-muted/50 w-fit">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <p className="text-body-lg text-muted-foreground">{t("latestArticles.noArticles")}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {articles.map((article) => (
-              <Link key={article.id} to={`/articles/${article.id}`}>
-                <Card
-                  className="overflow-hidden border-border hover:border-primary/50 transition-all group cursor-pointer h-full"
+              {articles.map((article, idx) => (
+                <Link 
+                  key={article.id} 
+                  to={`/articles/${article.id}`}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${idx * 0.1}s` }}
                 >
-                  {article.image_url && (
-                    <div className="relative overflow-hidden">
-                      <img
-                        src={article.image_url}
-                        alt={article.title}
-                        className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute top-4 right-4">
-                        <span className="px-3 py-1 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium">
-                          {article.category}
-                        </span>
+                  <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover-scale">
+                    {article.image_url && (
+                      <div className="relative overflow-hidden bg-muted">
+                        <img
+                          src={article.image_url}
+                          alt={getArticleText(article, 'title')}
+                          className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <div className="absolute top-4 right-4">
+                          <span className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-lg backdrop-blur-sm">
+                            {article.category}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div className="p-6 space-y-4">
-                    <h3 className="text-xl font-semibold group-hover:text-primary transition-colors line-clamp-2">
-                      {getArticleText(article, 'title')}
-                    </h3>
-                    
-                    <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
-                      {getArticleText(article, 'excerpt')}
-                    </p>
+                    <div className="p-6 space-y-4">
+                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                        {getArticleText(article, 'title')}
+                      </h3>
+                      
+                      <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
+                        {getArticleText(article, 'excerpt')}
+                      </p>
 
-                    <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border">
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
+                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border/50">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
                           {new Date(article.created_at).toLocaleDateString("fa-IR")}
                         </span>
+                        <span className="flex items-center gap-1.5 text-primary opacity-0 group-hover:opacity-100 transition-opacity font-medium">
+                          {t("latestArticles.readMore")}
+                          <ArrowLeft className="h-3.5 w-3.5" />
+                        </span>
                       </div>
-                      <Button variant="ghost" size="sm" className="gap-2 group-hover:text-primary">
-                        {t("latestArticles.readMore")}
-                        <ArrowLeft className="h-3 w-3" />
-                      </Button>
                     </div>
-                  </div>
-                </Card>
-              </Link>
+                  </Card>
+                </Link>
               ))}
             </div>
           )}
