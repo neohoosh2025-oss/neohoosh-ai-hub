@@ -37,30 +37,30 @@ const About = () => {
 
   const team = [
     {
-      name: "علی رضایی",
+      name: "محمدرضا تقی معز",
       role: "بنیان‌گذار و مدیر عامل",
-      avatar: "AR",
+      avatar: "م.ت",
       bio: "متخصص هوش مصنوعی با بیش از 10 سال تجربه",
       gradient: "from-primary to-secondary",
     },
     {
-      name: "سارا محمدی",
+      name: "سعید زارعی",
       role: "مدیر فنی",
-      avatar: "SM",
+      avatar: "س.ز",
       bio: "کارشناس معماری نرم‌افزار و سیستم‌های توزیع‌شده",
       gradient: "from-secondary to-accent",
     },
     {
-      name: "رضا احمدی",
+      name: "پوریا رضایی",
       role: "مدیر محصول",
-      avatar: "RA",
+      avatar: "پ.ر",
       bio: "طراح تجربه کاربری با تمرکز بر AI/ML",
       gradient: "from-accent to-primary",
     },
     {
-      name: "مریم کریمی",
+      name: "ارژنگ رضایی",
       role: "مدیر پشتیبانی",
-      avatar: "MK",
+      avatar: "ا.ر",
       bio: "متخصص خدمات مشتریان و موفقیت کاربران",
       gradient: "from-primary to-accent",
     },
