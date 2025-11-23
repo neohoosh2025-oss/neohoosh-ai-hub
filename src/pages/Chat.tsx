@@ -5,6 +5,8 @@ import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send,
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -661,7 +663,15 @@ const Chat = () => {
                         )}
                       </button>
                     )}
-                    <p className="text-base whitespace-pre-wrap">{msg.content}</p>
+                    {msg.role === "assistant" ? (
+                      <div className="prose prose-sm max-w-none dark:prose-invert [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-right [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-base whitespace-pre-wrap">{msg.content}</p>
+                    )}
                     {msg.imageUrl && (
                       <div className="mt-3">
                         <img 
