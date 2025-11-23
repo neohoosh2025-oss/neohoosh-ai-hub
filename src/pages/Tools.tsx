@@ -82,8 +82,7 @@ const tools: Tool[] = [
     description: "تولید محتوای باکیفیت برای وبلاگ، شبکه‌های اجتماعی و...",
     icon: FileText,
     color: "accent",
-    path: "/tools/content-writer",
-    badge: "به زودی",
+    path: "/chat",
     category: "تولید محتوا"
   }
 ];

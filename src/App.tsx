@@ -30,6 +30,9 @@ import DesignSystem from "./pages/DesignSystem";
 import Pricing from "./pages/Pricing";
 import Tools from "./pages/Tools";
 import ImageGenerator from "./pages/ImageGenerator";
+import VoiceToText from "./pages/VoiceToText";
+import TextToVoice from "./pages/TextToVoice";
+import CodeGenerator from "./pages/CodeGenerator";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +68,9 @@ const App = () => (
                         <Route path="/contact" element={<Contact />} />
                         <Route path="/tools" element={<Tools />} />
                         <Route path="/tools/image-generator" element={<ImageGenerator />} />
+                        <Route path="/tools/voice-to-text" element={<VoiceToText />} />
+                        <Route path="/tools/text-to-voice" element={<TextToVoice />} />
+                        <Route path="/tools/code-generator" element={<CodeGenerator />} />
                         <Route path="/chat" element={<Chat />} />
                         <Route path="/memory" element={<MemoryManagement />} />
                         <Route path="/admin" element={<Admin />} />
