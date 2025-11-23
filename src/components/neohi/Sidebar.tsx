@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Settings, MessageCircle, Home } from "lucide-react";
+import { Search, Plus, MessageCircle, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -28,15 +28,13 @@ interface SidebarProps {
   selectedChatId: string | null;
   onChatSelect: (chatId: string) => void;
   onNewChat: () => void;
-  onSettings: () => void;
 }
 
 export function Sidebar({ 
   chats, 
   selectedChatId, 
   onChatSelect, 
-  onNewChat,
-  onSettings 
+  onNewChat
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -158,14 +156,6 @@ export function Sidebar({
               className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-accent))]"
             >
               <Plus className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onSettings}
-              className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-secondary))]"
-            >
-              <Settings className="h-5 w-5" />
             </Button>
           </div>
         </div>
