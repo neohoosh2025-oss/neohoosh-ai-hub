@@ -153,31 +153,31 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen py-20 px-4">
+    <div className="min-h-screen py-16 px-3 sm:py-20 sm:px-4">
       <div className="container mx-auto max-w-6xl">
         {/* Hero Header */}
-        <div className="mb-12 animate-fade-in">
-          <h1 className="text-display-lg font-bold mb-3 bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+        <div className="mb-8 sm:mb-12 animate-fade-in">
+          <h1 className="text-2xl sm:text-3xl md:text-display-lg font-bold mb-2 sm:mb-3 bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent break-words">
             {t("dashboard.welcome")}، {user?.user_metadata?.display_name || user?.email}
           </h1>
-          <p className="text-body-lg text-muted-foreground">
+          <p className="text-sm sm:text-base md:text-body-lg text-muted-foreground">
             {t("dashboard.overview")}
           </p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-3 mb-12">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 mb-8 sm:mb-12">
           <Card className="hover-scale animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 {t("dashboard.savedArticlesCount")}
               </CardTitle>
-              <div className="p-2 rounded-xl bg-primary/10">
-                <BookMarked className="h-5 w-5 text-primary" />
+              <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-l from-primary to-secondary bg-clip-text text-transparent">
                 {stats.totalSaved}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -187,16 +187,16 @@ const Dashboard = () => {
           </Card>
 
           <Card className="hover-scale animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 {t("dashboard.totalActivity")}
               </CardTitle>
-              <div className="p-2 rounded-xl bg-secondary/10">
-                <Activity className="h-5 w-5 text-secondary" />
+              <div className="p-1.5 sm:p-2 rounded-xl bg-secondary/10">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold bg-gradient-to-l from-secondary to-accent bg-clip-text text-transparent">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-l from-secondary to-accent bg-clip-text text-transparent">
                 {stats.totalActivity}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -205,17 +205,17 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover-scale animate-fade-in" style={{ animationDelay: "0.3s" }}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">
+          <Card className="hover-scale animate-fade-in sm:col-span-2 md:col-span-1" style={{ animationDelay: "0.3s" }}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 {t("dashboard.memberSince")}
               </CardTitle>
-              <div className="p-2 rounded-xl bg-accent/10">
-                <TrendingUp className="h-5 w-5 text-accent" />
+              <div className="p-1.5 sm:p-2 rounded-xl bg-accent/10">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stats.joinDate ? format(new Date(stats.joinDate), "MMM yyyy") : "-"}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -225,49 +225,49 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Saved Articles */}
           <Card className="animate-fade-in" style={{ animationDelay: "0.4s" }}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-primary/10">
-                  <BookMarked className="h-5 w-5 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10 shrink-0">
+                  <BookMarked className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                 </div>
-                <div>
-                  <CardTitle className="text-xl">{t("dashboard.savedArticles")}</CardTitle>
-                  <CardDescription className="text-sm">
+                <div className="min-w-0">
+                  <CardTitle className="text-base sm:text-xl truncate">{t("dashboard.savedArticles")}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     {t("dashboard.savedDesc")}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {savedArticles.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="mx-auto mb-4 p-4 rounded-2xl bg-muted/50 w-fit">
-                    <BookMarked className="h-10 w-10 text-muted-foreground" />
+                <div className="text-center py-8 sm:py-12">
+                  <div className="mx-auto mb-3 sm:mb-4 p-3 sm:p-4 rounded-2xl bg-muted/50 w-fit">
+                    <BookMarked className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("dashboard.noSaved")}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {savedArticles.map((saved) => (
                     <div
                       key={saved.id}
-                      className="group p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/5 transition-all cursor-pointer hover-scale"
+                      className="group p-3 sm:p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/5 transition-all cursor-pointer"
                       onClick={() => navigate(`/articles/${saved.article_id}`)}
                     >
                       <div className="flex-1">
-                        <h4 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                        <h4 className="font-semibold text-xs sm:text-sm line-clamp-1 group-hover:text-primary transition-colors break-words">
                           {saved.articles.title}
                         </h4>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-2 leading-relaxed">
+                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1 sm:mt-2 leading-relaxed">
                           {saved.articles.excerpt}
                         </p>
-                        <div className="flex items-center gap-2 mt-3">
-                          <span className="text-xs px-2.5 py-1 bg-primary/10 text-primary rounded-lg font-medium">
+                        <div className="flex items-center gap-2 mt-2 sm:mt-3 flex-wrap">
+                          <span className="text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 text-primary rounded-lg font-medium">
                             {saved.articles.category}
                           </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -285,41 +285,41 @@ const Dashboard = () => {
 
           {/* Recent Activity */}
           <Card className="animate-fade-in" style={{ animationDelay: "0.5s" }}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-secondary/10">
-                  <Activity className="h-5 w-5 text-secondary" />
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="p-1.5 sm:p-2 rounded-xl bg-secondary/10 shrink-0">
+                  <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
                 </div>
-                <div>
-                  <CardTitle className="text-xl">{t("dashboard.recentActivity")}</CardTitle>
-                  <CardDescription className="text-sm">
+                <div className="min-w-0">
+                  <CardTitle className="text-base sm:text-xl truncate">{t("dashboard.recentActivity")}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     {t("dashboard.activityDesc")}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {recentActivity.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="mx-auto mb-4 p-4 rounded-2xl bg-muted/50 w-fit">
-                    <Activity className="h-10 w-10 text-muted-foreground" />
+                <div className="text-center py-8 sm:py-12">
+                  <div className="mx-auto mb-3 sm:mb-4 p-3 sm:p-4 rounded-2xl bg-muted/50 w-fit">
+                    <Activity className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {t("dashboard.noActivity")}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {recentActivity.map((activity) => (
                     <div
                       key={activity.id}
-                      className="flex items-start gap-3 p-4 rounded-xl border border-border hover:bg-accent/5 transition-all"
+                      className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 rounded-xl border border-border hover:bg-accent/5 transition-all"
                     >
-                      <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                      <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10 text-primary shrink-0">
                         {getActivityIcon(activity.activity_type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{getActivityText(activity)}</p>
+                        <p className="text-xs sm:text-sm font-medium break-words">{getActivityText(activity)}</p>
                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {format(new Date(activity.created_at), "MMM d, h:mm a")}
