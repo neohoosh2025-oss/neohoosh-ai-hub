@@ -162,7 +162,7 @@ const Home = () => {
               </span>
               <br />
               <span className="text-foreground">
-                در ایران. همیشه کنار تو.
+                در ایران، همیشه کنار تو
               </span>
             </motion.h1>
 
