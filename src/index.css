@@ -9,12 +9,47 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* ========================================
-       NEOHOOSH DESIGN SYSTEM v2.0
-       Enterprise AI SaaS Brand Identity
+       NEOHI DESIGN SYSTEM v1.0
+       Modern Messenger Platform
        ======================================== */
 
-    /* ===== CORE BRAND COLORS ===== */
-    /* Primary - Cyan/Electric Blue (Trust, Intelligence, Technology) */
+    /* ===== NEOHI LIGHT MODE COLORS ===== */
+    /* Background System */
+    --neohi-bg-main: 244 247 250;           /* #F4F7FA - Main background */
+    --neohi-bg-chat: 0 0% 100%;             /* #FFFFFF - Chat panel */
+    --neohi-bg-sidebar: 238 242 247;        /* #EEF2F7 - Sidebar */
+    --neohi-bg-hover: 220 14% 96%;          /* Hover states */
+    
+    /* Text Colors */
+    --neohi-text-primary: 222 47% 11%;      /* #1E293B - Primary text */
+    --neohi-text-secondary: 220 9% 46%;     /* #6B7785 - Secondary text */
+    --neohi-text-muted: 220 9% 60%;         /* Muted text */
+    
+    /* Accent & Brand */
+    --neohi-accent: 214 95% 62%;            /* #4C8BF5 - Main accent blue */
+    --neohi-accent-hover: 214 95% 55%;      /* Darker accent */
+    --neohi-accent-light: 214 100% 97%;     /* #E7F1FF - Light accent bg */
+    
+    /* Chat Bubbles */
+    --neohi-bubble-user: 214 100% 97%;      /* #E7F1FF - User bubble */
+    --neohi-bubble-other: 0 0% 100%;        /* #FFFFFF - Other bubble */
+    --neohi-bubble-user-text: 214 95% 35%;  /* User bubble text */
+    
+    /* Borders & Dividers */
+    --neohi-border: 0 0% 0% / 0.08;         /* rgba(0,0,0,0.08) */
+    --neohi-border-light: 0 0% 0% / 0.05;   /* Lighter border */
+    
+    /* Status Colors */
+    --neohi-online: 142 71% 45%;            /* Green - Online */
+    --neohi-unread: 0 72% 51%;              /* Red - Unread badge */
+    
+    /* Shadows */
+    --neohi-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --neohi-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --neohi-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --neohi-shadow-chat: 0 2px 8px rgb(0 0 0 / 0.04);
+
+    /* ===== ORIGINAL NEOHOOSH COLORS (Keep for compatibility) ===== */
     --primary-50: 195 92% 95%;
     --primary-100: 195 92% 88%;
     --primary-200: 195 92% 75%;
@@ -28,7 +63,6 @@ All colors MUST be HSL.
     --primary: 195 92% 52%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary - Deep Purple/Violet (Innovation, Premium, AI) */
     --secondary-50: 270 75% 96%;
     --secondary-100: 270 75% 90%;
     --secondary-200: 270 75% 78%;
@@ -42,7 +76,6 @@ All colors MUST be HSL.
     --secondary: 270 75% 58%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Accent - Turquoise/Teal (Energy, Modern, Fresh) */
     --accent-50: 168 85% 96%;
     --accent-100: 168 85% 90%;
     --accent-200: 168 85% 78%;
@@ -56,7 +89,6 @@ All colors MUST be HSL.
     --accent: 168 85% 52%;
     --accent-foreground: 0 0% 100%;
 
-    /* ===== NEUTRAL PALETTE ===== */
     --background: 0 0% 100%;
     --foreground: 222 47% 11%;
     
@@ -73,7 +105,6 @@ All colors MUST be HSL.
     --input: 220 13% 91%;
     --ring: 195 92% 52%;
 
-    /* ===== SEMANTIC COLORS ===== */
     --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     
@@ -86,7 +117,6 @@ All colors MUST be HSL.
     --info: 199 89% 48%;
     --info-foreground: 0 0% 100%;
 
-    /* ===== GRADIENT SYSTEM ===== */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary-400)) 0%, hsl(var(--primary-600)) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary-400)) 0%, hsl(var(--secondary-600)) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(var(--accent-400)) 0%, hsl(var(--accent-600)) 100%);
