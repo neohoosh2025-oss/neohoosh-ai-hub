@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square, Copy, Check } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square, Copy, Check, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -509,7 +509,21 @@ const Chat = () => {
   };
 
   return (
-    <div className="fixed inset-0 pt-20 bg-background flex overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
+    <div className="fixed inset-0 bg-background flex flex-col overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
+      {/* Header with Home Button */}
+      <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+        >
+          <Home className="w-5 h-5" />
+          <span className="font-medium">{language === "en" ? "Home" : "خانه"}</span>
+        </button>
+        <h1 className="text-lg font-semibold">{language === "en" ? "AI Chat" : "چت هوش مصنوعی"}</h1>
+        <div className="w-24"></div> {/* Spacer for centering */}
+      </div>
+      
+      <div className="flex-1 flex overflow-hidden">
       {/* Sidebar Overlay for Mobile */}
       {isMobile && sidebarOpen && (
         <div 
@@ -800,10 +814,11 @@ const Chat = () => {
               className="w-full h-auto rounded-lg"
             />
           )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-};
+         </DialogContent>
+       </Dialog>
+      </div>
+     </div>
+   );
+ };
 
 export default Chat;
