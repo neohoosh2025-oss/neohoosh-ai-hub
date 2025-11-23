@@ -191,12 +191,8 @@ serve(async (req) => {
     const requestBody: any = {
       model: selectedModel,
       messages: apiMessages,
+      stream: true, // Enable streaming for faster response
     };
-    
-    // Enable reasoning for Grok model (but not for vision model)
-    if (!imageData) {
-      requestBody.reasoning = { enabled: true };
-    }
     
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
@@ -210,8 +206,6 @@ serve(async (req) => {
       },
       body: JSON.stringify(requestBody),
     });
-
-    console.log("OpenRouter response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -236,48 +230,16 @@ serve(async (req) => {
       });
     }
 
-    const data = await response.json();
-    console.log("OpenRouter response:", JSON.stringify(data, null, 2));
-    
-    const assistantMessage = data.choices?.[0]?.message;
-    let assistantResponse = assistantMessage?.content || "متاسفانه پاسخی دریافت نشد.";
-    const reasoningDetails = assistantMessage?.reasoning_details;
-
-    // Extract and save memory items
-    if (userId) {
-      const memoryPattern = /\[MEMORY_SAVE:(\w+)=([^\]]+)\]/g;
-      let match;
-      
-      while ((match = memoryPattern.exec(assistantResponse)) !== null) {
-        const [fullMatch, key, value] = match;
-        
-        // Save to database
-        await supabase
-          .from('user_memory')
-          .upsert({
-            user_id: userId,
-            memory_type: 'profile',
-            key: key,
-            value: value,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id,key'
-          });
-        
-        // Remove memory tags from response
-        assistantResponse = assistantResponse.replace(fullMatch, '');
-      }
-      
-      // Clean up any extra whitespace
-      assistantResponse = assistantResponse.trim();
-    }
-
-    return new Response(JSON.stringify({ 
-      text: assistantResponse,
-      reasoning_details: reasoningDetails 
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Return streaming response
+    return new Response(response.body, {
+      headers: { 
+        ...corsHeaders, 
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+      },
     });
+
   } catch (e) {
     console.error("chat error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "خطای ناشناخته" }), {

@@ -359,7 +359,6 @@ const Chat = () => {
           }
         });
 
-        // Check for errors in both error object and data.error
         if (error || data?.error) {
           const errorMsg = data?.error || error?.message || "";
           
@@ -379,57 +378,96 @@ const Chat = () => {
           imageUrl: data.imageUrl
         };
         
-        // Show typing animation for image generation response
         typewriterEffect(assistantMessage.content, async () => {
           setMessages(prev => [...prev, assistantMessage]);
           await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
         });
       } else {
+        // Use streaming for text responses
         const allMessages = [...messages, userMessage];
         
-        const { data, error } = await supabase.functions.invoke("chat", {
-          body: { 
-            messages: allMessages.map(m => ({ role: m.role, content: m.content })),
-            modelType: selectedModel,
-            ...(currentImage && { imageData: currentImage })
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              messages: allMessages.map(m => ({ role: m.role, content: m.content })),
+              modelType: selectedModel,
+              ...(currentImage && { imageData: currentImage })
+            }),
           }
-        });
+        );
 
-        // Check for errors in both error object and data.error
-        if (error || data?.error) {
-          const errorMsg = data?.error || error?.message || "";
-          
-          if (errorMsg.includes("اعتبار") || errorMsg.includes("402")) {
-            toast.error(t("chat.creditError"));
-          } else if (errorMsg.includes("محدودیت") || errorMsg.includes("429")) {
-            toast.error(t("chat.rateLimitError"));
-          } else {
-            toast.error(t("chat.error"));
-          }
-          throw new Error(errorMsg);
-        }
-
-        const responseText = data.text || data.response || "";
-        
-        if (!responseText) {
+        if (!response.ok || !response.body) {
           toast.error(t("chat.error"));
-          throw new Error("No response from AI");
+          throw new Error("Failed to start stream");
         }
-        
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let textBuffer = "";
+        let streamDone = false;
+        let assistantContent = "";
+
+        // Create assistant message immediately
         const assistantMessage: Message = {
           role: "assistant",
-          content: responseText
+          content: "",
         };
-        
-        // Show typing animation for text response
-        typewriterEffect(responseText, async () => {
-          setMessages(prev => [...prev, assistantMessage]);
-          await saveMessage(convId, "assistant", responseText);
-        });
+        setMessages(prev => [...prev, assistantMessage]);
+        const assistantMessageIndex = messages.length + 1;
+
+        while (!streamDone) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          textBuffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            if (line.startsWith(":") || line.trim() === "") continue;
+            if (!line.startsWith("data: ")) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === "[DONE]") {
+              streamDone = true;
+              break;
+            }
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                assistantContent += content;
+                setMessages((prev) => 
+                  prev.map((m, i) => 
+                    i === assistantMessageIndex
+                      ? { ...m, content: assistantContent }
+                      : m
+                  )
+                );
+              }
+            } catch {
+              textBuffer = line + "\n" + textBuffer;
+              break;
+            }
+          }
+        }
+
+        // Save complete message to database
+        if (assistantContent) {
+          await saveMessage(convId, "assistant", assistantContent);
+        }
       }
     } catch (error: any) {
       console.error("Error:", error);
-      // Error toast is already shown above, no need to show again
     } finally {
       setIsLoading(false);
     }
