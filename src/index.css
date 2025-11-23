@@ -8,64 +8,151 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 210 100% 50%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 210 100% 50%;
-    --radius: 0.75rem;
+    /* ========== NEOHOOSH DESIGN SYSTEM ========== */
     
-    --neohoosh-blue: 210 100% 50%;
-    --neohoosh-blue-glow: 210 100% 70%;
-    --gradient-neon: linear-gradient(135deg, hsl(210 100% 50% / 0.2), hsl(240 100% 50% / 0.2));
-    --gradient-soft: linear-gradient(135deg, hsl(210 100% 98%), hsl(240 100% 98%));
-    --glow-neon: 0 0 8px hsl(210 100% 50% / 0.3), 0 0 16px hsl(210 100% 50% / 0.2);
-    --glow-neon-strong: 0 0 6px hsl(210 100% 50% / 0.4), 0 0 12px hsl(210 100% 50% / 0.3), 0 0 18px hsl(210 100% 50% / 0.2);
-    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.04), 0 1px 2px hsl(0 0% 0% / 0.06);
-    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.08), 0 2px 4px hsl(0 0% 0% / 0.06);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* === Core Brand Colors === */
+    --primary: 195 100% 45%; /* Cyan Blue - Main brand color */
+    --primary-light: 195 100% 65%;
+    --primary-dark: 195 100% 35%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 280 70% 55%; /* Purple - Secondary brand */
+    --secondary-light: 280 70% 70%;
+    --secondary-dark: 280 70% 40%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --accent: 160 80% 45%; /* Teal - Accent color */
+    --accent-light: 160 80% 60%;
+    --accent-dark: 160 80% 35%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* === Neutral Palette === */
+    --background: 0 0% 100%;
+    --foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+    
+    --muted: 220 15% 96%;
+    --muted-foreground: 220 10% 50%;
+    
+    --border: 220 15% 90%;
+    --input: 220 15% 90%;
+    --ring: 195 100% 45%;
+    
+    /* === Semantic Colors === */
+    --success: 145 70% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 40 95% 55%;
+    --warning-foreground: 0 0% 100%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --info: 210 100% 55%;
+    --info-foreground: 0 0% 100%;
+    
+    /* === Gradients === */
+    --gradient-primary: linear-gradient(135deg, hsl(195 100% 45%), hsl(280 70% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(160 80% 45%), hsl(195 100% 45%));
+    --gradient-radial: radial-gradient(circle at top, hsl(195 100% 45% / 0.1), transparent);
+    --gradient-mesh: 
+      radial-gradient(at 0% 0%, hsl(195 100% 45% / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsl(280 70% 55% / 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(160 80% 45% / 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(195 100% 65% / 0.15) 0px, transparent 50%);
+    
+    /* === Shadows === */
+    --shadow-xs: 0 1px 2px hsl(220 15% 15% / 0.04);
+    --shadow-sm: 0 2px 4px hsl(220 15% 15% / 0.06), 0 1px 2px hsl(220 15% 15% / 0.04);
+    --shadow-md: 0 4px 8px hsl(220 15% 15% / 0.08), 0 2px 4px hsl(220 15% 15% / 0.04);
+    --shadow-lg: 0 8px 16px hsl(220 15% 15% / 0.1), 0 4px 8px hsl(220 15% 15% / 0.06);
+    --shadow-xl: 0 16px 32px hsl(220 15% 15% / 0.12), 0 8px 16px hsl(220 15% 15% / 0.08);
+    --shadow-2xl: 0 24px 48px hsl(220 15% 15% / 0.16), 0 12px 24px hsl(220 15% 15% / 0.1);
+    
+    /* === Glow Effects === */
+    --glow-primary: 0 0 20px hsl(195 100% 45% / 0.4), 0 0 40px hsl(195 100% 45% / 0.2);
+    --glow-secondary: 0 0 20px hsl(280 70% 55% / 0.4), 0 0 40px hsl(280 70% 55% / 0.2);
+    --glow-accent: 0 0 20px hsl(160 80% 45% / 0.4), 0 0 40px hsl(160 80% 45% / 0.2);
+    --glow-soft: 0 0 30px hsl(195 100% 45% / 0.15);
+    
+    /* === Transitions === */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* === Border Radius === */
+    --radius-xs: 0.25rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+    --radius-full: 9999px;
+    
+    /* === Spacing Scale === */
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 11%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 11%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 210 100% 50%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 14%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 210 100% 50%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 210 100% 50%;
+    /* === Core Brand Colors (Dark Mode) === */
+    --primary: 195 100% 55%;
+    --primary-light: 195 100% 70%;
+    --primary-dark: 195 100% 45%;
     
-    --neohoosh-blue: 210 100% 60%;
-    --neohoosh-blue-glow: 210 100% 80%;
-    --gradient-soft: linear-gradient(135deg, hsl(210 100% 15%), hsl(240 100% 15%));
-    --shadow-soft: 0 2px 8px hsl(0 0% 0% / 0.2), 0 1px 2px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 4px 16px hsl(0 0% 0% / 0.3), 0 2px 4px hsl(0 0% 0% / 0.3);
+    --secondary: 280 70% 65%;
+    --secondary-light: 280 70% 75%;
+    --secondary-dark: 280 70% 50%;
+    
+    --accent: 160 80% 55%;
+    --accent-light: 160 80% 65%;
+    --accent-dark: 160 80% 45%;
+    
+    /* === Neutral Palette (Dark Mode) === */
+    --background: 220 20% 8%;
+    --foreground: 220 15% 95%;
+    --card: 220 20% 12%;
+    --card-foreground: 220 15% 95%;
+    --popover: 220 20% 12%;
+    --popover-foreground: 220 15% 95%;
+    
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 10% 60%;
+    
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    
+    /* === Shadows (Dark Mode) === */
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 2px 4px hsl(0 0% 0% / 0.3), 0 1px 2px hsl(0 0% 0% / 0.2);
+    --shadow-md: 0 4px 8px hsl(0 0% 0% / 0.35), 0 2px 4px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 8px 16px hsl(0 0% 0% / 0.4), 0 4px 8px hsl(0 0% 0% / 0.3);
+    --shadow-xl: 0 16px 32px hsl(0 0% 0% / 0.45), 0 8px 16px hsl(0 0% 0% / 0.35);
+    --shadow-2xl: 0 24px 48px hsl(0 0% 0% / 0.5), 0 12px 24px hsl(0 0% 0% / 0.4);
+    
+    /* === Glow Effects (Dark Mode) === */
+    --glow-primary: 0 0 30px hsl(195 100% 55% / 0.5), 0 0 60px hsl(195 100% 55% / 0.3);
+    --glow-secondary: 0 0 30px hsl(280 70% 65% / 0.5), 0 0 60px hsl(280 70% 65% / 0.3);
+    --glow-accent: 0 0 30px hsl(160 80% 55% / 0.5), 0 0 60px hsl(160 80% 55% / 0.3);
+    --glow-soft: 0 0 40px hsl(195 100% 55% / 0.2);
+    
+    /* === Gradients (Dark Mode) === */
+    --gradient-mesh: 
+      radial-gradient(at 0% 0%, hsl(195 100% 55% / 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsl(280 70% 65% / 0.2) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsl(160 80% 55% / 0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsl(195 100% 70% / 0.2) 0px, transparent 50%);
   }
 }
 
@@ -76,14 +163,65 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground;
     font-family: 'Vazirmatn', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'ss01' on, 'ss02' on;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  /* Typography Scale */
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
     font-weight: 700;
+    line-height: 1.1;
     letter-spacing: -0.02em;
+  }
+  
+  h2 {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  
+  h3 {
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  
+  h4 {
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  
+  h5 {
+    font-size: clamp(1.125rem, 2vw, 1.25rem);
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  
+  h6 {
+    font-size: clamp(1rem, 1.5vw, 1.125rem);
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  
+  p {
+    font-size: clamp(0.875rem, 1.5vw, 1rem);
+    line-height: 1.7;
+  }
+  
+  .text-display {
+    font-family: 'Space Grotesk', 'Vazirmatn', sans-serif;
+    font-weight: 700;
+  }
+  
+  .text-body {
+    font-family: 'Inter', 'Vazirmatn', sans-serif;
   }
 }
 
