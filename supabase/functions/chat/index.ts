@@ -179,7 +179,7 @@ serve(async (req) => {
 
     // Use Grok for all chat interactions
     const selectedModel = imageData 
-      ? "qwen/qwen2.5-vl-32b-instruct:free" 
+      ? "google/gemini-2.0-flash-exp:free" 
       : "x-ai/grok-4.1-fast";
     
     const requestBody: any = {
@@ -210,23 +210,23 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error("OpenRouter error details:", response.status, errorText);
       
+      let errorMessage = "خطا در پردازش درخواست.";
+      
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "محدودیت تعداد درخواست، لطفاً بعداً تلاش کنید." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402 || response.status === 401) {
-        return new Response(JSON.stringify({ error: "نیاز به شارژ اعتبار OpenRouter یا API key نامعتبر است" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        errorMessage = "محدودیت تعداد درخواست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.";
+      } else if (response.status === 402 || response.status === 401) {
+        errorMessage = "نیاز به شارژ اعتبار OpenRouter یا API key نامعتبر است.";
+      } else if (response.status >= 500) {
+        errorMessage = "خطای سرور. لطفاً بعداً تلاش کنید.";
       }
       
-      return new Response(JSON.stringify({ error: `خطا از OpenRouter (${response.status}): ${errorText.substring(0, 100)}` }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: errorMessage }),
+        { 
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
     }
 
     // Return streaming response
