@@ -179,9 +179,9 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[hsl(var(--chat-bg))]">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary-500" />
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
           <p className="text-muted-foreground">در حال بارگذاری...</p>
         </div>
       </div>
@@ -191,10 +191,10 @@ const Profile = () => {
   const profileCompletion = calculateProfileCompletion();
 
   return (
-    <div className="min-h-screen bg-[hsl(var(--chat-bg))] py-8">
+    <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Hero Section */}
-        <div className="mb-8 scroll-fade-in">
+        <div className="mb-8">
           <Card className="border-border/60 shadow-lg overflow-hidden">
             <div className="h-32 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
@@ -274,7 +274,7 @@ const Profile = () => {
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* Account Info Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-1">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -374,7 +374,7 @@ const Profile = () => {
             </Card>
 
             {/* Activity Overview Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-2">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-primary-500" />
@@ -428,7 +428,7 @@ const Profile = () => {
             </Card>
 
             {/* Subscription Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-3">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-primary-500" />
@@ -488,7 +488,7 @@ const Profile = () => {
           {/* Right Column */}
           <div className="space-y-6">
             {/* Settings Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-1">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="w-5 h-5 text-primary-500" />
@@ -543,7 +543,7 @@ const Profile = () => {
             </Card>
 
             {/* Security Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-2">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="w-5 h-5 text-primary-500" />
@@ -575,7 +575,7 @@ const Profile = () => {
             </Card>
 
             {/* Achievements Card */}
-            <Card className="border-border/60 shadow-sm scroll-fade-in scroll-fade-in-delay-3">
+            <Card className="border-border/60 shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="w-5 h-5 text-primary-500" />
