@@ -303,7 +303,7 @@ const ArticleDetail = () => {
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg md:text-xl font-bold mb-2">درباره نویسنده</h3>
                       <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-4">
-                        تیم تحریریه نئوحوش متشکل از متخصصان هوش مصنوعی و فناوری است که با هدف انتقال دانش و آموزش در حوزه AI فعالیت می‌کنند.
+                        تیم تحریریه نئوهوش متشکل از متخصصان هوش مصنوعی و فناوری است که با هدف انتقال دانش و آموزش در حوزه AI فعالیت می‌کنند.
                       </p>
                       <div className="flex gap-2 flex-wrap">
                         <Button variant="outline" size="sm" className="text-xs md:text-sm">مشاهده پروفایل</Button>
