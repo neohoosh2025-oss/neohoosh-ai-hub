@@ -266,7 +266,10 @@ const Home = () => {
               const iconMap: { [key: string]: any } = {
                 'MessageCircle': MessageCircle,
                 'Wand2': Wand2,
-                'BookOpen': BookOpen
+                'BookOpen': BookOpen,
+                'Sparkles': Sparkles,
+                'Brain': Brain,
+                'Zap': Zap
               };
               const Icon = iconMap[item.icon_name] || MessageCircle;
               
