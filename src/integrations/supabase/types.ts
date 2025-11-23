@@ -151,6 +151,117 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_features: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string
+          display_order: number | null
+          features_list: Json | null
+          gradient: string | null
+          icon_name: string
+          id: string
+          is_active: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description: string
+          display_order?: number | null
+          features_list?: Json | null
+          gradient?: string | null
+          icon_name: string
+          id?: string
+          is_active?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string
+          display_order?: number | null
+          features_list?: Json | null
+          gradient?: string | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_stats: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean
+          stat_key: string
+          stat_label: string
+          stat_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          stat_key: string
+          stat_label: string
+          stat_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          stat_key?: string
+          stat_label?: string
+          stat_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      homepage_tools: {
+        Row: {
+          color: string | null
+          created_at: string
+          display_order: number | null
+          icon_name: string
+          id: string
+          is_active: boolean
+          link_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon_name: string
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          display_order?: number | null
+          icon_name?: string
+          id?: string
+          is_active?: boolean
+          link_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -636,6 +747,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      testimonials: {
+        Row: {
+          approved: boolean
+          avatar_url: string | null
+          content: string
+          created_at: string
+          display_order: number | null
+          id: string
+          name: string
+          rating: number
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          approved?: boolean
+          avatar_url?: string | null
+          content: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name: string
+          rating?: number
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          approved?: boolean
+          avatar_url?: string | null
+          content?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          name?: string
+          rating?: number
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_activity: {
         Row: {

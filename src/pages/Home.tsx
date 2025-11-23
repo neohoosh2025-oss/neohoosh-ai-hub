@@ -40,23 +40,65 @@ interface Article {
   created_at: string;
 }
 
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+  avatar_url: string | null;
+}
+
+interface Stat {
+  stat_key: string;
+  stat_value: string;
+  stat_label: string;
+}
+
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon_name: string;
+  gradient: string;
+  features_list: any; // JSON type from Supabase
+}
+
+interface Tool {
+  id: string;
+  title: string;
+  icon_name: string;
+  color: string;
+  link_url: string;
+}
+
 const Home = () => {
   const [articles, setArticles] = useState<Article[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchArticles = async () => {
-      const { data } = await supabase
-        .from("articles")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(3);
+    const fetchData = async () => {
+      const [articlesData, testimonialsData, statsData, featuresData, toolsData] = await Promise.all([
+        supabase.from("articles").select("*").order("created_at", { ascending: false }).limit(3),
+        supabase.from("testimonials").select("*").eq("approved", true).order("display_order"),
+        supabase.from("homepage_stats").select("*").eq("is_active", true).order("display_order"),
+        supabase.from("homepage_features").select("*").eq("is_active", true).order("display_order"),
+        supabase.from("homepage_tools").select("*").eq("is_active", true).order("display_order")
+      ]);
       
-      setArticles(data || []);
+      setArticles(articlesData.data || []);
+      setTestimonials(testimonialsData.data || []);
+      setStats(statsData.data || []);
+      setFeatures(featuresData.data || []);
+      setTools(toolsData.data || []);
       setLoading(false);
     };
 
-    fetchArticles();
+    fetchData();
   }, []);
 
   const fadeInUp = {
@@ -188,18 +230,14 @@ const Home = () => {
               variants={fadeInUp}
               className="grid grid-cols-1 sm:grid-cols-3 gap-8 pt-16 max-w-3xl mx-auto"
             >
-              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
-                <div className="text-4xl md:text-5xl font-bold text-primary mb-2">+۶۰۰۰</div>
-                <div className="text-sm text-muted-foreground">گفتگو در ماه اخیر</div>
-              </div>
-              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
-                <div className="text-4xl md:text-5xl font-bold text-secondary mb-2">۲۴/۷</div>
-                <div className="text-sm text-muted-foreground">پشتیبانی آنلاین</div>
-              </div>
-              <div className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
-                <div className="text-4xl md:text-5xl font-bold text-accent mb-2">۱۰۰٪</div>
-                <div className="text-sm text-muted-foreground">رضایت کاربران</div>
-              </div>
+              {stats.map((stat, i) => (
+                <div key={stat.stat_key} className="text-center p-4 rounded-2xl bg-card/30 backdrop-blur-sm border border-border/50">
+                  <div className={`text-4xl md:text-5xl font-bold ${i === 0 ? 'text-primary' : i === 1 ? 'text-secondary' : 'text-accent'} mb-2`}>
+                    {stat.stat_value}
+                  </div>
+                  <div className="text-sm text-muted-foreground">{stat.stat_label}</div>
+                </div>
+              ))}
             </motion.div>
           </motion.div>
         </div>
@@ -224,29 +262,15 @@ const Home = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                icon: MessageCircle,
-                title: "چت‌بات هوشمند",
-                desc: "پاسخ سریع، حافظه مکالمه و شخصی‌سازی رفتار برای تجربه‌ای منحصربه‌فرد",
-                features: ["پاسخ سریع", "حافظه مکالمه", "شخصی‌سازی"],
-                gradient: "from-primary/20 to-primary/5"
-              },
-              {
-                icon: Wand2,
-                title: "ابزارهای قدرتمند AI",
-                desc: "تولید متن، خلاصه‌سازی، ترجمه و تحلیل با دقت و سرعت بالا",
-                features: ["تولید متن", "خلاصه‌سازی", "ترجمه و تحلیل"],
-                gradient: "from-secondary/20 to-secondary/5"
-              },
-              {
-                icon: BookOpen,
-                title: "آموزش‌های جامع",
-                desc: "مقالات تخصصی، راهنمای پرامپت و آموزش‌های حرفه‌ای هوش مصنوعی",
-                features: ["مقالات تخصصی", "راهنمای پرامپت", "آموزش حرفه‌ای"],
-                gradient: "from-accent/20 to-accent/5"
-              }
-            ].map((item, i) => (
+            {features.map((item, i) => {
+              const iconMap: { [key: string]: any } = {
+                'MessageCircle': MessageCircle,
+                'Wand2': Wand2,
+                'BookOpen': BookOpen
+              };
+              const Icon = iconMap[item.icon_name] || MessageCircle;
+              
+              return (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
@@ -257,14 +281,14 @@ const Home = () => {
                 <Card className="h-full border-2 border-border/50 hover:border-primary/50 hover:shadow-xl transition-all group">
                   <CardHeader>
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <item.icon className="w-8 h-8 text-primary" />
+                      <Icon className="w-8 h-8 text-primary" />
                     </div>
                     <CardTitle className="text-2xl mb-3">{item.title}</CardTitle>
-                    <CardDescription className="text-base leading-relaxed">{item.desc}</CardDescription>
+                    <CardDescription className="text-base leading-relaxed">{item.description}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
-                      {item.features.map((feature, idx) => (
+                      {item.features_list?.map((feature, idx) => (
                         <li key={idx} className="flex items-center gap-3">
                           <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                             <Check className="w-3 h-3 text-primary" />
@@ -276,7 +300,8 @@ const Home = () => {
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
+            );
+            })}
           </div>
         </div>
       </section>
@@ -426,34 +451,39 @@ const Home = () => {
           </motion.div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
-            {[
-              { icon: MessageCircle, title: "چت‌بات", color: "primary" },
-              { icon: FileText, title: "تولید متن", color: "secondary" },
-              { icon: Wand2, title: "بازنویسی", color: "accent" },
-              { icon: Languages, title: "ترجمه", color: "primary" },
-              { icon: ImageIcon, title: "تولید تصویر", color: "secondary" },
-              { icon: Code, title: "کد نویسی", color: "accent" },
-              { icon: TrendingUp, title: "تحلیل مقاله", color: "primary" },
-              { icon: Sparkles, title: "ساخت پرامپت", color: "secondary" }
-            ].map((tool, i) => (
+            {tools.map((tool, i) => {
+              const iconMap: { [key: string]: any } = {
+                'MessageCircle': MessageCircle,
+                'FileText': FileText,
+                'Wand2': Wand2,
+                'Languages': Languages,
+                'Image': ImageIcon,
+                'Code': Code,
+                'TrendingUp': TrendingUp,
+                'Sparkles': Sparkles
+              };
+              const ToolIcon = iconMap[tool.icon_name] || MessageCircle;
+              
+              return (
               <motion.div
-                key={i}
+                key={tool.id}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4, delay: i * 0.05 }}
                 viewport={{ once: true }}
               >
-                <Link to="/tools">
+                <Link to={tool.link_url || "/tools"}>
                   <Card className="p-6 text-center hover:shadow-lg hover:-translate-y-1 transition-all group border-border/50 hover:border-primary/50 cursor-pointer">
                     <div className={`w-14 h-14 rounded-xl bg-${tool.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                      <tool.icon className={`w-7 h-7 text-${tool.color}`} />
+                      <ToolIcon className={`w-7 h-7 text-${tool.color}`} />
                     </div>
                     <h3 className="font-semibold text-sm">{tool.title}</h3>
                     <p className="text-xs text-muted-foreground mt-1">شروع کنید</p>
                   </Card>
                 </Link>
               </motion.div>
-            ))}
+            );
+            })}
           </div>
         </div>
       </section>
@@ -643,28 +673,9 @@ const Home = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                name: "علی محمدی",
-                role: "توسعه‌دهنده نرم‌افزار",
-                content: "نئوهوش کار من رو خیلی راحت‌تر کرده. از چت‌بات برای کدنویسی و حل مشکلات استفاده می‌کنم.",
-                rating: 5
-              },
-              {
-                name: "سارا احمدی",
-                role: "طراح گرافیک",
-                content: "ابزارهای تولید محتوا و تصویر فوق‌العادست! کیفیت خروجی‌ها حرفه‌ای و متنوعه.",
-                rating: 5
-              },
-              {
-                name: "رضا کریمی",
-                role: "بازاریاب دیجیتال",
-                content: "برای تولید محتوا و تحلیل داده‌ها از نئوهوش استفاده می‌کنم. واقعاً عالیه!",
-                rating: 5
-              }
-            ].map((testimonial, i) => (
+            {testimonials.map((testimonial, i) => (
               <motion.div
-                key={i}
+                key={testimonial.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
@@ -683,9 +694,17 @@ const Home = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
-                        {testimonial.name[0]}
-                      </div>
+                      {testimonial.avatar_url ? (
+                        <img 
+                          src={testimonial.avatar_url} 
+                          alt={testimonial.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-lg">
+                          {testimonial.name[0]}
+                        </div>
+                      )}
                       <div>
                         <p className="font-semibold">{testimonial.name}</p>
                         <p className="text-sm text-muted-foreground">{testimonial.role}</p>
