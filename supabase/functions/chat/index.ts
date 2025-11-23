@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
@@ -11,11 +12,11 @@ serve(async (req) => {
 
   try {
     const { messages, modelType, imageData } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -29,8 +30,11 @@ serve(async (req) => {
       userId = user?.id;
     }
 
-    // Handle image generation
+    // Handle image generation with Lovable AI
     if (modelType === "image") {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+      
       const userPrompt = messages[messages.length - 1].content;
       
       const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -140,53 +144,58 @@ serve(async (req) => {
       systemPrompt += userContext;
     }
 
-    // Prepare messages for vision API if image is provided
-    let apiMessages;
-    if (imageData) {
-      // Use vision-capable model for images
-      const lastMessage = messages[messages.length - 1];
-      apiMessages = [
-        { role: "system", content: systemPrompt },
-        ...messages.slice(0, -1),
-        {
-          role: "user",
-          content: [
-            { type: "text", text: lastMessage.content },
-            { type: "image_url", image_url: { url: imageData } }
-          ]
+    // Prepare messages - preserve reasoning_details if present
+    const apiMessages = [
+      { role: "system", content: systemPrompt },
+      ...messages.map((msg: any) => {
+        const message: any = {
+          role: msg.role,
+          content: msg.content
+        };
+        
+        // Preserve reasoning_details from assistant messages
+        if (msg.role === 'assistant' && msg.reasoning_details) {
+          message.reasoning_details = msg.reasoning_details;
         }
-      ];
-    } else {
-      apiMessages = [
-        { role: "system", content: systemPrompt },
-        ...messages,
-      ];
-    }
+        
+        // Handle vision for user messages with images
+        if (msg.role === 'user' && imageData) {
+          message.content = [
+            { type: "text", text: msg.content },
+            { type: "image_url", image_url: { url: imageData } }
+          ];
+        }
+        
+        return message;
+      })
+    ];
 
-    // Use Lovable AI with Gemini Flash for text chat
-    const selectedModel = imageData 
-      ? "google/gemini-2.5-pro"  // Pro for vision
-      : "google/gemini-2.5-flash"; // Flash for text
-    
-    console.log("Using model:", selectedModel);
-    console.log("Request body:", JSON.stringify({ model: selectedModel, messages: apiMessages.length }, null, 2));
+    console.log("Request body:", JSON.stringify({
+      model: "x-ai/grok-4.1-fast",
+      messages: apiMessages,
+      stream: true,
+      reasoning: { enabled: true }
+    }));
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
+        "HTTP-Referer": "https://neohoosh.com",
+        "X-Title": "Neohoosh AI"
       },
       body: JSON.stringify({
-        model: selectedModel,
+        model: "x-ai/grok-4.1-fast",
         messages: apiMessages,
         stream: true,
+        reasoning: { enabled: true }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
+      console.error("OpenRouter error:", response.status, errorText);
       
       let errorMessage = "خطا در پردازش درخواست.";
       
