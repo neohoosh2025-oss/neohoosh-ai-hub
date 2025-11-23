@@ -362,9 +362,20 @@ const Chat = () => {
           }
         );
 
-        if (!response.ok || !response.body) {
-          toast.error(t("chat.error"));
+        if (!response.ok) {
+          if (response.status === 402) {
+            toast.error("اعتبار تمام شده است. لطفاً اعتبار خود را شارژ کنید.");
+          } else if (response.status === 429) {
+            toast.error("محدودیت تعداد درخواست. لطفاً چند لحظه صبر کنید.");
+          } else {
+            toast.error(t("chat.error"));
+          }
           throw new Error("Failed to start stream");
+        }
+
+        if (!response.body) {
+          toast.error(t("chat.error"));
+          throw new Error("No response body");
         }
 
         const reader = response.body.getReader();
