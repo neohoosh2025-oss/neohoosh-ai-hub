@@ -48,6 +48,7 @@ const App = () => (
               {/* Full-screen routes without Navigation/Footer */}
               <Route path="/neohi" element={<NeoHi />} />
               <Route path="/design-system" element={<DesignSystem />} />
+              <Route path="/chat" element={<Chat />} />
               
               
               {/* Regular routes with Navigation/Footer */}
@@ -71,7 +72,6 @@ const App = () => (
                         <Route path="/tools/voice-to-text" element={<VoiceToText />} />
                         <Route path="/tools/text-to-voice" element={<TextToVoice />} />
                         <Route path="/tools/code-generator" element={<CodeGenerator />} />
-                        <Route path="/chat" element={<Chat />} />
                         <Route path="/memory" element={<MemoryManagement />} />
                         <Route path="/admin" element={<Admin />} />
                         <Route path="/admin/translate" element={<AdminTranslate />} />
