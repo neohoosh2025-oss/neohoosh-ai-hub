@@ -239,7 +239,6 @@ export default function NeoHi() {
           selectedChatId={selectedChatId}
           onChatSelect={setSelectedChatId}
           onNewChat={() => setShowNewChat(true)}
-          onSettings={() => navigate("/neohi?tab=settings")}
         />
       </div>
 
@@ -250,7 +249,6 @@ export default function NeoHi() {
           selectedChatId={selectedChatId}
           onChatSelect={setSelectedChatId}
           onNewChat={() => setShowNewChat(true)}
-          onSettings={() => navigate("/neohi?tab=settings")}
         />
         <BottomNavigation />
       </div>

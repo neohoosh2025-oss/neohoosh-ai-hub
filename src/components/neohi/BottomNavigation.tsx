@@ -1,4 +1,4 @@
-import { MessageCircle, Users, Camera, User } from "lucide-react";
+import { MessageCircle, Users, Camera, Settings } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -8,9 +8,9 @@ const BottomNavigation = () => {
   
   const navItems = [
     { icon: MessageCircle, path: "/neohi", tab: "chats", isActive: location.pathname === "/neohi" && !location.search },
-    { icon: Users, path: "/neohi?tab=contacts", tab: "contacts", isActive: location.search.includes("tab=contacts") },
     { icon: Camera, path: "/neohi?tab=stories", tab: "stories", isActive: location.search.includes("tab=stories") },
-    { icon: User, path: "/neohi?tab=settings", tab: "settings", isActive: location.search.includes("tab=settings") },
+    { icon: Users, path: "/neohi?tab=contacts", tab: "contacts", isActive: location.search.includes("tab=contacts") },
+    { icon: Settings, path: "/neohi?tab=settings", tab: "settings", isActive: location.search.includes("tab=settings") },
   ];
 
   return (
