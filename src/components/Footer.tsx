@@ -86,11 +86,11 @@ const Footer = () => {
                 <span>neohoosh.ai@</span>
               </a>
               <a 
-                href="mailto:info@neohoosh.ai"
+                href="mailto:NEOHOOSH.2025@gmail.com"
                 className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition-colors group"
               >
                 <Mail className="h-4 w-4 sm:h-5 sm:w-5 group-hover:scale-110 transition-transform" />
-                <span>info@neohoosh.ai</span>
+                <span>NEOHOOSH.2025@gmail.com</span>
               </a>
             </div>
           </div>
