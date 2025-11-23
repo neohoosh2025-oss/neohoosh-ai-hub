@@ -281,8 +281,10 @@ const Chat = () => {
       }
       
       if (currentIndex < text.length) {
-        setTypingContent(text.slice(0, currentIndex + 1));
-        currentIndex++;
+        // Show 3 characters at a time for faster typing
+        const chunkSize = 3;
+        setTypingContent(text.slice(0, Math.min(currentIndex + chunkSize, text.length)));
+        currentIndex += chunkSize;
       } else {
         if (typingIntervalRef.current) {
           clearInterval(typingIntervalRef.current);
@@ -291,7 +293,7 @@ const Chat = () => {
         setIsTyping(false);
         onComplete();
       }
-    }, 10);
+    }, 15);
   };
 
   const handleSend = async () => {
