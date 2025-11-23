@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 interface UseScrollAnimationOptions {
   threshold?: number;
   rootMargin?: string;
+  triggerOnce?: boolean;
 }
 
 export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
-  const { threshold = 0.1, rootMargin = "0px" } = options;
+  const { threshold = 0.1, rootMargin = "0px", triggerOnce = true } = options;
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -15,6 +16,11 @@ export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
+          if (triggerOnce && ref.current) {
+            observer.unobserve(ref.current);
+          }
+        } else if (!triggerOnce) {
+          setIsVisible(false);
         }
       },
       { threshold, rootMargin }
@@ -30,7 +36,27 @@ export const useScrollAnimation = (options: UseScrollAnimationOptions = {}) => {
         observer.unobserve(currentRef);
       }
     };
-  }, [threshold, rootMargin]);
+  }, [threshold, rootMargin, triggerOnce]);
 
   return { ref, isVisible };
+};
+
+export const useScrollProgress = () => {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const updateScrollProgress = () => {
+      const scrollPx = document.documentElement.scrollTop;
+      const winHeightPx =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      const scrolled = (scrollPx / winHeightPx) * 100;
+      setScrollProgress(scrolled);
+    };
+
+    window.addEventListener("scroll", updateScrollProgress);
+    return () => window.removeEventListener("scroll", updateScrollProgress);
+  }, []);
+
+  return scrollProgress;
 };

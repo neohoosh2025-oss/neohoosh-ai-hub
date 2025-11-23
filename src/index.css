@@ -494,4 +494,40 @@ All colors MUST be HSL.
   .pulse-glow {
     animation: pulseGlow 2s ease-in-out infinite;
   }
+
+  /* Scroll Progress Bar */
+  .scroll-progress {
+    @apply fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-secondary to-accent z-50 origin-left;
+  }
+
+  /* Magnetic Hover Effect */
+  .magnetic-hover {
+    @apply transition-all duration-300 ease-out hover:scale-105;
+  }
+
+  /* Reveal Animation */
+  .reveal {
+    @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
+  }
+
+  .reveal.active {
+    @apply opacity-100 translate-y-0;
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-full;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
 }

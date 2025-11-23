@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Sparkles, BookOpen, MessageCircle, Calendar } from "lucide-react";
@@ -6,6 +7,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
+import { ParallaxSection } from "@/components/ParallaxSection";
+import { staggerContainer, fadeInUp, scaleIn } from "@/components/PageTransition";
 import heroImage from "@/assets/hero-bg.jpg";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -73,46 +76,52 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section with Parallax */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Parallax Effect */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed',
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
-        </div>
+        {/* Parallax Background */}
+        <ParallaxSection offset={100} className="absolute inset-0 z-0">
+          <div 
+            className="w-full h-full"
+            style={{
+              backgroundImage: `url(${heroImage})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background"></div>
+          </div>
+        </ParallaxSection>
 
-        {/* Content */}
+        {/* Content with Stagger Animation */}
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <div className="max-w-4xl mx-auto space-y-8 animate-float">
-            <div className="inline-block mb-4">
-              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium glow-neon">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+            className="max-w-4xl mx-auto space-y-8"
+          >
+            <motion.div variants={fadeInUp} className="inline-block mb-4">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium glow-soft shimmer">
                 <Sparkles className="h-4 w-4" />
                 {t("hero.badge")}
               </span>
-            </div>
+            </motion.div>
             
-            <h1 className="text-5xl md:text-7xl font-bold leading-tight animate-fade-in">
-              <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent animate-glow">
+            <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold leading-tight">
+              <span className="bg-gradient-to-r from-neohoosh-blue to-primary bg-clip-text text-transparent">
                 {t("hero.title")}
               </span>
               <br />
               <span className="text-foreground">{t("hero.subtitle")}</span>
-            </h1>
+            </motion.h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
+            <motion.p variants={fadeInUp} className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto">
               {t("hero.description")}
-            </p>
+            </motion.p>
 
-            <div className="flex flex-wrap gap-4 justify-center pt-4">
+            <motion.div variants={scaleIn} className="flex flex-wrap gap-4 justify-center pt-4">
               <Link to="/articles">
-                <Button size="lg" className="gap-2 glow-neon hover:glow-neon-strong transition-all">
+                <Button size="lg" className="gap-2 magnetic-hover">
                   <BookOpen className="h-5 w-5" />
                   {t("hero.cta")}
                   <ArrowLeft className="h-4 w-4" />
@@ -120,68 +129,91 @@ const Home = () => {
               </Link>
               
               <Link to="/chat">
-                <Button size="lg" variant="secondary" className="gap-2">
+                <Button size="lg" variant="glass" className="gap-2 magnetic-hover">
                   <MessageCircle className="h-5 w-5" />
                   {t("hero.smartAssistant")}
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center animate-bounce">
+        {/* Animated Scroll Indicator */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.8, repeat: Infinity, repeatType: "reverse" }}
+          className="absolute bottom-8 left-0 right-0 flex justify-center"
+        >
           <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2">
-            <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+            <motion.div 
+              animate={{ y: [0, 12, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="w-1.5 h-1.5 bg-primary rounded-full"
+            />
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-card/50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {t("features.title")}
-            </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {t("features.subtitle")}
-            </p>
+      {/* Features Section with Scroll Reveal */}
+      <ParallaxSection offset={30}>
+        <section className="py-20 bg-card/50">
+          <div className="container mx-auto px-4">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                {t("features.title")}
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                {t("features.subtitle")}
+              </p>
+            </motion.div>
+
+            <motion.div 
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              className="grid md:grid-cols-3 gap-8"
+            >
+              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">{t("features.learning")}</h3>
+                <p className="text-muted-foreground">
+                  {t("features.learningDesc")}
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">{t("features.updated")}</h3>
+                <p className="text-muted-foreground">
+                  {t("features.updatedDesc")}
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeInUp} className="p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group magnetic-hover">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-soft transition-all">
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">{t("features.community")}</h3>
+                <p className="text-muted-foreground">
+                  {t("features.communityDesc")}
+                </p>
+              </motion.div>
+            </motion.div>
           </div>
-
-          <div className="grid md:grid-cols-3 gap-8" ref={featuresAnimation.ref}>
-            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in ${featuresAnimation.isVisible ? 'visible' : ''}`}>
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
-                <BookOpen className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">{t("features.learning")}</h3>
-              <p className="text-muted-foreground">
-                {t("features.learningDesc")}
-              </p>
-            </div>
-
-            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in scroll-fade-in-delay-1 ${featuresAnimation.isVisible ? 'visible' : ''}`}>
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
-                <Sparkles className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">{t("features.updated")}</h3>
-              <p className="text-muted-foreground">
-                {t("features.updatedDesc")}
-              </p>
-            </div>
-
-            <div className={`p-6 rounded-2xl bg-background border border-border hover:border-primary/50 transition-all group scroll-fade-in scroll-fade-in-delay-2 ${featuresAnimation.isVisible ? 'visible' : ''}`}>
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:glow-neon transition-all">
-                <MessageCircle className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-xl font-semibold mb-3">{t("features.community")}</h3>
-              <p className="text-muted-foreground">
-                {t("features.communityDesc")}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </ParallaxSection>
 
       {/* Latest Articles Section */}
       <section className="py-20">
