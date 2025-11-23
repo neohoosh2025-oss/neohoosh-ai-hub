@@ -509,7 +509,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="fixed inset-0 pt-16 bg-background flex overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
+    <div className="fixed inset-0 pt-20 bg-background flex overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
       {/* Sidebar Overlay for Mobile */}
       {isMobile && sidebarOpen && (
         <div 
