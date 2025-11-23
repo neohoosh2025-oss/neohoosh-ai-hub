@@ -664,7 +664,7 @@ const Chat = () => {
                       </button>
                     )}
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-sm max-w-none dark:prose-invert [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-right [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
+                      <div className="prose prose-sm max-w-none dark:prose-invert [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:text-base [&_h2]:font-semibold [&_h3]:text-base [&_h3]:font-medium [&_h4]:text-sm [&_h4]:font-medium [&_h5]:text-sm [&_h6]:text-sm [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-right [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>
                           {msg.content}
                         </ReactMarkdown>
