@@ -125,7 +125,7 @@ const Articles = () => {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
-              <span>دانشنامه هوش مصنوعی نئوحوش</span>
+              <span>دانشنامه هوش مصنوعی نئوهوش</span>
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-l from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent leading-tight">
