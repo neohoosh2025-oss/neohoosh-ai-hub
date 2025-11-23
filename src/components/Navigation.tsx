@@ -38,10 +38,11 @@ const Navigation = () => {
   const links = [
     { path: "/", label: t("home") },
     { path: "/articles", label: t("articles") },
+    { path: "/tools", label: "ابزارها", highlight: true },
     { path: "/products", label: t("products") },
     { path: "/services", label: t("services") },
     { path: "/chat", label: t("chatbot") },
-    { path: "/neohi", label: "NeoHi", highlight: true },
+    { path: "/neohi", label: "NeoHi" },
     { path: "/about", label: t("about") },
     { path: "/contact", label: t("contact") },
   ];
