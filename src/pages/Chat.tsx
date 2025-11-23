@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
@@ -694,11 +695,38 @@ const Chat = () => {
                         </button>
                       )}
                       {msg.role === "assistant" ? (
-                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
+                        <>
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {msg.content}
+                            </ReactMarkdown>
+                          </div>
+                          
+                          {/* Reasoning Display */}
+                          {msg.reasoning_details && (
+                            <Collapsible className="mt-3">
+                              <CollapsibleTrigger className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors text-xs font-medium w-full text-left border border-border/40">
+                                <Brain className="w-4 h-4 text-primary" />
+                                <span>نمایش فرآیند استدلال</span>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="mt-2 p-3 rounded-lg bg-muted/20 border border-border/30">
+                                <div className="text-xs text-muted-foreground space-y-2">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Brain className="w-3.5 h-3.5 text-primary" />
+                                    <span className="font-semibold text-foreground">چگونه مدل فکر کرد:</span>
+                                  </div>
+                                  <div className="prose prose-xs max-w-none dark:prose-invert">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                      {typeof msg.reasoning_details === 'string' 
+                                        ? msg.reasoning_details 
+                                        : JSON.stringify(msg.reasoning_details, null, 2)}
+                                    </ReactMarkdown>
+                                  </div>
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          )}
+                        </>
                       ) : (
                         <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                       )}
