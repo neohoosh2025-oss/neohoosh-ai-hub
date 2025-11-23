@@ -25,6 +25,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   imageUrl?: string;
+  reasoning_details?: any;
 }
 
 interface Conversation {
@@ -182,7 +183,8 @@ const Chat = () => {
       .map(msg => ({
         role: msg.role as "user" | "assistant",
         content: msg.content,
-        imageUrl: msg.image_url || undefined
+        imageUrl: msg.image_url || undefined,
+        reasoning_details: msg.reasoning_details || undefined
       }));
     setMessages(formattedMessages);
   };
@@ -413,13 +415,16 @@ const Chat = () => {
             try {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              const reasoningDetails = parsed.choices?.[0]?.message?.reasoning_details;
+              
               if (content) {
                 assistantContent += content;
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
                     ...newMessages[newMessages.length - 1],
-                    content: assistantContent
+                    content: assistantContent,
+                    ...(reasoningDetails && { reasoning_details: reasoningDetails })
                   };
                   return newMessages;
                 });
@@ -432,7 +437,13 @@ const Chat = () => {
         }
 
         if (assistantContent) {
-          await saveMessage(convId, "assistant", assistantContent);
+          const lastMessage = messages[messages.length - 1];
+          await saveMessage(
+            convId, 
+            "assistant", 
+            assistantContent,
+            undefined
+          );
         }
       }
     } catch (error: any) {
