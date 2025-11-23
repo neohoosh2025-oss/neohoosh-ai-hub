@@ -28,6 +28,8 @@ import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
 import DesignSystem from "./pages/DesignSystem";
 import Pricing from "./pages/Pricing";
+import Tools from "./pages/Tools";
+import ImageGenerator from "./pages/ImageGenerator";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +63,8 @@ const App = () => (
                         <Route path="/pricing" element={<Pricing />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/contact" element={<Contact />} />
+                        <Route path="/tools" element={<Tools />} />
+                        <Route path="/tools/image-generator" element={<ImageGenerator />} />
                         <Route path="/chat" element={<Chat />} />
                         <Route path="/memory" element={<MemoryManagement />} />
                         <Route path="/admin" element={<Admin />} />
