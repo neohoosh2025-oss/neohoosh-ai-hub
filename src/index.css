@@ -171,17 +171,18 @@ All colors MUST be HSL.
 
   .dark {
     /* ===== DARK MODE COLORS ===== */
-    --background: 222 47% 8%;
+    /* Chat-specific: Deeper, calmer background */
+    --background: 220 15% 7%;
     --foreground: 210 40% 98%;
     
-    --card: 222 47% 10%;
+    --card: 220 15% 10%;
     --card-foreground: 210 40% 98%;
     
-    --popover: 222 47% 10%;
+    --popover: 220 15% 10%;
     --popover-foreground: 210 40% 98%;
     
     /* Brand colors remain similar in dark mode */
-    --primary: 195 92% 55%;
+    --primary: 215 100% 62%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 270 75% 62%;
@@ -190,18 +191,23 @@ All colors MUST be HSL.
     --accent: 168 85% 55%;
     --accent-foreground: 0 0% 100%;
     
-    --muted: 217 33% 15%;
-    --muted-foreground: 215 20% 70%;
+    /* Chat bubbles - softer in dark */
+    --muted: 220 15% 13%;
+    --muted-foreground: 215 15% 70%;
     
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 195 92% 55%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 215 100% 62%;
     
     --success: 142 71% 50%;
     --success-foreground: 0 0% 100%;
     
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
+    
+    /* Chat-specific colors */
+    --chat-user-bubble: 220 15% 16%;
+    --chat-bot-bubble: 220 15% 12%;
     
     /* Dark mode shadows are more subtle */
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.20);
@@ -215,6 +221,27 @@ All colors MUST be HSL.
     --glow-primary: 0 0 50px hsl(var(--primary) / 0.45);
     --glow-secondary: 0 0 50px hsl(var(--secondary) / 0.45);
     --glow-accent: 0 0 50px hsl(var(--accent) / 0.45);
+  }
+
+  /* ===== CHAT-SPECIFIC DESIGN TOKENS ===== */
+  :root {
+    /* Light mode chat colors */
+    --chat-bg: 220 20% 97%;
+    --chat-user-bubble: 215 100% 96%;
+    --chat-bot-bubble: 0 0% 100%;
+    --chat-input-bg: 0 0% 100%;
+    --chat-header-bg: 0 0% 100% / 0.8;
+    --chat-sidebar-bg: 0 0% 100%;
+  }
+
+  .dark {
+    /* Dark mode chat colors */
+    --chat-bg: 220 15% 7%;
+    --chat-user-bubble: 220 15% 16%;
+    --chat-bot-bubble: 220 15% 12%;
+    --chat-input-bg: 220 15% 10%;
+    --chat-header-bg: 220 15% 10% / 0.8;
+    --chat-sidebar-bg: 220 15% 10%;
   }
 
   /* ===== TYPOGRAPHY SYSTEM ===== */

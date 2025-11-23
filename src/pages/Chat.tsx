@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, ArrowRight, Upload, Download, Square, Copy, Check, Home } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -9,6 +9,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image";
 
@@ -17,7 +18,7 @@ interface Model {
   name: string;
   description: string;
   icon: typeof Briefcase;
-  color: string;
+  gradient: string;
 }
 
 interface Message {
@@ -34,6 +35,13 @@ interface Conversation {
   updated_at: string;
 }
 
+const quickActions = [
+  { label: "ساخت محتوای اینستاگرام", prompt: "یک کپشن خلاقانه برای اینستاگرام بنویس" },
+  { label: "تحلیل متن", prompt: "این متن را تحلیل کن" },
+  { label: "تولید مقاله", prompt: "یک مقاله حرفه‌ای بنویس درباره" },
+  { label: "بهبود متن", prompt: "این متن را ویرایش و بهبود بده" },
+];
+
 const Chat = () => {
   const { t, language } = useLanguage();
   const models: Model[] = [
@@ -42,37 +50,38 @@ const Chat = () => {
       name: t("chat.businessAdvisor"),
       description: t("chat.businessDesc"),
       icon: Briefcase,
-      color: "text-blue-500"
+      gradient: "from-blue-500 to-cyan-500"
     },
     {
       id: "personal",
       name: t("chat.personalDev"),
       description: t("chat.personalDesc"),
       icon: UserIcon,
-      color: "text-purple-500"
+      gradient: "from-purple-500 to-pink-500"
     },
     {
       id: "general",
       name: t("chat.openQuestions"),
       description: t("chat.openQuestionsDesc"),
       icon: MessageSquare,
-      color: "text-green-500"
+      gradient: "from-green-500 to-emerald-500"
     },
     {
       id: "ads",
       name: t("chat.adsGen"),
       description: t("chat.adsGenDesc"),
       icon: Megaphone,
-      color: "text-orange-500"
+      gradient: "from-orange-500 to-red-500"
     },
     {
       id: "image",
       name: t("chat.textToImage"),
       description: t("chat.textToImageDesc"),
       icon: ImageIcon,
-      color: "text-indigo-500"
+      gradient: "from-indigo-500 to-purple-500"
     },
   ];
+
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
@@ -85,14 +94,11 @@ const Chat = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [typingContent, setTypingContent] = useState<string>("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [isStopRequested, setIsStopRequested] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const typingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -124,6 +130,14 @@ const Chat = () => {
       loadAllConversations();
     }
   }, [user]);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [message]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -246,63 +260,9 @@ const Chat = () => {
     }
   };
 
-  const stopTyping = () => {
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-      typingIntervalRef.current = null;
-    }
-    setIsTyping(false);
-    setIsStopRequested(true);
-  };
-
-  const typewriterEffect = (text: string, onComplete: () => void) => {
-    if (!text || typeof text !== 'string') {
-      console.error('Invalid text for typewriter effect:', text);
-      onComplete();
-      return;
-    }
-    
-    setIsTyping(true);
-    setTypingContent("");
-    setIsStopRequested(false);
-    let currentIndex = 0;
-    
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-    }
-    
-    typingIntervalRef.current = setInterval(() => {
-      if (isStopRequested) {
-        if (typingIntervalRef.current) {
-          clearInterval(typingIntervalRef.current);
-          typingIntervalRef.current = null;
-        }
-        setIsTyping(false);
-        setTypingContent(text);
-        onComplete();
-        return;
-      }
-      
-      if (currentIndex < text.length) {
-        // Show 3 characters at a time for faster typing
-        const chunkSize = 3;
-        setTypingContent(text.slice(0, Math.min(currentIndex + chunkSize, text.length)));
-        currentIndex += chunkSize;
-      } else {
-        if (typingIntervalRef.current) {
-          clearInterval(typingIntervalRef.current);
-          typingIntervalRef.current = null;
-        }
-        setIsTyping(false);
-        onComplete();
-      }
-    }, 15);
-  };
-
   const handleSend = async () => {
     if ((!message.trim() && !uploadedImage) || !selectedModel || isLoading || !user) return;
     
-    // Ensure conversation exists and get its id
     let convId: string;
     if (!currentConversationId) {
       const title = uploadedImage && !message.trim()
@@ -381,12 +341,9 @@ const Chat = () => {
           imageUrl: data.imageUrl
         };
         
-        typewriterEffect(assistantMessage.content, async () => {
-          setMessages(prev => [...prev, assistantMessage]);
-          await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
-        });
+        setMessages(prev => [...prev, assistantMessage]);
+        await saveMessage(convId, "assistant", assistantMessage.content, data.imageUrl);
       } else {
-        // Use streaming for text responses
         const allMessages = [...messages, userMessage];
         
         const response = await fetch(
@@ -416,7 +373,6 @@ const Chat = () => {
         let streamDone = false;
         let assistantContent = "";
 
-        // Add placeholder assistant message
         const placeholderMessage: Message = {
           role: "assistant",
           content: "",
@@ -448,7 +404,6 @@ const Chat = () => {
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
               if (content) {
                 assistantContent += content;
-                // Update the last message (assistant) with streaming content
                 setMessages((prev) => {
                   const newMessages = [...prev];
                   newMessages[newMessages.length - 1] = {
@@ -465,7 +420,6 @@ const Chat = () => {
           }
         }
 
-        // Save complete message to database
         if (assistantContent) {
           await saveMessage(convId, "assistant", assistantContent);
         }
@@ -508,301 +462,348 @@ const Chat = () => {
     }
   };
 
+  const handleQuickAction = (prompt: string) => {
+    setMessage(prompt);
+    textareaRef.current?.focus();
+  };
+
   return (
-    <div className="fixed inset-0 bg-background flex flex-col overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
-      {/* Header with Home Button */}
-      <div className="h-16 border-b border-border flex items-center justify-between px-4 shrink-0">
+    <div className="fixed inset-0 bg-[hsl(var(--chat-bg))] flex flex-col overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
+      {/* Glassmorphism Header */}
+      <div className="h-14 border-b border-border/40 flex items-center justify-between px-4 shrink-0 backdrop-blur-xl bg-[hsl(var(--chat-header-bg))] sticky top-0 z-50">
         <button
           onClick={() => navigate("/")}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-accent transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted/50 transition-all duration-200"
         >
-          <Home className="w-5 h-5" />
-          <span className="font-medium">{language === "en" ? "Home" : "خانه"}</span>
+          <Home className="w-4 h-4" />
+          <span className="font-medium text-sm hidden sm:inline">{language === "en" ? "Home" : "خانه"}</span>
         </button>
-        <h1 className="text-lg font-semibold">{language === "en" ? "AI Chat" : "چت هوش مصنوعی"}</h1>
-        <div className="w-24"></div> {/* Spacer for centering */}
+        
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-primary-500" />
+          <h1 className="text-base font-semibold bg-gradient-to-r from-primary-500 to-primary-700 bg-clip-text text-transparent">
+            {language === "en" ? "AI Chat" : "چت هوش مصنوعی"}
+          </h1>
+        </div>
+        
+        <ThemeToggle />
       </div>
       
       <div className="flex-1 flex overflow-hidden">
-      {/* Sidebar Overlay for Mobile */}
-      {isMobile && sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-      
-      {/* Sidebar */}
-      <div className={`
-        ${isMobile ? 'fixed right-0 top-16 bottom-0 z-50' : 'relative'}
-        ${sidebarOpen ? 'w-64' : 'w-0'} 
-        transition-all duration-300 bg-card border-l border-border flex flex-col overflow-hidden
-      `}>
-        <div className="p-3 border-b border-border bg-background">
-          <Button
-            onClick={() => {
-              setSelectedModel(null);
-              setCurrentConversationId(null);
-              setMessages([]);
-              if (isMobile) setSidebarOpen(false);
-            }}
-            className="w-full justify-center"
-            variant="default"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-        </div>
+        {/* Sidebar Overlay for Mobile */}
+        {isMobile && sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
         
-        <div className="flex-1 overflow-y-auto p-2">
-          {conversations.map((conv) => (
-            <div
-              key={conv.id}
-              className={`group p-3 rounded-lg mb-1 cursor-pointer transition-colors ${
-                currentConversationId === conv.id
-                  ? "bg-primary/10"
-                  : "hover:bg-secondary"
-              }`}
+        {/* Sidebar */}
+        <div className={`
+          ${isMobile ? 'fixed right-0 top-14 bottom-0 z-50' : 'relative'}
+          ${sidebarOpen ? 'w-64' : 'w-0'} 
+          transition-all duration-300 bg-[hsl(var(--chat-sidebar-bg))] border-l border-border/40 flex flex-col overflow-hidden
+        `}>
+          <div className="p-3 border-b border-border/40">
+            <Button
               onClick={() => {
-                loadConversation(conv.id);
+                setSelectedModel(null);
+                setCurrentConversationId(null);
+                setMessages([]);
                 if (isMobile) setSidebarOpen(false);
               }}
+              className="w-full justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white"
             >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{conv.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(conv.updated_at).toLocaleDateString("fa-IR")}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={(e) => deleteConversation(conv.id, e)}
-                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header with Menu Toggle */}
-        <div className="p-3 border-b border-border bg-background flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="flex-shrink-0"
-          >
-            {sidebarOpen ? <ArrowRight className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-          {selectedModel && (
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              {(() => {
-                const model = models.find(m => m.id === selectedModel);
-                const Icon = model?.icon || MessageSquare;
-                return (
-                  <>
-                    <Icon className={`h-4 w-4 flex-shrink-0 ${model?.color}`} />
-                    <span className="text-sm font-medium truncate">{model?.name}</span>
-                  </>
-                );
-              })()}
-            </div>
-          )}
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto overscroll-contain">
-          {!selectedModel ? (
-            <div className="max-w-2xl mx-auto p-4 md:p-8 pt-8 md:pt-20">
-              <h1 className="text-3xl md:text-4xl font-bold text-center mb-2">{t("chat.title")}</h1>
-              <p className="text-center text-sm md:text-base text-muted-foreground mb-8 md:mb-12">{t("chat.subtitle")}</p>
-              
-              <div className="grid gap-3">
-                {models.map((model) => {
-                  const Icon = model.icon;
-                  return (
-                    <button
-                      key={model.id}
-                      onClick={() => {
-                        createNewConversation(model.id);
-                        if (isMobile) setSidebarOpen(false);
-                      }}
-                      className="p-3 md:p-4 rounded-xl border border-border hover:bg-secondary/50 active:bg-secondary transition-all text-right flex items-center gap-3"
-                    >
-                      <Icon className={`h-5 w-5 ${model.color}`} />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm">{model.name}</h3>
-                        <p className="text-xs text-muted-foreground">{model.description}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full">
-              {(() => {
-                const model = models.find(m => m.id === selectedModel);
-                const Icon = model?.icon || MessageSquare;
-                return (
-                  <>
-                    <Icon className={`h-12 w-12 mb-4 ${model?.color}`} />
-                    <h2 className="text-xl font-bold mb-2">{model?.name}</h2>
-                    <p className="text-muted-foreground text-center max-w-md">{model?.description}</p>
-                  </>
-                );
-              })()}
-            </div>
-          ) : (
-            <div className="max-w-3xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6 pb-4">
-              {messages.map((msg, idx) => (
-                 <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} px-2 md:px-0 group`}>
-                  <div className={`relative max-w-[85%] md:max-w-[80%] ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary"} rounded-2xl px-3 md:px-4 py-2.5 md:py-3`}>
-                    {msg.role === "assistant" && (
-                      <button
-                        onClick={() => handleCopyMessage(msg.content, idx)}
-                        className="absolute -top-2 -left-2 p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent shadow-sm"
-                        title="کپی کردن"
-                      >
-                        {copiedMessageId === idx ? (
-                          <Check className="w-3.5 h-3.5 text-green-600" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    )}
-                    {msg.role === "assistant" ? (
-                      <div className="prose prose-sm max-w-none dark:prose-invert [&_h1]:text-lg [&_h1]:font-semibold [&_h2]:text-base [&_h2]:font-semibold [&_h3]:text-base [&_h3]:font-medium [&_h4]:text-sm [&_h4]:font-medium [&_h5]:text-sm [&_h6]:text-sm [&_table]:w-full [&_table]:border-collapse [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2 [&_th]:text-right [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_td]:text-right [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {msg.content}
-                        </ReactMarkdown>
-                      </div>
-                    ) : (
-                      <p className="text-base whitespace-pre-wrap">{msg.content}</p>
-                    )}
-                    {msg.imageUrl && (
-                      <div className="mt-3">
-                        <img 
-                          src={msg.imageUrl} 
-                          alt="تصویر" 
-                          className="rounded-lg max-w-full cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => setZoomedImage(msg.imageUrl!)}
-                        />
-                        {msg.role === "assistant" && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => downloadImage(msg.imageUrl!)}
-                            className="mt-2 gap-1 text-xs"
-                          >
-                            <Download className="h-3 w-3" />
-                            دانلود
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Typing indicator */}
-              {isTyping && (
-                 <div className="flex justify-start px-2 md:px-0 animate-fade-in">
-                  <div className="max-w-[85%] md:max-w-[80%] bg-secondary rounded-2xl px-3 md:px-4 py-2.5 md:py-3">
-                    <p className="text-base whitespace-pre-wrap">
-                      {typingContent}
-                      <span className="inline-block w-0.5 h-4 bg-primary mr-0.5 animate-pulse"></span>
+              <Plus className="h-4 w-4" />
+              <span className="text-sm font-medium">گفتگوی جدید</span>
+            </Button>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {conversations.map((conv) => (
+              <div
+                key={conv.id}
+                className={`group p-3 rounded-xl mb-1 cursor-pointer transition-all duration-200 ${
+                  currentConversationId === conv.id
+                    ? "bg-primary-50 dark:bg-primary-900/20"
+                    : "hover:bg-muted/50"
+                }`}
+                onClick={() => {
+                  loadConversation(conv.id);
+                  if (isMobile) setSidebarOpen(false);
+                }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{conv.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(conv.updated_at).toLocaleDateString("fa-IR")}
                     </p>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => deleteConversation(conv.id, e)}
+                    className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-              )}
-              
-              <div ref={messagesEndRef} />
-            </div>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Input Area */}
-        {selectedModel && (
-          <div className="border-t border-border p-3 md:p-4 bg-background safe-area-bottom">
-            <div className="max-w-3xl mx-auto">
-              {/* Image Upload Preview */}
-              {uploadedImage && (
-                <div className="mb-3 relative inline-block">
-                  <img 
-                    src={uploadedImage} 
-                    alt="آپلود شده" 
-                    className="max-h-32 rounded-lg border border-border"
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Toggle Sidebar Button */}
+          <div className="p-2 border-b border-border/40 bg-background/50 backdrop-blur-sm flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="flex-shrink-0"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+            {selectedModel && (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                {(() => {
+                  const model = models.find(m => m.id === selectedModel);
+                  const Icon = model?.icon || MessageSquare;
+                  return (
+                    <>
+                      <div className={`p-1.5 rounded-lg bg-gradient-to-br ${model?.gradient}`}>
+                        <Icon className="h-3.5 w-3.5 text-white" />
+                      </div>
+                      <span className="text-sm font-medium truncate">{model?.name}</span>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto overscroll-contain">
+            {!selectedModel ? (
+              <div className="max-w-3xl mx-auto p-6 pt-12">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 mb-4">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h1 className="text-3xl font-bold mb-2">{t("chat.title")}</h1>
+                  <p className="text-muted-foreground">{t("chat.subtitle")}</p>
+                </div>
+                
+                <div className="grid gap-3">
+                  {models.map((model) => {
+                    const Icon = model.icon;
+                    return (
+                      <button
+                        key={model.id}
+                        onClick={() => {
+                          createNewConversation(model.id);
+                          if (isMobile) setSidebarOpen(false);
+                        }}
+                        className="group p-4 rounded-2xl border border-border/60 hover:border-primary-300 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-all duration-200 text-right flex items-center gap-4"
+                      >
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${model.gradient} group-hover:scale-110 transition-transform duration-200`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm mb-0.5">{model.name}</h3>
+                          <p className="text-xs text-muted-foreground">{model.description}</p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full p-6">
+                {(() => {
+                  const model = models.find(m => m.id === selectedModel);
+                  const Icon = model?.icon || MessageSquare;
+                  return (
+                    <>
+                      <div className={`p-6 rounded-3xl bg-gradient-to-br ${model?.gradient} mb-4`}>
+                        <Icon className="h-12 w-12 text-white" />
+                      </div>
+                      <h2 className="text-xl font-bold mb-2">{model?.name}</h2>
+                      <p className="text-muted-foreground text-center max-w-md mb-6">{model?.description}</p>
+                      
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap gap-2 justify-center max-w-2xl">
+                        {quickActions.map((action, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleQuickAction(action.prompt)}
+                            className="px-4 py-2 rounded-full border border-border/60 hover:bg-muted/50 text-sm transition-all duration-200 hover:scale-105"
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="max-w-3xl mx-auto p-4 space-y-4 pb-4">
+                {messages.map((msg, idx) => (
+                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} group message-animation`}>
+                    <div className={`relative max-w-[85%] ${
+                      msg.role === "user" 
+                        ? "bg-[hsl(var(--chat-user-bubble))] border border-primary-200/50" 
+                        : "bg-[hsl(var(--chat-bot-bubble))] border border-border/40"
+                    } rounded-2xl px-4 py-3 shadow-sm`}>
+                      {msg.role === "assistant" && (
+                        <button
+                          onClick={() => handleCopyMessage(msg.content, idx)}
+                          className="absolute -top-2 -left-2 p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-muted shadow-sm"
+                          title="کپی کردن"
+                        >
+                          {copiedMessageId === idx ? (
+                            <Check className="w-3.5 h-3.5 text-success" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      )}
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-sm max-w-none dark:prose-invert prose-headings:font-semibold [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_table]:border [&_table]:border-border [&_th]:border [&_th]:border-border [&_th]:bg-muted/50 [&_th]:px-3 [&_th]:py-2 [&_td]:border [&_td]:border-border [&_td]:px-3 [&_td]:py-2 [&_pre]:bg-muted [&_pre]:p-3 [&_pre]:rounded-lg [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-[15px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                      )}
+                      {msg.imageUrl && (
+                        <div className="mt-3">
+                          <img 
+                            src={msg.imageUrl} 
+                            alt="تصویر" 
+                            className="rounded-xl max-w-full cursor-pointer hover:opacity-90 transition-opacity border border-border/40"
+                            onClick={() => setZoomedImage(msg.imageUrl!)}
+                          />
+                          {msg.role === "assistant" && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => downloadImage(msg.imageUrl!)}
+                              className="mt-2 gap-1.5 text-xs"
+                            >
+                              <Download className="h-3 w-3" />
+                              دانلود
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Typing indicator */}
+                {isLoading && (
+                  <div className="flex justify-start message-animation">
+                    <div className="bg-[hsl(var(--chat-bot-bubble))] border border-border/40 rounded-2xl px-4 py-3 shadow-sm">
+                      <div className="flex gap-1">
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
+              </div>
+            )}
+          </div>
+
+          {/* Input Area */}
+          {selectedModel && (
+            <div className="border-t border-border/40 p-4 bg-background/50 backdrop-blur-sm">
+              <div className="max-w-3xl mx-auto">
+                {/* Image Upload Preview */}
+                {uploadedImage && (
+                  <div className="mb-3 relative inline-block">
+                    <img 
+                      src={uploadedImage} 
+                      alt="آپلود شده" 
+                      className="max-h-32 rounded-xl border border-border/60"
+                    />
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-md"
+                      onClick={removeUploadedImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="flex gap-2 items-end">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
                   />
                   <Button
                     size="icon"
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
-                    onClick={removeUploadedImage}
+                    variant="ghost"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isLoading || selectedModel === "image"}
+                    className="h-10 w-10 shrink-0 hover:bg-muted/50"
+                    title="آپلود تصویر"
                   >
-                    <X className="h-3 w-3" />
+                    <Paperclip className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
-              
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <Button
-                  size="icon"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || selectedModel === "image"}
-                  title="آپلود تصویر"
-                >
-                  <Upload className="h-4 w-4" />
-                </Button>
-                <Textarea
-                  placeholder={selectedModel === "image" ? "توضیح تصویر..." : uploadedImage ? "سوالی درباره تصویر بپرسید..." : "پیام خود را بنویسید..."}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && !isLoading) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  disabled={isLoading}
-                  className="flex-1 min-w-0 text-base resize-none min-h-[44px] max-h-[120px]"
-                  rows={1}
-                />
-                {isTyping ? (
-                  <Button 
-                    onClick={stopTyping}
-                    size="icon"
-                    variant="destructive"
-                  >
-                    <Square className="h-4 w-4" />
-                  </Button>
-                ) : (
+                  
+                  <div className="flex-1 relative">
+                    <Textarea
+                      ref={textareaRef}
+                      placeholder={selectedModel === "image" ? "توضیح تصویر..." : uploadedImage ? "سوالی درباره تصویر بپرسید..." : "پیام خود را بنویسید..."}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey && !isLoading) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
+                      disabled={isLoading}
+                      className="resize-none min-h-[44px] max-h-[120px] pr-12 rounded-2xl border-border/60 bg-[hsl(var(--chat-input-bg))] focus:border-primary-300 transition-all duration-200 text-[15px] leading-relaxed"
+                      rows={1}
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="absolute left-2 bottom-2 h-7 w-7 hover:bg-muted/50"
+                      title="پیام صوتی"
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
                   <Button 
                     onClick={handleSend} 
                     disabled={isLoading || (!message.trim() && !uploadedImage)}
                     size="icon"
+                    className="h-10 w-10 shrink-0 bg-primary-500 hover:bg-primary-600 text-white rounded-2xl shadow-sm disabled:opacity-50"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
-                )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
@@ -814,11 +815,10 @@ const Chat = () => {
               className="w-full h-auto rounded-lg"
             />
           )}
-         </DialogContent>
-       </Dialog>
-      </div>
-     </div>
-   );
- };
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
 
 export default Chat;
