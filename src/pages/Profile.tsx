@@ -71,7 +71,8 @@ const Profile = () => {
           const { data: conversations, error: convError } = await supabase
             .from("conversations")
             .select("id, created_at, updated_at")
-            .eq("user_id", user.id);
+            .eq("user_id", user.id)
+            .order('updated_at', { ascending: false });
           
           if (convError) {
             console.error('Error loading conversations:', convError);
@@ -79,6 +80,7 @@ const Profile = () => {
 
           let messageCount = 0;
           let allMessages: any[] = [];
+          let latestActivity = user.created_at;
           
           // Only fetch messages if we have conversations
           if (conversations && conversations.length > 0) {
@@ -93,6 +95,10 @@ const Profile = () => {
             } else {
               messageCount = count || 0;
               allMessages = messages || [];
+              // Get the latest activity from the most recent message
+              if (messages && messages.length > 0) {
+                latestActivity = messages[0].created_at;
+              }
             }
           }
 
@@ -181,7 +187,7 @@ const Profile = () => {
             conversationsCount: conversations?.length || 0,
             activeToday: todayCount > 0,
             memberSince: user.created_at,
-            lastActivity: conversations?.[0]?.updated_at || user.created_at
+            lastActivity: latestActivity
           });
         } catch (statsError) {
           console.error('Error loading stats:', statsError);
