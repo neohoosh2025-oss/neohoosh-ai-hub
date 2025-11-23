@@ -413,13 +413,12 @@ const Chat = () => {
         let streamDone = false;
         let assistantContent = "";
 
-        // Create assistant message immediately
-        const assistantMessage: Message = {
+        // Add placeholder assistant message
+        const placeholderMessage: Message = {
           role: "assistant",
           content: "",
         };
-        setMessages(prev => [...prev, assistantMessage]);
-        const assistantMessageIndex = messages.length + 1;
+        setMessages(prev => [...prev, placeholderMessage]);
 
         while (!streamDone) {
           const { done, value } = await reader.read();
@@ -446,13 +445,15 @@ const Chat = () => {
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
               if (content) {
                 assistantContent += content;
-                setMessages((prev) => 
-                  prev.map((m, i) => 
-                    i === assistantMessageIndex
-                      ? { ...m, content: assistantContent }
-                      : m
-                  )
-                );
+                // Update the last message (assistant) with streaming content
+                setMessages((prev) => {
+                  const newMessages = [...prev];
+                  newMessages[newMessages.length - 1] = {
+                    ...newMessages[newMessages.length - 1],
+                    content: assistantContent
+                  };
+                  return newMessages;
+                });
               }
             } catch {
               textBuffer = line + "\n" + textBuffer;
