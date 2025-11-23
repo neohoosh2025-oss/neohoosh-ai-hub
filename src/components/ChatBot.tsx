@@ -213,8 +213,8 @@ const ChatBot = () => {
           {/* Content */}
           {!selectedModel ? (
             <div className="flex-1 overflow-y-auto p-6">
-              <h4 className="text-lg font-bold mb-4 text-center">{t("chat.selectModel")}</h4>
-              <div className="grid gap-3">
+              <h4 className="text-lg font-bold mb-6 text-center">{t("chat.selectModel")}</h4>
+              <div className="grid gap-4">
                 {models.map((model) => {
                   const Icon = model.icon;
                   return (
