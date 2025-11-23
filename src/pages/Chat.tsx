@@ -184,7 +184,7 @@ const Chat = () => {
         role: msg.role as "user" | "assistant",
         content: msg.content,
         imageUrl: msg.image_url || undefined,
-        reasoning_details: msg.reasoning_details || undefined
+        reasoning_details: (msg as any).reasoning_details || undefined
       }));
     setMessages(formattedMessages);
   };
