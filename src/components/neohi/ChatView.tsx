@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, MoreVertical, Phone, Video, CheckCheck } from "lucide-react";
+import { ArrowLeft, MoreVertical, Phone, Video } from "lucide-react";
+import { motion } from "framer-motion";
 import { MessageInput } from "./MessageInput";
+import { MessageList } from "./MessageList";
 
 interface Message {
   id: string;
@@ -131,61 +132,59 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .eq("id", chatId);
   };
 
-  const getTimeDisplay = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  };
-
   if (!chat) {
     return (
-      <div className="h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="h-screen bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-10 h-10 border-3 border-[hsl(var(--neohi-accent))] border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
       {/* Header */}
-      <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
-        <div className="flex items-center justify-between h-11">
+      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              className="text-[#0a84ff] hover:bg-transparent"
+              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
               onClick={onBack}
             >
-              <ArrowLeft className="h-6 w-6 scale-x-[-1]" />
+              <ArrowLeft className="h-5 w-5" />
             </Button>
             
-            <Avatar className="h-9 w-9">
+            <Avatar className="h-10 w-10 ring-2 ring-[hsl(var(--neohi-border))]">
               <AvatarImage src={chat.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {chat.name?.charAt(0) || "C"}
+              <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white font-semibold">
+                {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
             <div>
-              <h2 className="text-white font-semibold text-[15px]">
+              <h2 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-[15px]">
                 {chat.name || "Chat"}
               </h2>
-              <p className="text-gray-400 text-xs">Online</p>
+              <p className="text-[hsl(var(--neohi-status-online))] text-xs flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
+                Online
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
               <Phone className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
               <Video className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[#0a84ff] hover:bg-transparent">
+            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
               <MoreVertical className="h-5 w-5" />
             </Button>
           </div>
@@ -193,93 +192,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       </header>
 
       {/* Messages */}
-      <ScrollArea className="flex-1">
-        <div className="p-4 space-y-3 pb-4">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500">Loading messages...</div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-gray-500 text-center">
-                <p>No messages yet</p>
-                <p className="text-sm mt-1">Send the first message</p>
-              </div>
-            </div>
-          ) : (
-            messages.map((message, index) => {
-              const isOwn = message.sender_id === currentUser?.id;
-              const showAvatar = !isOwn && (
-                index === messages.length - 1 ||
-                messages[index + 1]?.sender_id !== message.sender_id
-              );
-
-              return (
-                <div
-                  key={message.id}
-                  className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
-                >
-                  {/* Avatar */}
-                  <div className="w-8 h-8 shrink-0">
-                    {showAvatar && message.sender && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={message.sender.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs">
-                          {message.sender.display_name?.charAt(0) || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-
-                  {/* Message Bubble */}
-                  <div className={`flex flex-col max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
-                    {message.media_url && (
-                      <div className="mb-1">
-                        {message.message_type === "image" && (
-                          <img
-                            src={message.media_url}
-                            alt="Shared"
-                            className="rounded-2xl max-w-xs border border-[#2c2c2e]"
-                          />
-                        )}
-                        {message.message_type === "video" && (
-                          <video
-                            src={message.media_url}
-                            controls
-                            className="rounded-2xl max-w-xs border border-[#2c2c2e]"
-                          />
-                        )}
-                      </div>
-                    )}
-                    
-                    {message.content && (
-                      <div
-                        className={`rounded-2xl px-4 py-2 ${
-                          isOwn
-                            ? "bg-[#0a84ff] text-white rounded-br-md"
-                            : "bg-[#2c2c2e] text-white rounded-bl-md"
-                        }`}
-                      >
-                        <p className="text-[15px] whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                        
-                        <div className={`flex items-center gap-1 mt-1 text-xs ${isOwn ? "text-white/70" : "text-gray-400"}`}>
-                          <span>{getTimeDisplay(message.created_at)}</span>
-                          {isOwn && (
-                            <CheckCheck className="h-3 w-3" />
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })
-          )}
-          <div ref={scrollRef} />
-        </div>
-      </ScrollArea>
+      <MessageList messages={messages} loading={loading} />
 
       {/* Message Input */}
       <MessageInput onSend={handleSendMessage} />
