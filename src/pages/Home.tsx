@@ -155,7 +155,7 @@ const Home = () => {
             {/* Main Heading - Emotional & Powerful */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight font-display"
+              className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold leading-tight font-display px-4"
             >
               <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
                 نسل جدید هوش مصنوعی
@@ -169,7 +169,7 @@ const Home = () => {
             {/* Sub Heading */}
             <motion.p 
               variants={fadeInUp}
-              className="text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light"
+              className="text-base sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light px-4"
             >
               ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد.
             </motion.p>
@@ -251,12 +251,12 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-16 px-4"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
               امکانات NeoHoosh
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               سه ستون اصلی پلتفرم هوش مصنوعی نئوهوش
             </p>
           </motion.div>
@@ -334,17 +334,17 @@ const Home = () => {
                       معرفی NEOHI
                     </Badge>
                     
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                       <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
                         NEOHI
                       </span>
                     </h2>
                     
-                    <p className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-semibold text-foreground mb-4">
                       جایی برای گفتگو، یادگیری و شبکه‌سازی
                     </p>
                     
-                    <p className="text-lg text-muted-foreground leading-relaxed">
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                       کامیونیتی اختصاصی NeoHoosh، الهام‌گرفته از تجربه تلگرام؛
                       سریع، سبک، گروه‌محور و مخصوص کاربران AI.
                     </p>
@@ -443,17 +443,17 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-16 px-4"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
               ابزارهای AI در NeoHoosh
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               مجموعه کاملی از ابزارهای هوش مصنوعی برای نیازهای مختلف
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-6xl mx-auto px-4">
             {tools.map((tool, i) => {
               const iconMap: { [key: string]: any } = {
                 'MessageCircle': MessageCircle,
@@ -598,17 +598,17 @@ const Home = () => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="text-center mb-16"
+              className="text-center mb-16 px-4"
             >
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
                 آخرین مقالات
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                 با جدیدترین مطالب و آموزش‌های AI آشنا شوید
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto px-4">
               {articles.map((article, i) => (
                 <motion.div
                   key={article.id}
@@ -665,17 +665,17 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-16 px-4"
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 font-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 font-display">
               کاربران راضی NeoHoosh
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               تجربه هزاران کاربر از استفاده پلتفرم هوش مصنوعی نئوهوش
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto px-4">
             {testimonials.map((testimonial, i) => (
               <motion.div
                 key={testimonial.id}
@@ -732,11 +732,11 @@ const Home = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Card className="max-w-4xl mx-auto p-12 lg:p-16 text-center border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl">
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <Card className="max-w-4xl mx-auto p-8 sm:p-12 lg:p-16 text-center border-2 border-primary/30 shadow-glow-strong bg-card/80 backdrop-blur-xl">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                 آماده شروع هستید؟
               </h2>
-              <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+              <p className="text-base sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
                 همین امروز به هزاران کاربر راضی بپیوندید و قدرت هوش مصنوعی را تجربه کنید
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
