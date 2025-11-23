@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, Settings, MessageCircle } from "lucide-react";
+import { Search, Plus, Settings, MessageCircle, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -141,6 +142,15 @@ export function Sidebar({
           </div>
           
           <div className="flex items-center gap-1">
+            <Link to="/">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-accent))]"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
