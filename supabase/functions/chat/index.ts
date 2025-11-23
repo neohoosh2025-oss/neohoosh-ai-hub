@@ -177,20 +177,21 @@ serve(async (req) => {
       ];
     }
 
-    // Use Grok with reasoning for vision or standard chat
+    // Use Grok for all chat interactions
     const selectedModel = imageData 
       ? "qwen/qwen2.5-vl-32b-instruct:free" 
-      : "x-ai/grok-4.1-fast:free";
-    
-    // Check if we need to preserve reasoning from previous message
-    const lastAssistantMsg = [...apiMessages].reverse().find(m => m.role === 'assistant');
-    const hasReasoningDetails = lastAssistantMsg?.reasoning_details;
+      : "x-ai/grok-4.1-fast";
     
     const requestBody: any = {
       model: selectedModel,
       messages: apiMessages,
-      stream: true, // Enable streaming for faster response
+      stream: true,
     };
+
+    // Enable reasoning for Grok models
+    if (selectedModel.includes('grok')) {
+      requestBody.reasoning = { enabled: true };
+    }
     
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
 
