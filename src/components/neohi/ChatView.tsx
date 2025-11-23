@@ -2,10 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, MoreVertical, Phone, Video } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowLeft, MoreVertical, Phone, Video, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
+import { GroupInfo } from "./GroupInfo";
+import { ChannelInfo } from "./ChannelInfo";
 
 interface Message {
   id: string;
@@ -30,6 +32,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -145,9 +148,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden relative" dir="ltr">
       {/* Header */}
-      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md">
+      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md z-10">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
@@ -159,30 +162,50 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             
-            <Avatar className="h-10 w-10 ring-2 ring-[hsl(var(--neohi-border))]">
+            <Avatar className="h-10 w-10 ring-2 ring-[hsl(var(--neohi-border))] cursor-pointer" onClick={() => setShowInfo(true)}>
               <AvatarImage src={chat.avatar_url || undefined} />
               <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white font-semibold">
                 {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
-            <div>
+            <div className="cursor-pointer" onClick={() => setShowInfo(true)}>
               <h2 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-[15px]">
                 {chat.name || "Chat"}
               </h2>
               <p className="text-[hsl(var(--neohi-status-online))] text-xs flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
-                Online
+                {chat.type === "channel" ? (
+                  "Channel"
+                ) : chat.type === "group" ? (
+                  "Group"
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
+                    Online
+                  </>
+                )}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
-              <Phone className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
-              <Video className="h-5 w-5" />
+            {chat.type === "dm" && (
+              <>
+                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
+                  <Phone className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
+                  <Video className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setShowInfo(true)}
+              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+            >
+              <Info className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
               <MoreVertical className="h-5 w-5" />
@@ -194,8 +217,21 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       {/* Messages */}
       <MessageList messages={messages} loading={loading} />
 
-      {/* Message Input */}
-      <MessageInput onSend={handleSendMessage} />
+      {/* Message Input - Only for DM and Group, not for Channel */}
+      {chat.type !== "channel" && <MessageInput onSend={handleSendMessage} />}
+
+      {/* Info Panel */}
+      <AnimatePresence>
+        {showInfo && (
+          <>
+            {chat.type === "group" ? (
+              <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
+            ) : chat.type === "channel" ? (
+              <ChannelInfo chatId={chatId} onClose={() => setShowInfo(false)} />
+            ) : null}
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
