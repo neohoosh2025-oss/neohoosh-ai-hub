@@ -351,20 +351,20 @@ const Home = () => {
                   </div>
 
                   {/* Features Grid */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     {[
                       { icon: Users, label: "گروه‌های تخصصی" },
-                      { icon: MessageSquare, label: "کانال‌های کاربردی" },
+                      { icon: MessageSquare, label: "کانال‌ها" },
                       { icon: Share2, label: "پرسش و پاسخ" },
                       { icon: ImageIcon, label: "اشتراک رسانه" },
-                      { icon: Globe, label: "دسترسی چندپلتفرمی" },
+                      { icon: Globe, label: "دسترسی آسان" },
                       { icon: Video, label: "پخش زنده" }
                     ].map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-background/50 border border-border/50">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <item.icon className="w-5 h-5 text-primary" />
+                      <div key={i} className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl bg-background/50 border border-border/50">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                         </div>
-                        <span className="text-sm font-medium">{item.label}</span>
+                        <span className="text-xs sm:text-sm font-medium leading-tight">{item.label}</span>
                       </div>
                     ))}
                   </div>
