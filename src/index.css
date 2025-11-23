@@ -200,6 +200,73 @@ All colors MUST be HSL.
   }
 
   .dark {
+    /* ===== NEOHI DARK MODE COLORS ===== */
+    /* Background System */
+    --neohi-bg-main: 217 19% 7%;            /* #111315 - Main background */
+    --neohi-bg-sidebar: 220 18% 10%;        /* #181A1D - Sidebar */
+    --neohi-bg-chat: 218 17% 13%;           /* #1F2226 - Chat panel */
+    --neohi-bg-hover: 220 14% 16%;          /* Hover states */
+    
+    /* Text Colors */
+    --neohi-text-primary: 0 0% 90%;         /* #E5E5E5 - Primary text */
+    --neohi-text-secondary: 220 9% 62%;     /* #9CA3AF - Secondary text */
+    --neohi-text-muted: 220 9% 50%;         /* Muted text */
+    
+    /* Accent & Brand (Same in dark) */
+    --neohi-accent: 214 95% 62%;            /* #4C8BF5 */
+    --neohi-accent-hover: 214 95% 70%;      /* Lighter on hover in dark */
+    --neohi-accent-light: 214 50% 15%;      /* Dark accent bg */
+    
+    /* Chat Bubbles */
+    --neohi-bubble-user: 214 44% 18%;       /* #24344E - User bubble */
+    --neohi-bubble-other: 220 15% 15%;      /* #26282D - Other bubble */
+    --neohi-bubble-user-text: 214 100% 75%; /* Lighter user text */
+    
+    /* Borders & Dividers */
+    --neohi-border: 0 0% 100% / 0.08;       /* rgba(255,255,255,0.08) */
+    --neohi-border-light: 0 0% 100% / 0.05; /* Lighter border */
+    
+    /* Status Colors */
+    --neohi-online: 142 71% 55%;            /* Brighter green */
+    --neohi-unread: 0 72% 60%;              /* Brighter red */
+
+    /* Original Dark Mode */
+    --background: 222 47% 4%;
+    --foreground: 213 31% 91%;
+    
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    
+    --muted: 223 47% 11%;
+    --muted-foreground: 215 20% 65%;
+    
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 195 92% 52%;
+    
+    --primary: 195 92% 52%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 270 75% 58%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --accent: 168 85% 52%;
+    --accent-foreground: 0 0% 100%;
+    
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  .dark {
     /* ===== DARK MODE COLORS ===== */
     /* Chat-specific: Deeper, calmer background */
     --background: 220 15% 7%;
