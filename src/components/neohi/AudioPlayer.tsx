@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Download } from "lucide-react";
 import { motion } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 
 interface AudioPlayerProps {
   src: string;
@@ -11,7 +12,9 @@ export function AudioPlayer({ src, isOwn = false }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -58,6 +61,36 @@ export function AudioPlayer({ src, isOwn = false }: AudioPlayerProps) {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const handleDownload = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `audio-${Date.now()}.webm`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "دانلود شد",
+        description: "فایل با موفقیت دانلود شد",
+      });
+    } catch (error) {
+      console.error("Download error:", error);
+      toast({
+        title: "خطا",
+        description: "دانلود فایل با مشکل مواجه شد",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -72,16 +105,6 @@ export function AudioPlayer({ src, isOwn = false }: AudioPlayerProps) {
     >
       <audio ref={audioRef} src={src} preload="metadata" />
       
-      {/* Download Button */}
-      <a
-        href={src}
-        download
-        className="absolute top-2 left-2 p-1.5 rounded-full bg-[hsl(var(--neohi-bg-chat))]/50 hover:bg-[hsl(var(--neohi-bg-chat))]/80 transition-colors z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Download className="h-3.5 w-3.5 text-[hsl(var(--neohi-text-secondary))]" />
-      </a>
-
       <div className="flex items-center gap-3">
         {/* Play/Pause Button */}
         <button
@@ -120,6 +143,15 @@ export function AudioPlayer({ src, isOwn = false }: AudioPlayerProps) {
             <span>-{formatTime(duration - currentTime)}</span>
           </div>
         </div>
+
+        {/* Download Button */}
+        <button
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="flex-shrink-0 p-2 rounded-full hover:bg-[hsl(var(--neohi-bg-chat))]/50 transition-colors disabled:opacity-50"
+        >
+          <Download className="h-4 w-4 text-[hsl(var(--neohi-text-secondary))]" />
+        </button>
       </div>
     </motion.div>
   );
