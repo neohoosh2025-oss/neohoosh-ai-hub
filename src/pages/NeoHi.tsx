@@ -204,6 +204,17 @@ export default function NeoHi() {
           loadChats();
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "neohi_chat_members",
+        },
+        () => {
+          loadChats();
+        }
+      )
       .subscribe();
 
     return () => {
