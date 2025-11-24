@@ -69,16 +69,16 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
   return (
     <div className="h-full overflow-y-auto bg-neohi-bg-main">
       {/* Fixed Header */}
-      <header className="sticky top-0 z-10 h-[60px] bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 flex items-center justify-center relative">
+      <header className="sticky top-0 z-10 h-[50px] bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 flex items-center justify-center relative">
         <Button
           variant="ghost"
           size="icon"
           onClick={onClose}
-          className="absolute left-4 h-10 w-10 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary"
+          className="absolute left-4 h-9 w-9 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-lg font-semibold text-neohi-text-primary">Profile</h1>
+        <h1 className="text-base font-semibold text-neohi-text-primary">Profile</h1>
       </header>
 
       {/* Cover Section */}
