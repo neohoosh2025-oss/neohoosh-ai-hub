@@ -24,7 +24,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
-import BottomNavigation from "./BottomNavigation";
 
 interface ProfileSettingsProps {
   onBack: () => void;
@@ -376,9 +375,6 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           </motion.div>
         </div>
       </ScrollArea>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 }

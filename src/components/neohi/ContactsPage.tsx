@@ -12,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import BottomNavigation from "./BottomNavigation";
 
 interface Contact {
   id: string;
@@ -361,9 +360,6 @@ export function ContactsPage({ onBack }: { onBack?: () => void }) {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 }

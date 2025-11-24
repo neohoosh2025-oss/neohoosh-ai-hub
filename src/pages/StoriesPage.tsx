@@ -11,7 +11,6 @@ import {
   DialogContent,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import BottomNavigation from "@/components/neohi/BottomNavigation";
 
 interface Story {
   id: string;
@@ -411,8 +410,6 @@ export default function StoriesPage({ onBack }: { onBack?: () => void }) {
         )}
       </AnimatePresence>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation />
     </div>
   );
 }
