@@ -194,18 +194,21 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           >
             <div className="flex flex-col items-center gap-4">
               <div className="relative group">
-                <Avatar 
-                  className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))] cursor-pointer"
+                <div 
+                  className="cursor-pointer"
                   onClick={() => avatarUrl && setShowAvatarDialog(true)}
                 >
-                  <AvatarImage src={avatarUrl || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-4xl font-bold">
-                    {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
+                  <Avatar className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))]">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-4xl font-bold">
+                      {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 <label
                   htmlFor="avatar-upload"
-                  className="absolute bottom-2 right-2 w-10 h-10 bg-[hsl(var(--neohi-accent))] rounded-full flex items-center justify-center cursor-pointer hover:bg-[hsl(var(--neohi-accent))]/90 transition-all shadow-lg group-hover:scale-110"
+                  className="absolute bottom-2 right-2 w-10 h-10 bg-[hsl(var(--neohi-accent))] rounded-full flex items-center justify-center cursor-pointer hover:bg-[hsl(var(--neohi-accent))]/90 transition-all shadow-lg group-hover:scale-110 z-10"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Camera className="h-5 w-5 text-white" />
                   <input
@@ -376,22 +379,23 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         </div>
       </ScrollArea>
 
+
       {/* Avatar Dialog */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="max-w-3xl w-full h-[90vh] p-0 bg-black/95 border-none">
-          <div className="relative w-full h-full flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
+        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none overflow-hidden">
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <button
               onClick={() => setShowAvatarDialog(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm"
             >
               <X className="h-6 w-6" />
-            </Button>
-            <img 
+            </button>
+            <motion.img 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               src={avatarUrl} 
               alt="Profile" 
-              className="max-w-full max-h-full object-contain"
+              className="max-w-full max-h-full object-contain rounded-lg"
             />
           </div>
         </DialogContent>
