@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Send, Image as ImageIcon, Smile, Mic, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +14,6 @@ export function MessageInput({ onSend }: MessageInputProps) {
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [showMicPermissionDialog, setShowMicPermissionDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -78,15 +76,6 @@ export function MessageInput({ onSend }: MessageInputProps) {
         fileInputRef.current.value = "";
       }
     }
-  };
-
-  const requestMicrophonePermission = () => {
-    setShowMicPermissionDialog(true);
-  };
-
-  const handleMicPermissionConfirm = async () => {
-    setShowMicPermissionDialog(false);
-    await startRecording();
   };
 
   const startRecording = async () => {
@@ -250,7 +239,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
           </Button>
         ) : (
           <Button
-            onClick={requestMicrophonePermission}
+            onClick={startRecording}
             disabled={uploading}
             variant="ghost"
             size="icon"
@@ -269,35 +258,6 @@ export function MessageInput({ onSend }: MessageInputProps) {
           className="hidden"
         />
       </div>
-
-      {/* Microphone Permission Dialog */}
-      <AlertDialog open={showMicPermissionDialog} onOpenChange={setShowMicPermissionDialog}>
-        <AlertDialogContent className="bg-neohi-bg-sidebar border-neohi-border">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-neohi-text-primary text-right">
-              دسترسی به میکروفون
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-neohi-text-secondary text-right" dir="rtl">
-              برای ضبط و ارسال پیام صوتی، نیاز به دسترسی به میکروفون دارید.
-              <br /><br />
-              بعد از کلیک روی "اجازه دادن"، مرورگر از شما درخواست دسترسی به میکروفون می‌کند.
-              <br /><br />
-              اگر قبلاً دسترسی را رد کرده‌اید، باید از تنظیمات مرورگر آن را مجاز کنید.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse gap-2">
-            <AlertDialogAction 
-              onClick={handleMicPermissionConfirm}
-              className="bg-neohi-accent hover:bg-neohi-accent/90 text-white"
-            >
-              اجازه دادن
-            </AlertDialogAction>
-            <AlertDialogCancel className="bg-neohi-bg-hover text-neohi-text-primary hover:bg-neohi-bg-chat">
-              انصراف
-            </AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
