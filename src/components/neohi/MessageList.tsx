@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, MoreVertical, Trash2, Trash } from "lucide-react";
+import { CheckCheck, MoreVertical, Trash2, Trash, Reply, Forward } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { VideoPlayer } from "./VideoPlayer";
 import { FileMessage } from "./FileMessage";
@@ -14,17 +14,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ForwardDialog } from "./ForwardDialog";
 
 interface MessageListProps {
   messages: any[];
   loading: boolean;
   onMessageDeleted?: (messageId: string) => void;
+  onReply?: (message: any) => void;
 }
 
-export function MessageList({ messages, loading, onMessageDeleted }: MessageListProps) {
+export function MessageList({ messages, loading, onMessageDeleted, onReply }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [forwardMessage, setForwardMessage] = useState<any>(null);
 
   useEffect(() => {
     getCurrentUser();
@@ -184,6 +187,20 @@ export function MessageList({ messages, loading, onMessageDeleted }: MessageList
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align={isOwn ? "end" : "start"}>
                         <DropdownMenuItem
+                          onClick={() => onReply?.(message)}
+                          className="gap-2"
+                        >
+                          <Reply className="h-4 w-4" />
+                          <span>ریپلای</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setForwardMessage(message)}
+                          className="gap-2"
+                        >
+                          <Forward className="h-4 w-4" />
+                          <span>فوروارد</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           onClick={() => handleDeleteForMe(message.id)}
                           className="gap-2"
                         >
@@ -288,6 +305,12 @@ export function MessageList({ messages, loading, onMessageDeleted }: MessageList
         </AnimatePresence>
         <div ref={scrollRef} />
       </div>
+
+      <ForwardDialog
+        open={!!forwardMessage}
+        onClose={() => setForwardMessage(null)}
+        message={forwardMessage}
+      />
     </div>
   );
 }
