@@ -198,16 +198,16 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-neohi-bg-chat" dir="ltr">
-      {/* Header - Ultra Clean */}
-      <header className="bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 py-3.5 z-10 flex-shrink-0 safe-area-top">
-        <div className="flex items-center justify-between gap-3">
+    <div className="h-screen w-full flex flex-col bg-neohi-bg-chat" dir="ltr">
+      {/* Header - Fixed Top Bar (Telegram Style) */}
+      <header className="h-[60px] flex-shrink-0 bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-3 z-10">
+        <div className="h-full flex items-center justify-between gap-2">
           {/* Back Button - Mobile Only */}
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="md:hidden h-10 w-10 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary transition-all"
+            className="md:hidden h-9 w-9 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary flex-shrink-0"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -215,27 +215,27 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           {/* Chat Info - Clickable */}
           <button
             onClick={() => setShowInfo(true)}
-            className="flex items-center gap-3 flex-1 hover:bg-neohi-bg-hover rounded-xl px-2 py-1.5 transition-all group min-w-0"
+            className="flex items-center gap-2.5 flex-1 hover:bg-neohi-bg-hover rounded-lg px-2 py-1.5 transition-all min-w-0"
           >
-            <Avatar className="h-11 w-11 ring-2 ring-neohi-border flex-shrink-0">
+            <Avatar className="h-10 w-10 ring-1 ring-neohi-border flex-shrink-0">
               <AvatarImage src={chat.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-blue-600 text-white font-bold text-base">
+              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-blue-600 text-white font-semibold text-sm">
                 {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 text-left min-w-0">
-              <h2 className="text-neohi-text-primary font-bold text-base truncate group-hover:text-neohi-accent transition-colors">
+              <h2 className="text-neohi-text-primary font-semibold text-[15px] truncate leading-tight">
                 {chat.name || "گفتگو"}
               </h2>
-              <p className="text-neohi-text-secondary text-xs flex items-center gap-1.5 truncate">
+              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5">
                 {chat.type === "channel" ? (
                   "کانال"
                 ) : chat.type === "group" ? (
                   "گروه"
                 ) : (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-neohi-online"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-neohi-online"></span>
                     آنلاین
                   </>
                 )}
@@ -244,22 +244,22 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           </button>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-0.5 flex-shrink-0">
             {chat.type === "dm" && (
               <>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden sm:flex"
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden sm:flex"
                 >
-                  <Phone className="h-5 w-5" />
+                  <Phone className="h-[18px] w-[18px]" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden sm:flex"
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden sm:flex"
                 >
-                  <Video className="h-5 w-5" />
+                  <Video className="h-[18px] w-[18px]" />
                 </Button>
               </>
             )}
@@ -267,29 +267,29 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               variant="ghost" 
               size="icon" 
               onClick={() => setShowInfo(true)}
-              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full"
+              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
             >
-              <Info className="h-5 w-5" />
+              <Info className="h-[18px] w-[18px]" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden md:flex"
+              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden md:flex"
             >
-              <MoreVertical className="h-5 w-5" />
+              <MoreVertical className="h-[18px] w-[18px]" />
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Messages - Fixed Height Scrollable Container */}
-      <div className="flex-1 overflow-hidden">
+      {/* Messages Area - Scrollable Container (Telegram Style) */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <MessageList messages={messages} loading={loading} />
       </div>
 
-      {/* Message Input - Fixed at Bottom */}
+      {/* Input Bar - Fixed at Bottom (Telegram Style) */}
       {(chat.type === "dm" || chat.type === "group") && (
-        <div className="flex-shrink-0 border-t border-neohi-border">
+        <div className="h-auto flex-shrink-0 border-t border-neohi-border bg-neohi-bg-sidebar/95 backdrop-blur-lg">
           <MessageInput onSend={handleSendMessage} />
         </div>
       )}
