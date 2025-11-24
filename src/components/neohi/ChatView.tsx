@@ -199,38 +199,38 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
   return (
     <div className="h-full w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
-      {/* Header */}
-      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md z-10">
+      {/* Header - Mobile Optimized */}
+      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-3 md:px-4 py-2.5 md:py-3 backdrop-blur-md z-10 sticky top-0">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="icon"
-              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
               onClick={onBack}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             
-            <Avatar className="h-10 w-10 ring-2 ring-[hsl(var(--neohi-border))] cursor-pointer" onClick={() => setShowInfo(true)}>
+            <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[hsl(var(--neohi-border))] cursor-pointer flex-shrink-0" onClick={() => setShowInfo(true)}>
               <AvatarImage src={chat.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white font-semibold text-sm">
                 {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
-            <div className="cursor-pointer" onClick={() => setShowInfo(true)}>
-              <h2 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-[15px]">
+            <div className="cursor-pointer flex-1 min-w-0" onClick={() => setShowInfo(true)}>
+              <h2 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-sm md:text-[15px] truncate">
                 {chat.name || "Chat"}
               </h2>
-              <p className="text-[hsl(var(--neohi-status-online))] text-xs flex items-center gap-1">
+              <p className="text-[hsl(var(--neohi-status-online))] text-[10px] md:text-xs flex items-center gap-1 truncate">
                 {chat.type === "channel" ? (
                   "Channel"
                 ) : chat.type === "group" ? (
                   "Group"
                 ) : (
                   <>
-                    <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
+                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
                     Online
                   </>
                 )}
@@ -238,14 +238,14 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
             {chat.type === "dm" && (
               <>
-                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
-                  <Phone className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden sm:flex">
+                  <Phone className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
-                  <Video className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden sm:flex">
+                  <Video className="h-4 w-4 md:h-5 md:w-5" />
                 </Button>
               </>
             )}
@@ -253,12 +253,12 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               variant="ghost" 
               size="icon" 
               onClick={() => setShowInfo(true)}
-              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10"
             >
-              <Info className="h-5 w-5" />
+              <Info className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all">
-              <MoreVertical className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden md:flex">
+              <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
             </Button>
           </div>
         </div>
@@ -267,20 +267,68 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       {/* Messages */}
       <MessageList messages={messages} loading={loading} />
 
-      {/* Message Input - Always show for DM and Group */}
+      {/* Message Input - Mobile Optimized */}
       {(chat.type === "dm" || chat.type === "group") && (
         <MessageInput onSend={handleSendMessage} />
       )}
 
-      {/* Info Panel */}
+      {/* Info Panel - Mobile Optimized with Full Screen Overlay */}
       <AnimatePresence>
         {showInfo && (
           <>
-            {chat.type === "group" ? (
-              <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
-            ) : chat.type === "channel" ? (
-              <ChannelInfo chatId={chatId} onClose={() => setShowInfo(false)} />
-            ) : null}
+            {/* Mobile Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowInfo(false)}
+              className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm"
+            />
+            
+            {/* Info Panel - Slide from right on mobile, side panel on desktop */}
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed md:absolute top-0 right-0 bottom-0 w-full sm:w-[85%] md:w-80 bg-[hsl(var(--neohi-bg-sidebar))] shadow-2xl z-50 overflow-y-auto"
+            >
+              {chat.type === "group" ? (
+                <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
+              ) : chat.type === "channel" ? (
+                <ChannelInfo chatId={chatId} onClose={() => setShowInfo(false)} />
+              ) : (
+                <div className="p-4 md:p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-[hsl(var(--neohi-text-primary))]">Profile</h3>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowInfo(false)}
+                      className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))]"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                  </div>
+                  
+                  <div className="flex flex-col items-center text-center mb-6">
+                    <Avatar className="h-24 w-24 mb-4 ring-4 ring-[hsl(var(--neohi-accent))]/20">
+                      <AvatarImage src={chat.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-3xl">
+                        {chat.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <h4 className="text-xl font-semibold text-[hsl(var(--neohi-text-primary))] mb-1">
+                      {chat.name || "User"}
+                    </h4>
+                    <p className="text-sm text-[hsl(var(--neohi-status-online))] flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
+                      Online
+                    </p>
+                  </div>
+                </div>
+              )}
+            </motion.div>
           </>
         )}
       </AnimatePresence>
