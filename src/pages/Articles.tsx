@@ -128,7 +128,7 @@ const Articles = () => {
               <span>دانشنامه هوش مصنوعی نئوهوش</span>
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-l from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-l from-foreground via-foreground to-foreground/80 bg-clip-text text-transparent leading-[1.3] pb-2">
               آخرین مقالات و آموزش‌ها
             </h1>
             
