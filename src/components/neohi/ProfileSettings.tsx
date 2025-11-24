@@ -8,9 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { 
-  ArrowLeft, 
+  ArrowRight, 
   Camera, 
-  Save, 
   User, 
   AtSign,
   Phone as PhoneIcon,
@@ -24,6 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
+import { useDebounceCallback } from "@/hooks/use-debounce-callback";
 
 interface ProfileSettingsProps {
   onBack: () => void;
@@ -33,7 +33,6 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   
@@ -43,6 +42,27 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [createdAt, setCreatedAt] = useState("");
+
+  // Auto-save with debounce
+  const autoSave = useDebounceCallback(async (data: {
+    display_name?: string;
+    bio?: string;
+    phone?: string;
+    avatar_url?: string;
+  }) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from("neohi_users")
+        .update(data)
+        .eq("id", userId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Auto-save error:", error);
+    }
+  }, 1000);
 
   useEffect(() => {
     loadProfile();
@@ -97,52 +117,23 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         .getPublicUrl(filePath);
 
       setAvatarUrl(publicUrl);
+      
+      // Auto-save avatar URL
+      await autoSave({ avatar_url: publicUrl });
 
       toast({
-        title: "Avatar uploaded",
-        description: "Don't forget to save your changes",
+        title: "آواتار ذخیره شد",
+        description: "آواتار شما با موفقیت آپلود و ذخیره شد",
       });
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({
-        title: "Upload failed",
-        description: "Failed to upload avatar",
+        title: "خطا در آپلود",
+        description: "آپلود آواتار با مشکل مواجه شد",
         variant: "destructive",
       });
     } finally {
       setUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!userId) return;
-
-    try {
-      setSaving(true);
-
-      const { error } = await supabase
-        .from("neohi_users")
-        .update({
-          display_name: displayName,
-          bio: bio,
-          phone: phone,
-          avatar_url: avatarUrl,
-        })
-        .eq("id", userId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been saved successfully",
-      });
-    } catch (error) {
-      console.error("Error saving profile:", error);
-      toast({
-        title: "Save failed",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
     }
   };
 
@@ -164,32 +155,21 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   }
 
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden" dir="rtl">
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-start">
           <Button
             variant="ghost"
-            className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+            size="icon"
+            className="text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
             onClick={onBack}
           >
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            Back
-          </Button>
-          
-          <span className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">Profile Settings</span>
-
-          <Button
-            className="bg-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-accent))]/90 text-white shadow-lg transition-all"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : "Save"}
+            <ArrowRight className="h-6 w-6" />
           </Button>
         </div>
       </motion.header>
@@ -281,12 +261,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Display Name
+                  نام نمایشی
                 </Label>
                 <Input
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Enter your display name"
+                  onChange={(e) => {
+                    setDisplayName(e.target.value);
+                    autoSave({ display_name: e.target.value });
+                  }}
+                  placeholder="نام نمایشی خود را وارد کنید"
                   className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
                 />
               </div>
@@ -294,12 +277,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
                   <MessageSquare className="h-4 w-4" />
-                  Bio
+                  بیوگرافی
                 </Label>
                 <Textarea
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell us about yourself..."
+                  onChange={(e) => {
+                    setBio(e.target.value);
+                    autoSave({ bio: e.target.value });
+                  }}
+                  placeholder="درباره خودتان بنویسید..."
                   className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] min-h-[120px] resize-none focus:border-[hsl(var(--neohi-accent))]"
                 />
               </div>
@@ -307,12 +293,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
                   <PhoneIcon className="h-4 w-4" />
-                  Phone Number
+                  شماره تلفن
                 </Label>
                 <Input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 234 567 8900"
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    autoSave({ phone: e.target.value });
+                  }}
+                  placeholder="+98 912 345 6789"
                   className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
                 />
               </div>
