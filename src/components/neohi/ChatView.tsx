@@ -285,15 +285,15 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               <h2 className="text-neohi-text-primary font-semibold text-[15px] truncate leading-tight">
                 {chat.type === "dm" ? (otherUserData?.display_name || "کاربر") : (chat.name || "کاربر")}
               </h2>
-              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end">
+              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end flex-row-reverse">
                 {chat.type === "channel" ? (
                   "کانال"
                 ) : chat.type === "group" ? (
                   "گروه"
                 ) : otherUserData?.is_online ? (
                   <>
-                    <span className="w-1.5 h-1.5 rounded-full bg-neohi-online"></span>
                     آنلاین
+                    <span className="w-1.5 h-1.5 rounded-full bg-neohi-online"></span>
                   </>
                 ) : (
                   <span>{getStatusText()}</span>
