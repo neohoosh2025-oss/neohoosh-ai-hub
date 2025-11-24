@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, FileText, Music, Download } from "lucide-react";
+import { CheckCheck, Download } from "lucide-react";
+import { AudioPlayer } from "./AudioPlayer";
+import { FileMessage } from "./FileMessage";
 
 interface MessageListProps {
   messages: any[];
@@ -109,92 +110,80 @@ export function MessageList({ messages, loading }: MessageListProps) {
                   >
                     {message.media_url && (
                       <div className="mb-2">
+                        {/* Images */}
                         {message.message_type === "image" && (
-                          <div className="relative group">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative group max-w-[280px]"
+                          >
                             <img
                               src={message.media_url}
                               alt="Shared"
-                              className="rounded-xl max-w-[280px] border border-[hsl(var(--neohi-border))]"
+                              className="rounded-2xl w-full h-auto border border-[hsl(var(--neohi-border))]/50"
                             />
                             <a
                               href={message.media_url}
                               download
-                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
                             >
                               <Download className="h-4 w-4" />
                             </a>
-                          </div>
+                          </motion.div>
                         )}
+
+                        {/* Videos */}
                         {message.message_type === "video" && (
-                          <div className="relative group">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative group max-w-[280px] rounded-2xl overflow-hidden border border-[hsl(var(--neohi-border))]/50"
+                          >
                             <video
                               src={message.media_url}
                               controls
-                              className="rounded-xl max-w-[280px] border border-[hsl(var(--neohi-border))]"
+                              className="w-full h-auto bg-black/5"
                             />
                             <a
                               href={message.media_url}
                               download
-                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
                             >
                               <Download className="h-4 w-4" />
                             </a>
-                          </div>
+                          </motion.div>
                         )}
+
+                        {/* Voice Messages */}
                         {message.message_type === "voice" && (
-                          <div className="flex items-center gap-2 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-2 border border-[hsl(var(--neohi-border))]">
-                            <audio src={message.media_url} controls className="flex-1" />
-                            <a
-                              href={message.media_url}
-                              download
-                              className="text-[hsl(var(--neohi-text-secondary))] hover:text-[hsl(var(--neohi-accent))] transition-colors"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </div>
+                          <AudioPlayer src={message.media_url} isOwn={isOwn} />
                         )}
+
+                        {/* Audio Files */}
                         {message.message_type === "audio" && (
-                          <div className="flex items-center gap-2 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-2 border border-[hsl(var(--neohi-border))]">
-                            <Music className="h-5 w-5 text-[hsl(var(--neohi-accent))] flex-shrink-0" />
-                            <audio src={message.media_url} controls className="flex-1 min-w-0" />
-                            <a
-                              href={message.media_url}
-                              download
-                              className="text-[hsl(var(--neohi-text-secondary))] hover:text-[hsl(var(--neohi-accent))] transition-colors flex-shrink-0"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
-                          </div>
+                          <AudioPlayer src={message.media_url} isOwn={isOwn} />
                         )}
+
+                        {/* Documents */}
                         {message.message_type === "document" && (
-                          <a
-                            href={message.media_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-3 border border-[hsl(var(--neohi-border))] hover:bg-[hsl(var(--neohi-bg-hover))]/80 transition-colors min-w-[200px]"
-                          >
-                            <FileText className="h-5 w-5 text-[hsl(var(--neohi-accent))] flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">سند</p>
-                              <p className="text-xs text-[hsl(var(--neohi-text-secondary))]">کلیک برای باز کردن</p>
-                            </div>
-                            <Download className="h-4 w-4 text-[hsl(var(--neohi-text-secondary))] flex-shrink-0" />
-                          </a>
+                          <FileMessage 
+                            url={message.media_url} 
+                            type="document"
+                            fileName={message.content?.replace("📁 ", "")}
+                            isOwn={isOwn}
+                          />
                         )}
+
+                        {/* Other Files */}
                         {message.message_type === "file" && (
-                          <a
-                            href={message.media_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-3 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-3 border border-[hsl(var(--neohi-border))] hover:bg-[hsl(var(--neohi-bg-hover))]/80 transition-colors min-w-[200px]"
-                          >
-                            <FileText className="h-5 w-5 text-[hsl(var(--neohi-accent))] flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">فایل</p>
-                              <p className="text-xs text-[hsl(var(--neohi-text-secondary))]">کلیک برای دانلود</p>
-                            </div>
-                            <Download className="h-4 w-4 text-[hsl(var(--neohi-text-secondary))] flex-shrink-0" />
-                          </a>
+                          <FileMessage 
+                            url={message.media_url} 
+                            type="file"
+                            fileName={message.content?.replace("📎 ", "")}
+                            isOwn={isOwn}
+                          />
                         )}
                       </div>
                     )}
