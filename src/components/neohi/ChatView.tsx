@@ -36,6 +36,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [showInfo, setShowInfo] = useState(false);
   const [otherUserId, setOtherUserId] = useState<string | null>(null);
   const [otherUserData, setOtherUserData] = useState<any>(null);
+  const [replyMessage, setReplyMessage] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -223,7 +224,12 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     };
   };
 
-  const handleSendMessage = async (content: string, mediaUrl?: string, messageType?: string) => {
+  const handleSendMessage = async (
+    content: string,
+    mediaUrl?: string,
+    messageType?: string,
+    replyTo?: string
+  ) => {
     if (!currentUser) return;
 
     await supabase.from("neohi_messages").insert({
@@ -232,6 +238,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       content,
       media_url: mediaUrl,
       message_type: messageType || "text",
+      reply_to: replyTo,
     });
 
     await supabase
@@ -357,13 +364,18 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           onMessageDeleted={(messageId) => {
             setMessages(prev => prev.filter(m => m.id !== messageId));
           }}
+          onReply={(message) => setReplyMessage(message)}
         />
       </div>
 
       {/* Input Bar - Fixed at Bottom (Telegram Style) */}
       {(chat.type === "dm" || chat.type === "group") && (
         <div className="flex-shrink-0 border-t border-neohi-border bg-neohi-bg-sidebar/95 backdrop-blur-lg">
-          <MessageInput onSend={handleSendMessage} />
+          <MessageInput 
+            onSend={handleSendMessage}
+            replyMessage={replyMessage}
+            onCancelReply={() => setReplyMessage(null)}
+          />
         </div>
       )}
 

@@ -1,15 +1,17 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music } from "lucide-react";
+import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface MessageInputProps {
-  onSend: (content: string, mediaUrl?: string, messageType?: string) => void;
+  onSend: (content: string, mediaUrl?: string, messageType?: string, replyTo?: string) => void;
+  replyMessage?: any;
+  onCancelReply?: () => void;
 }
 
-export function MessageInput({ onSend }: MessageInputProps) {
+export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -28,8 +30,9 @@ export function MessageInput({ onSend }: MessageInputProps) {
 
   const handleSend = () => {
     if (!message.trim()) return;
-    onSend(message.trim());
+    onSend(message.trim(), undefined, undefined, replyMessage?.id);
     setMessage("");
+    onCancelReply?.();
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -99,7 +102,9 @@ export function MessageInput({ onSend }: MessageInputProps) {
           : `📁 ${filePreview.file.name}`
       );
 
-      onSend(fileMessage, publicUrl, filePreview.type);
+      onSend(fileMessage, publicUrl, filePreview.type, replyMessage?.id);
+      
+      onCancelReply?.();
       
       // Clean up
       URL.revokeObjectURL(filePreview.url);
@@ -277,7 +282,33 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   return (
-    <div className="p-3 bg-neohi-bg-sidebar">
+    <div className="bg-neohi-bg-sidebar">
+      {/* Reply Preview */}
+      {replyMessage && (
+        <div className="px-3 pt-3 pb-2 border-t border-neohi-border bg-neohi-bg-hover/50">
+          <div className="flex items-start gap-2 p-2 bg-neohi-bg-chat rounded-lg border-r-2 border-neohi-accent">
+            <Reply className="h-4 w-4 text-neohi-accent flex-shrink-0 mt-1" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-neohi-accent font-medium mb-0.5">
+                ریپلای به {replyMessage.sender?.display_name || "پیام"}
+              </p>
+              <p className="text-sm text-neohi-text-secondary truncate">
+                {replyMessage.content || "رسانه"}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCancelReply}
+              className="h-6 w-6 rounded-full hover:bg-neohi-bg-hover flex-shrink-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+      
+      <div className="p-3">
       {/* File Preview */}
       {filePreview && (
         <div className="mb-3 p-3 bg-neohi-bg-hover rounded-2xl border border-neohi-border">
@@ -464,6 +495,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
           accept="*/*"
           className="hidden"
         />
+      </div>
       </div>
     </div>
   );
