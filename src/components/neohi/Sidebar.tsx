@@ -118,9 +118,7 @@ export function Sidebar({
               {chat.last_message?.content || "No messages yet"}
             </p>
             {hasUnread && (
-              <span className="ml-2 px-1.5 py-0.5 bg-neohi-unread text-white text-xs rounded-full font-medium min-w-[18px] text-center flex-shrink-0">
-                {chat.unread_count}
-              </span>
+              <div className="ml-2 w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
             )}
           </div>
         </div>
