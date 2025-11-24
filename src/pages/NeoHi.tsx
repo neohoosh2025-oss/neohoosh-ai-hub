@@ -7,6 +7,7 @@ import { ChatView } from "@/components/neohi/ChatView";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
+import { Sidebar } from "@/components/neohi/Sidebar";
 import StoriesPage from "@/pages/StoriesPage";
 
 interface Chat {
@@ -252,43 +253,53 @@ export default function NeoHi() {
     );
   }
 
-  // Main View - Just the empty state
+  // Main View - Sidebar + Welcome Screen
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center overflow-hidden">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex overflow-hidden">
+      {/* Sidebar */}
+      <Sidebar
+        chats={chats}
+        selectedChatId={selectedChatId}
+        onChatSelect={setSelectedChatId}
+        onNewChat={() => setShowNewChat(true)}
+      />
+
       {/* Welcome Screen */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="text-center"
-      >
+      <div className="flex-1 flex items-center justify-center">
         <motion.div
-          animate={{ 
-            scale: [1, 1.05, 1],
-            rotate: [0, 5, -5, 0]
-          }}
-          transition={{ 
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
         >
           <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            animate={{ 
+              scale: [1, 1.05, 1],
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{ 
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
           >
-            <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            >
+              <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </motion.div>
           </motion.div>
+          <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
+            Welcome to NeoHi
+          </h2>
+          <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
+            Select a chat to start messaging, or create a new conversation
+          </p>
         </motion.div>
-        <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
-          Welcome to NeoHi
-        </h2>
-        <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
-          Select a chat to start messaging, or create a new conversation
-        </p>
-      </motion.div>
+      </div>
 
       {/* New Chat Dialog */}
       <NewChatDialog
