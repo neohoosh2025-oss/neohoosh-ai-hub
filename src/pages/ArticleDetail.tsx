@@ -211,7 +211,7 @@ const ArticleDetail = () => {
                   نئو
                 </div>
                 <div>
-                  <p className="font-semibold text-sm md:text-base">تیم نئوحوش</p>
+                  <p className="font-semibold text-sm md:text-base">تیم نئوهوش</p>
                   <p className="text-xs md:text-sm text-muted-foreground">نویسنده</p>
                 </div>
               </div>
