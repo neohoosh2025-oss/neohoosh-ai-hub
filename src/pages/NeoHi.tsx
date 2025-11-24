@@ -243,8 +243,8 @@ export default function NeoHi() {
     return <ProfileSettings onBack={() => navigate("/neohi")} />;
   }
 
-  // If a chat is selected, show the chat view
-  if (selectedChatId) {
+  // If a chat is selected in mobile, show full screen chat view
+  if (selectedChatId && window.innerWidth < 768) {
     return (
       <ChatView
         chatId={selectedChatId}
@@ -253,7 +253,7 @@ export default function NeoHi() {
     );
   }
 
-  // Main View - Sidebar + Welcome Screen
+  // Main View - Sidebar + Chat/Welcome Screen
   return (
     <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-row-reverse overflow-hidden">
       {/* Sidebar */}
@@ -264,41 +264,50 @@ export default function NeoHi() {
         onNewChat={() => setShowNewChat(true)}
       />
 
-      {/* Welcome Screen */}
-      <div className="flex-1 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ 
-              scale: [1, 1.05, 1],
-              rotate: [0, 5, -5, 0]
-            }}
-            transition={{ 
-              duration: 3,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-            className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
-          >
+      {/* Chat Area or Welcome Screen */}
+      <div className="flex-1">
+        {selectedChatId ? (
+          <ChatView
+            chatId={selectedChatId}
+            onBack={() => setSelectedChatId(null)}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center">
             <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center"
             >
-              <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.05, 1],
+                  rotate: [0, 5, -5, 0]
+                }}
+                transition={{ 
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                >
+                  <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </motion.div>
+              </motion.div>
+              <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
+                Welcome to NeoHi
+              </h2>
+              <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
+                Select a chat to start messaging, or create a new conversation
+              </p>
             </motion.div>
-          </motion.div>
-          <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
-            Welcome to NeoHi
-          </h2>
-          <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
-            Select a chat to start messaging, or create a new conversation
-          </p>
-        </motion.div>
+          </div>
+        )}
       </div>
 
       {/* New Chat Dialog */}
