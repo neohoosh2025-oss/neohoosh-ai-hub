@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, MessageCircle, Home, Settings } from "lucide-react";
+import { Search, Plus, MessageCircle, Home, Settings, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -222,16 +222,26 @@ export function Sidebar({
         </AnimatePresence>
       </ScrollArea>
 
-      {/* Settings Button at Bottom */}
+      {/* Bottom Navigation - Contacts & Settings */}
       <div className="p-4 border-t border-[hsl(var(--neohi-border))]">
-        <Button
-          onClick={() => navigate("/neohi?tab=settings")}
-          variant="ghost"
-          className="w-full justify-center gap-3 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
-        >
-          <Settings className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
-          <span className="font-medium">Settings</span>
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            onClick={() => navigate("/neohi?tab=contacts")}
+            variant="ghost"
+            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+          >
+            <Users className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
+            <span className="font-medium text-sm">Contacts</span>
+          </Button>
+          <Button
+            onClick={() => navigate("/neohi?tab=settings")}
+            variant="ghost"
+            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+          >
+            <Settings className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
+            <span className="font-medium text-sm">Settings</span>
+          </Button>
+        </div>
       </div>
     </div>
   );
