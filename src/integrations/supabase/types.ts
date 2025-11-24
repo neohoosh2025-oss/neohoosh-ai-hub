@@ -428,6 +428,42 @@ export type Database = {
           },
         ]
       }
+      neohi_message_deletions: {
+        Row: {
+          deleted_at: string | null
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          deleted_at?: string | null
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          deleted_at?: string | null
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_message_deletions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_message_deletions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neohi_message_status: {
         Row: {
           id: string

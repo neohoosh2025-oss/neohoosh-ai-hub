@@ -159,6 +159,10 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
   const loadMessages = async () => {
     setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Get messages and filter out deleted ones
     const { data } = await supabase
       .from("neohi_messages")
       .select(`
@@ -169,7 +173,19 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .eq("is_deleted", false)
       .order("created_at", { ascending: true });
 
-    if (data) setMessages(data);
+    if (data) {
+      // Get user's deleted messages
+      const { data: deletions } = await supabase
+        .from("neohi_message_deletions")
+        .select("message_id")
+        .eq("user_id", user.id);
+
+      const deletedMessageIds = new Set(deletions?.map(d => d.message_id) || []);
+      
+      // Filter out messages deleted by current user
+      const filteredMessages = data.filter(msg => !deletedMessageIds.has(msg.id));
+      setMessages(filteredMessages);
+    }
     setLoading(false);
   };
 

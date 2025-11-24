@@ -2,10 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, MoreVertical, Trash2, Trash } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { VideoPlayer } from "./VideoPlayer";
 import { FileMessage } from "./FileMessage";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface MessageListProps {
   messages: any[];
@@ -56,6 +64,38 @@ export function MessageList({ messages, loading }: MessageListProps) {
       minute: "2-digit",
       hour12: false,
     });
+  };
+
+  const handleDeleteForMe = async (messageId: string) => {
+    if (!currentUserId) return;
+
+    const { error } = await supabase
+      .from("neohi_message_deletions")
+      .insert({
+        message_id: messageId,
+        user_id: currentUserId,
+      });
+
+    if (error) {
+      toast.error("خطا در حذف پیام");
+      console.error(error);
+    } else {
+      toast.success("پیام حذف شد");
+    }
+  };
+
+  const handleDeleteForEveryone = async (messageId: string) => {
+    const { error } = await supabase
+      .from("neohi_messages")
+      .delete()
+      .eq("id", messageId);
+
+    if (error) {
+      toast.error("خطا در حذف پیام");
+      console.error(error);
+    } else {
+      toast.success("پیام برای همه حذف شد");
+    }
   };
 
   if (loading) {
@@ -118,12 +158,47 @@ export function MessageList({ messages, loading }: MessageListProps) {
                 </div>
 
                 {/* Message Bubble (Telegram Style) */}
-                <div className={`flex flex-col max-w-[70%] sm:max-w-[65%] ${isOwn ? "items-end" : "items-start"}`}>
-                  {!isOwn && message.sender && showAvatar && (
-                    <span className="text-[12px] text-[hsl(var(--neohi-text-secondary))] mb-1 px-3 font-medium">
-                      {message.sender.display_name}
-                    </span>
-                  )}
+                <div className={`flex flex-col max-w-[70%] sm:max-w-[65%] ${isOwn ? "items-end" : "items-start"} group/message`}>
+                  <div className="flex items-center gap-2 w-full">
+                    {!isOwn && message.sender && showAvatar && (
+                      <span className="text-[12px] text-[hsl(var(--neohi-text-secondary))] mb-1 px-3 font-medium">
+                        {message.sender.display_name}
+                      </span>
+                    )}
+                    
+                    {/* Delete Menu */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-6 w-6 p-0 opacity-0 group-hover/message:opacity-100 transition-opacity ${
+                            isOwn ? "order-first" : "order-last ml-auto"
+                          }`}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align={isOwn ? "end" : "start"}>
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteForMe(message.id)}
+                          className="gap-2"
+                        >
+                          <Trash className="h-4 w-4" />
+                          <span>حذف برای من</span>
+                        </DropdownMenuItem>
+                        {isOwn && (
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteForEveryone(message.id)}
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>حذف برای همه</span>
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                   
                   <motion.div
                     initial={{ scale: 0.95, opacity: 0 }}
