@@ -18,9 +18,10 @@ import { toast } from "sonner";
 interface MessageListProps {
   messages: any[];
   loading: boolean;
+  onMessageDeleted?: (messageId: string) => void;
 }
 
-export function MessageList({ messages, loading }: MessageListProps) {
+export function MessageList({ messages, loading, onMessageDeleted }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -81,6 +82,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
       console.error(error);
     } else {
       toast.success("پیام حذف شد");
+      onMessageDeleted?.(messageId);
     }
   };
 
@@ -95,6 +97,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
       console.error(error);
     } else {
       toast.success("پیام برای همه حذف شد");
+      onMessageDeleted?.(messageId);
     }
   };
 
