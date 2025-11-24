@@ -223,7 +223,7 @@ export function Sidebar({
       </ScrollArea>
 
       {/* Bottom Navigation - Contacts & Settings */}
-      <div className="p-4 border-t border-neohi-border">
+      <div className="p-3 border-t border-neohi-border">
         <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={() => navigate("/neohi?tab=contacts")}
