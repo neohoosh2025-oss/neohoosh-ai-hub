@@ -70,11 +70,17 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    await supabase
+    const { error } = await supabase
       .from("neohi_chat_members")
       .update({ last_read_at: new Date().toISOString() })
       .eq("chat_id", chatId)
       .eq("user_id", user.id);
+    
+    if (error) {
+      console.error("Error marking messages as read:", error);
+    } else {
+      console.log("Messages marked as read for chat:", chatId);
+    }
   };
 
   const loadChat = async () => {
