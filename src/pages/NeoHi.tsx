@@ -231,8 +231,8 @@ export default function NeoHi() {
 
   // Main View - Desktop: Sidebar + Chat Area / Mobile: Full Screen
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex overflow-hidden">
-      {/* Desktop Sidebar */}
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-row-reverse overflow-hidden">
+      {/* Desktop Sidebar - Now on LEFT */}
       <div className="hidden md:block">
         <Sidebar
           chats={chats}
