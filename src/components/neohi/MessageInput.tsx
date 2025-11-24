@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Image as ImageIcon, Smile, Mic } from "lucide-react";
+import { Plus, Send, Image as ImageIcon, Smile, Mic, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface MessageInputProps {
   onSend: (content: string, mediaUrl?: string, messageType?: string) => void;
@@ -12,7 +12,12 @@ interface MessageInputProps {
 export function MessageInput({ onSend }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<number | null>(null);
   const { toast } = useToast();
 
   const handleSend = () => {
@@ -73,6 +78,103 @@ export function MessageInput({ onSend }: MessageInputProps) {
     }
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await uploadAudio(audioBlob);
+        
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Reset state
+        setRecordingTime(0);
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current);
+          recordingIntervalRef.current = null;
+        }
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      
+      // Start timer
+      recordingIntervalRef.current = window.setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+      
+      toast({
+        title: "در حال ضبط",
+        description: "میکروفون فعال است",
+      });
+    } catch (error) {
+      console.error("Recording error:", error);
+      toast({
+        title: "خطا",
+        description: "دسترسی به میکروفن رد شد",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const uploadAudio = async (audioBlob: Blob) => {
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const fileName = `${user.id}/${Date.now()}.webm`;
+
+      const { error } = await supabase.storage
+        .from("neohi-media")
+        .upload(fileName, audioBlob);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("neohi-media")
+        .getPublicUrl(fileName);
+
+      onSend("🎤 پیام صوتی", publicUrl, "audio");
+      
+      toast({
+        title: "ارسال شد",
+        description: "پیام صوتی ارسال شد",
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "خطا",
+        description: "ارسال پیام صوتی با مشکل مواجه شد",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="p-3 bg-neohi-bg-sidebar">
       <div className="flex items-end gap-2">
@@ -106,8 +208,21 @@ export function MessageInput({ onSend }: MessageInputProps) {
           >
             <Send className="h-5 w-5" />
           </Button>
+        ) : isRecording ? (
+          <Button
+            onClick={stopRecording}
+            className="h-10 w-10 rounded-full bg-red-500 hover:bg-red-600 text-white flex-shrink-0 relative"
+            size="icon"
+          >
+            <Square className="h-5 w-5" />
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full min-w-[24px]">
+              {recordingTime}s
+            </span>
+          </Button>
         ) : (
           <Button
+            onClick={startRecording}
+            disabled={uploading}
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
