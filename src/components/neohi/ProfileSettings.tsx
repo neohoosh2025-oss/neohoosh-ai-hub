@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { 
   ArrowLeft, 
   Camera, 
@@ -18,7 +19,8 @@ import {
   Shield,
   Bell,
   Palette,
-  Globe
+  Globe,
+  X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -42,6 +44,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [createdAt, setCreatedAt] = useState("");
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
 
   // Auto-save with debounce
   const autoSave = useDebounceCallback(async (data: {
@@ -191,7 +194,10 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           >
             <div className="flex flex-col items-center gap-4">
               <div className="relative group">
-                <Avatar className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))]">
+                <Avatar 
+                  className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))] cursor-pointer"
+                  onClick={() => avatarUrl && setShowAvatarDialog(true)}
+                >
                   <AvatarImage src={avatarUrl || undefined} />
                   <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-4xl font-bold">
                     {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
@@ -369,6 +375,27 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           </motion.div>
         </div>
       </ScrollArea>
+
+      {/* Avatar Dialog */}
+      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+        <DialogContent className="max-w-3xl w-full h-[90vh] p-0 bg-black/95 border-none">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
+              onClick={() => setShowAvatarDialog(false)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <img 
+              src={avatarUrl} 
+              alt="Profile" 
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
