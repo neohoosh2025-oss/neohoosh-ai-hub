@@ -279,7 +279,10 @@ export default function NeoHi() {
     return (
       <ChatView
         chatId={selectedChatId}
-        onBack={() => setSelectedChatId(null)}
+        onBack={() => {
+          setSelectedChatId(null);
+          loadChats(); // Reload to update unread counts
+        }}
       />
     );
   }
@@ -291,7 +294,13 @@ export default function NeoHi() {
       <Sidebar
         chats={chats}
         selectedChatId={selectedChatId}
-        onChatSelect={setSelectedChatId}
+        onChatSelect={(chatId) => {
+          setSelectedChatId(chatId);
+          // Clear unread count immediately
+          setChats(prev => prev.map(c => 
+            c.id === chatId ? { ...c, unread_count: 0 } : c
+          ));
+        }}
         onNewChat={() => setShowNewChat(true)}
       />
 
