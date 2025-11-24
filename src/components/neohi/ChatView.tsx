@@ -175,7 +175,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-full w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
       {/* Header */}
       <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md z-10">
         <div className="flex items-center justify-between">
@@ -245,9 +245,11 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       <MessageList messages={messages} loading={loading} />
 
       {/* Message Input - Always show for DM and Group */}
-      {(chat.type === "dm" || chat.type === "group") && (
-        <MessageInput onSend={handleSendMessage} />
-      )}
+      <div className="border-t border-[hsl(var(--neohi-border))]">
+        {(chat.type === "dm" || chat.type === "group") && (
+          <MessageInput onSend={handleSendMessage} />
+        )}
+      </div>
 
       {/* Info Panel */}
       <AnimatePresence>
