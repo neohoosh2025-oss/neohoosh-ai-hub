@@ -230,6 +230,16 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                   Uploading...
                 </motion.p>
               )}
+              <div className="text-center">
+                <h3 className="text-[hsl(var(--neohi-text-primary))] font-bold text-2xl">
+                  {displayName || "کاربر"}
+                </h3>
+                {createdAt && (
+                  <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
+                    عضو از {new Date(createdAt).toLocaleDateString('fa-IR')}
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
 
