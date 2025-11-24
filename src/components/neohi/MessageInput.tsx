@@ -56,19 +56,41 @@ export function MessageInput({ onSend }: MessageInputProps) {
         .from("neohi-media")
         .getPublicUrl(fileName);
 
-      const messageType = file.type.startsWith("image/")
-        ? "image"
-        : file.type.startsWith("video/")
-        ? "video"
-        : "file";
+      // Detect file type
+      let messageType = "file";
+      if (file.type.startsWith("image/")) {
+        messageType = "image";
+      } else if (file.type.startsWith("video/")) {
+        messageType = "video";
+      } else if (file.type.startsWith("audio/")) {
+        messageType = "audio";
+      } else if (
+        file.type.includes("pdf") ||
+        file.type.includes("document") ||
+        file.type.includes("word") ||
+        file.type.includes("text") ||
+        file.type.includes("sheet") ||
+        file.type.includes("presentation")
+      ) {
+        messageType = "document";
+      }
 
-      onSend(message.trim() || "", publicUrl, messageType);
+      const fileMessage = messageType === "file" 
+        ? `📎 ${file.name}` 
+        : message.trim() || `📁 ${file.name}`;
+
+      onSend(fileMessage, publicUrl, messageType);
       setMessage("");
+      
+      toast({
+        title: "ارسال شد",
+        description: "فایل با موفقیت ارسال شد",
+      });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
-        title: "Upload error",
-        description: "File upload failed",
+        title: "خطا در آپلود",
+        description: "ارسال فایل با مشکل مواجه شد",
         variant: "destructive",
       });
     } finally {
@@ -299,12 +321,12 @@ export function MessageInput({ onSend }: MessageInputProps) {
           </Button>
         )}
 
-        {/* Hidden File Input */}
+        {/* Hidden File Input - Accept all file types */}
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleFileUpload}
-          accept="image/*,video/*"
+          accept="*/*"
           className="hidden"
         />
       </div>

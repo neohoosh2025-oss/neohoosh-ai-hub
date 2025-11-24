@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, FileText, Music, Download } from "lucide-react";
 
 interface MessageListProps {
   messages: any[];
@@ -125,6 +125,36 @@ export function MessageList({ messages, loading }: MessageListProps) {
                         )}
                         {message.message_type === "voice" && (
                           <audio src={message.media_url} controls className="w-full" />
+                        )}
+                        {message.message_type === "audio" && (
+                          <div className="flex items-center gap-2 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-2 border border-[hsl(var(--neohi-border))]">
+                            <Music className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
+                            <audio src={message.media_url} controls className="flex-1" />
+                          </div>
+                        )}
+                        {message.message_type === "document" && (
+                          <a
+                            href={message.media_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-3 border border-[hsl(var(--neohi-border))] hover:bg-[hsl(var(--neohi-bg-hover))]/80 transition-colors"
+                          >
+                            <FileText className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
+                            <span className="text-sm">سند</span>
+                            <Download className="h-4 w-4 mr-auto" />
+                          </a>
+                        )}
+                        {message.message_type === "file" && (
+                          <a
+                            href={message.media_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-[hsl(var(--neohi-bg-hover))] rounded-lg p-3 border border-[hsl(var(--neohi-border))] hover:bg-[hsl(var(--neohi-bg-hover))]/80 transition-colors"
+                          >
+                            <FileText className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
+                            <span className="text-sm">فایل</span>
+                            <Download className="h-4 w-4 mr-auto" />
+                          </a>
                         )}
                       </div>
                     )}
