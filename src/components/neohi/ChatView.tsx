@@ -39,6 +39,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     getCurrentUser();
     loadChat();
     loadMessages();
+    markMessagesAsRead();
     const cleanup = subscribeToMessages();
     return cleanup;
   }, [chatId]);
@@ -56,6 +57,17 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
     }
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!currentUser) return;
+
+    // Update last_read_at for this chat member
+    await supabase
+      .from("neohi_chat_members")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("chat_id", chatId)
+      .eq("user_id", currentUser.id);
   };
 
   const loadChat = async () => {
