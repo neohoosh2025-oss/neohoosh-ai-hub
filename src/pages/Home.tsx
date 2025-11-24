@@ -147,7 +147,7 @@ const Home = () => {
             {/* Main Heading - Mobile Optimized */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-display px-2 break-words"
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight font-display px-2 break-words"
             >
               <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent block mb-2 break-words whitespace-normal">
                 نسل جدید هوش مصنوعی
