@@ -8,6 +8,7 @@ import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
 import { GroupInfo } from "./GroupInfo";
 import { ChannelInfo } from "./ChannelInfo";
+import { UserProfile } from "./UserProfile";
 
 interface Message {
   id: string;
@@ -33,6 +34,8 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showInfo, setShowInfo] = useState(false);
+  const [otherUserId, setOtherUserId] = useState<string | null>(null);
+  const [otherUserData, setOtherUserData] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,7 +92,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .single();
     
     if (data) {
-      let chatData = { ...data };
+      let chatData: any = { ...data };
 
       // For DMs, get the other user's info
       if (data.type === "dm" && currentUser) {
@@ -98,18 +101,22 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           .select("user_id")
           .eq("chat_id", chatId);
 
-        const otherUserId = members?.find((m: any) => m.user_id !== currentUser.id)?.user_id;
+        const otherUid = members?.find((m: any) => m.user_id !== currentUser.id)?.user_id;
         
-        if (otherUserId) {
+        if (otherUid) {
+          setOtherUserId(otherUid);
           const { data: otherUser } = await supabase
             .from("neohi_users")
-            .select("display_name, avatar_url")
-            .eq("id", otherUserId)
+            .select("*")
+            .eq("id", otherUid)
             .single();
 
           if (otherUser) {
+            setOtherUserData(otherUser);
             chatData.name = otherUser.display_name;
             chatData.avatar_url = otherUser.avatar_url;
+            chatData.is_online = otherUser.is_online;
+            chatData.last_seen = otherUser.last_seen;
           }
         }
       }
@@ -185,6 +192,24 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .eq("id", chatId);
   };
 
+  const getStatusText = () => {
+    if (chat?.type !== "dm" || !otherUserData) return "";
+    if (otherUserData.is_online) return "آنلاین";
+    if (otherUserData.last_seen) {
+      const lastSeen = new Date(otherUserData.last_seen);
+      const now = new Date();
+      const diff = now.getTime() - lastSeen.getTime();
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(minutes / 60);
+      
+      if (minutes < 1) return "لحظاتی پیش";
+      if (minutes < 60) return `${minutes} دقیقه پیش`;
+      if (hours < 24) return `${hours} ساعت پیش`;
+      return "اخیراً";
+    }
+    return "اخیراً";
+  };
+
   if (!chat) {
     return (
       <div className="h-screen bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
@@ -215,7 +240,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           {/* Chat Info - Clickable */}
           <button
             onClick={() => setShowInfo(true)}
-            className="flex items-center gap-2.5 flex-1 hover:bg-neohi-bg-hover rounded-lg px-2 py-1.5 transition-all min-w-0"
+            className="flex items-center gap-3 flex-1 hover:bg-neohi-bg-hover rounded-xl px-2 py-1.5 transition-all min-w-0"
           >
             <Avatar className="h-10 w-10 ring-1 ring-neohi-border flex-shrink-0">
               <AvatarImage src={chat.avatar_url || undefined} />
@@ -224,20 +249,22 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 text-left min-w-0">
+            <div className="flex-1 text-right min-w-0">
               <h2 className="text-neohi-text-primary font-semibold text-[15px] truncate leading-tight">
-                {chat.name || "گفتگو"}
+                {chat.name || "کاربر"}
               </h2>
-              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5">
+              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end">
                 {chat.type === "channel" ? (
                   "کانال"
                 ) : chat.type === "group" ? (
                   "گروه"
-                ) : (
+                ) : otherUserData?.is_online ? (
                   <>
                     <span className="w-1.5 h-1.5 rounded-full bg-neohi-online"></span>
                     آنلاین
                   </>
+                ) : (
+                  <span>{getStatusText()}</span>
                 )}
               </p>
             </div>
@@ -263,14 +290,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
                 </Button>
               </>
             )}
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowInfo(true)}
-              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
-            >
-              <Info className="h-[18px] w-[18px]" />
-            </Button>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -319,37 +338,13 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
                 <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
               ) : chat.type === "channel" ? (
                 <ChannelInfo chatId={chatId} onClose={() => setShowInfo(false)} />
-              ) : (
-                <div className="p-4 md:p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-[hsl(var(--neohi-text-primary))]">Profile</h3>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setShowInfo(false)}
-                      className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))]"
-                    >
-                      <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  
-                  <div className="flex flex-col items-center text-center mb-6">
-                    <Avatar className="h-24 w-24 mb-4 ring-4 ring-[hsl(var(--neohi-accent))]/20">
-                      <AvatarImage src={chat.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-3xl">
-                        {chat.name?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <h4 className="text-xl font-semibold text-[hsl(var(--neohi-text-primary))] mb-1">
-                      {chat.name || "User"}
-                    </h4>
-                    <p className="text-sm text-[hsl(var(--neohi-status-online))] flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
-                      Online
-                    </p>
-                  </div>
-                </div>
-              )}
+              ) : otherUserId ? (
+                <UserProfile 
+                  userId={otherUserId} 
+                  onClose={() => setShowInfo(false)}
+                  onSendMessage={() => setShowInfo(false)}
+                />
+              ) : null}
             </motion.div>
           </>
         )}
