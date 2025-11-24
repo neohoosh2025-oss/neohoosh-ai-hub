@@ -8,7 +8,6 @@ import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
 import { GroupInfo } from "./GroupInfo";
 import { ChannelInfo } from "./ChannelInfo";
-import BottomNavigation from "./BottomNavigation";
 
 interface Message {
   id: string;
@@ -260,11 +259,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
           </>
         )}
       </AnimatePresence>
-
-      {/* Bottom Navigation - Only on Mobile */}
-      <div className="md:hidden">
-        <BottomNavigation />
-      </div>
     </div>
   );
 }
