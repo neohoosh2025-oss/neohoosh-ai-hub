@@ -351,7 +351,13 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
       {/* Messages Area - Scrollable Container (Telegram Style) */}
       <div className="flex-1 overflow-hidden relative">
-        <MessageList messages={messages} loading={loading} />
+        <MessageList 
+          messages={messages} 
+          loading={loading} 
+          onMessageDeleted={(messageId) => {
+            setMessages(prev => prev.filter(m => m.id !== messageId));
+          }}
+        />
       </div>
 
       {/* Input Bar - Fixed at Bottom (Telegram Style) */}
