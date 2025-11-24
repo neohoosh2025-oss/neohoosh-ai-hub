@@ -15,10 +15,10 @@ All colors MUST be HSL.
 
     /* ===== NEOHI LIGHT MODE COLORS ===== */
     /* Background System */
-    --neohi-bg-main: 210 20% 98%;           /* #F9FAFB - Main background */
-    --neohi-bg-chat: 0 0% 100%;             /* #FFFFFF - Chat panel */
-    --neohi-bg-sidebar: 210 20% 96%;        /* #F3F4F6 - Sidebar */
-    --neohi-bg-hover: 210 20% 94%;          /* Hover states */
+    --neohi-bg-main: 220 15% 95%;           /* #F1F2F4 - Main background */
+    --neohi-bg-chat: 220 15% 98%;           /* #FAFBFC - Chat panel */
+    --neohi-bg-sidebar: 220 15% 93%;        /* #ECEDEF - Sidebar */
+    --neohi-bg-hover: 220 15% 90%;          /* Hover states */
     
     /* Text Colors */
     --neohi-text-primary: 222 47% 11%;      /* #1E293B - Primary text */
@@ -32,12 +32,12 @@ All colors MUST be HSL.
     
     /* Chat Bubbles */
     --neohi-bubble-user: 214 100% 97%;      /* #E7F1FF - User bubble */
-    --neohi-bubble-other: 0 0% 100%;        /* #FFFFFF - Other bubble */
+    --neohi-bubble-other: 220 15% 96%;      /* Light gray - Other bubble */
     --neohi-bubble-user-text: 214 95% 35%;  /* User bubble text */
     
     /* Borders & Dividers */
-    --neohi-border: 220 13% 91%;            /* Light gray border */
-    --neohi-border-light: 220 13% 95%;      /* Lighter border */
+    --neohi-border: 220 13% 88%;            /* Light gray border */
+    --neohi-border-light: 220 13% 92%;      /* Lighter border */
     
     /* Status Colors */
     --neohi-online: 142 71% 45%;            /* Green - Online */
