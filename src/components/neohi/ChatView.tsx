@@ -198,7 +198,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-neohi-bg-chat" dir="ltr">
+    <div className="h-screen flex flex-col bg-neohi-bg-chat">
       {/* Header - Fixed Top Bar (Telegram Style) */}
       <header className="h-[60px] flex-shrink-0 bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-3 z-10">
         <div className="h-full flex items-center justify-between gap-2">
@@ -283,13 +283,13 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       </header>
 
       {/* Messages Area - Scrollable Container (Telegram Style) */}
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 overflow-hidden relative">
         <MessageList messages={messages} loading={loading} />
       </div>
 
       {/* Input Bar - Fixed at Bottom (Telegram Style) */}
       {(chat.type === "dm" || chat.type === "group") && (
-        <div className="h-auto flex-shrink-0 border-t border-neohi-border bg-neohi-bg-sidebar/95 backdrop-blur-lg">
+        <div className="flex-shrink-0 border-t border-neohi-border bg-neohi-bg-sidebar/95 backdrop-blur-lg">
           <MessageInput onSend={handleSendMessage} />
         </div>
       )}

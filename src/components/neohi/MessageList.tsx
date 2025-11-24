@@ -55,8 +55,8 @@ export function MessageList({ messages, loading }: MessageListProps) {
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-[hsl(var(--neohi-bg-chat))]" style={{ scrollBehavior: 'smooth' }}>
-      <div className="flex flex-col px-3 py-3 min-h-full">
+    <div className="h-full overflow-y-auto bg-[hsl(var(--neohi-bg-chat))]" style={{ scrollBehavior: 'smooth' }}>
+      <div className="flex flex-col px-3 py-3">
         <AnimatePresence initial={false}>
           {messages.map((message, index) => {
             const isOwn = message.sender_id === currentUserId;
@@ -76,7 +76,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
                   stiffness: 400,
                   damping: 25,
                 }}
-                className={`flex items-end gap-1.5 mb-1 ${isOwn ? "flex-row-reverse ml-auto" : "flex-row mr-auto"}`}
+                className={`flex items-end gap-2 mb-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
               >
                 {/* Avatar */}
                 <div className="w-8 h-8 flex-shrink-0">
@@ -101,10 +101,10 @@ export function MessageList({ messages, loading }: MessageListProps) {
                   <motion.div
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className={`rounded-[12px] px-3 py-1.5 shadow-sm ${
+                    className={`rounded-[12px] px-3 py-2 shadow-sm ${
                       isOwn
-                        ? "bg-[hsl(var(--neohi-bubble-user))] text-[hsl(var(--neohi-text-primary))] rounded-br-none"
-                        : "bg-[hsl(var(--neohi-bubble-other))] text-[hsl(var(--neohi-text-primary))] rounded-bl-none border border-[hsl(var(--neohi-border))]"
+                        ? "bg-[hsl(var(--neohi-bubble-user))] text-[hsl(var(--neohi-text-primary))] rounded-br-md"
+                        : "bg-[hsl(var(--neohi-bubble-other))] text-[hsl(var(--neohi-text-primary))] rounded-bl-md border border-[hsl(var(--neohi-border))]"
                     }`}
                   >
                     {message.media_url && (
