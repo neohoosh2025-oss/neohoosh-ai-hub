@@ -134,7 +134,7 @@ export default function NeoHi() {
             // Get last message
             const { data: lastMessage } = await supabase
               .from("neohi_messages")
-              .select("content, sender_id")
+              .select("content, sender_id, message_type")
               .eq("chat_id", chat.id)
               .eq("is_deleted", false)
               .order("created_at", { ascending: false })
@@ -170,7 +170,9 @@ export default function NeoHi() {
               ...chatData,
               last_message: lastMessage
                 ? {
-                    content: lastMessage.content,
+                    content: lastMessage.message_type && lastMessage.message_type !== "text"
+                      ? getMediaTypeLabel(lastMessage.message_type)
+                      : (lastMessage.content || "No message yet"),
                     is_read: lastMessage.sender_id === user.id,
                   }
                 : null,
@@ -231,6 +233,23 @@ export default function NeoHi() {
     return () => {
       supabase.removeChannel(channel);
     };
+  };
+
+  const getMediaTypeLabel = (messageType: string): string => {
+    switch (messageType) {
+      case "image":
+        return "Photo";
+      case "voice":
+        return "Voice";
+      case "video":
+        return "Video";
+      case "file":
+        return "File";
+      case "audio":
+        return "Audio";
+      default:
+        return "Media";
+    }
   };
 
   const getChatName = (chat: Chat) => {
