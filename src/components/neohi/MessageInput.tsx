@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Image as ImageIcon, Smile, Mic, Square } from "lucide-react";
+import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,11 @@ export function MessageInput({ onSend }: MessageInputProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<{
+    file: File;
+    url: string;
+    type: string;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -38,17 +43,49 @@ export function MessageInput({ onSend }: MessageInputProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Detect file type
+    let messageType = "file";
+    if (file.type.startsWith("image/")) {
+      messageType = "image";
+    } else if (file.type.startsWith("video/")) {
+      messageType = "video";
+    } else if (file.type.startsWith("audio/")) {
+      messageType = "audio";
+    } else if (
+      file.type.includes("pdf") ||
+      file.type.includes("document") ||
+      file.type.includes("word") ||
+      file.type.includes("text") ||
+      file.type.includes("sheet") ||
+      file.type.includes("presentation")
+    ) {
+      messageType = "document";
+    }
+
+    // Create preview URL for images and videos
+    const previewUrl = URL.createObjectURL(file);
+    
+    setFilePreview({
+      file,
+      url: previewUrl,
+      type: messageType,
+    });
+  };
+
+  const handleSendFile = async () => {
+    if (!filePreview) return;
+
     setUploading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const fileExt = file.name.split(".").pop();
+      const fileExt = filePreview.file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
       const { error } = await supabase.storage
         .from("neohi-media")
-        .upload(fileName, file);
+        .upload(fileName, filePreview.file);
 
       if (error) throw error;
 
@@ -56,30 +93,17 @@ export function MessageInput({ onSend }: MessageInputProps) {
         .from("neohi-media")
         .getPublicUrl(fileName);
 
-      // Detect file type
-      let messageType = "file";
-      if (file.type.startsWith("image/")) {
-        messageType = "image";
-      } else if (file.type.startsWith("video/")) {
-        messageType = "video";
-      } else if (file.type.startsWith("audio/")) {
-        messageType = "audio";
-      } else if (
-        file.type.includes("pdf") ||
-        file.type.includes("document") ||
-        file.type.includes("word") ||
-        file.type.includes("text") ||
-        file.type.includes("sheet") ||
-        file.type.includes("presentation")
-      ) {
-        messageType = "document";
-      }
+      const fileMessage = message.trim() || (
+        filePreview.type === "file" 
+          ? `📎 ${filePreview.file.name}` 
+          : `📁 ${filePreview.file.name}`
+      );
 
-      const fileMessage = messageType === "file" 
-        ? `📎 ${file.name}` 
-        : message.trim() || `📁 ${file.name}`;
-
-      onSend(fileMessage, publicUrl, messageType);
+      onSend(fileMessage, publicUrl, filePreview.type);
+      
+      // Clean up
+      URL.revokeObjectURL(filePreview.url);
+      setFilePreview(null);
       setMessage("");
       
       toast({
@@ -98,6 +122,16 @@ export function MessageInput({ onSend }: MessageInputProps) {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleCancelFile = () => {
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview.url);
+      setFilePreview(null);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -244,11 +278,111 @@ export function MessageInput({ onSend }: MessageInputProps) {
 
   return (
     <div className="p-3 bg-neohi-bg-sidebar">
+      {/* File Preview */}
+      {filePreview && (
+        <div className="mb-3 p-3 bg-neohi-bg-hover rounded-2xl border border-neohi-border">
+          <div className="flex items-start gap-2 mb-3">
+            <div className="flex-1">
+              <p className="text-sm text-neohi-text-secondary mb-2">پیش‌نمایش فایل:</p>
+              
+              {/* Image Preview */}
+              {filePreview.type === "image" && (
+                <img
+                  src={filePreview.url}
+                  alt="Preview"
+                  className="rounded-xl max-h-40 w-auto border border-neohi-border"
+                />
+              )}
+              
+              {/* Video Preview */}
+              {filePreview.type === "video" && (
+                <video
+                  src={filePreview.url}
+                  controls
+                  className="rounded-xl max-h-40 w-auto border border-neohi-border"
+                />
+              )}
+              
+              {/* Audio Preview */}
+              {filePreview.type === "audio" && (
+                <div className="flex items-center gap-2 p-3 bg-neohi-bg-chat rounded-xl border border-neohi-border">
+                  <Music className="h-5 w-5 text-neohi-accent flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{filePreview.file.name}</p>
+                    <p className="text-xs text-neohi-text-secondary">
+                      {(filePreview.file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Document Preview */}
+              {(filePreview.type === "document" || filePreview.type === "file") && (
+                <div className="flex items-center gap-2 p-3 bg-neohi-bg-chat rounded-xl border border-neohi-border">
+                  <FileText className="h-5 w-5 text-neohi-accent flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{filePreview.file.name}</p>
+                    <p className="text-xs text-neohi-text-secondary">
+                      {(filePreview.file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Caption Input */}
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="توضیحات (اختیاری)"
+                className="mt-3 resize-none min-h-[42px] max-h-[80px] bg-neohi-bg-chat border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-xl px-3 py-2 text-sm"
+                rows={1}
+              />
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCancelFile}
+              className="flex-shrink-0 h-8 w-8 rounded-full hover:bg-neohi-bg-chat"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSendFile}
+              disabled={uploading}
+              className="flex-1 bg-neohi-accent hover:bg-neohi-accent/90 text-white"
+            >
+              {uploading ? "در حال ارسال..." : "ارسال"}
+            </Button>
+            <Button
+              onClick={handleCancelFile}
+              variant="outline"
+              className="flex-1"
+              disabled={uploading}
+            >
+              لغو
+            </Button>
+          </div>
+        </div>
+      )}
+      
       {/* Audio Preview */}
       {audioPreview && (
         <div className="mb-3 p-3 bg-neohi-bg-hover rounded-2xl border border-neohi-border">
           <p className="text-sm text-neohi-text-secondary mb-2">پیش‌نمایش پیام صوتی:</p>
           <audio src={audioPreview} controls className="w-full mb-3" />
+          
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="توضیحات (اختیاری)"
+            className="mb-3 resize-none min-h-[42px] max-h-[80px] bg-neohi-bg-chat border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-xl px-3 py-2 text-sm"
+            rows={1}
+          />
+          
           <div className="flex gap-2">
             <Button
               onClick={handleSendAudio}
@@ -273,7 +407,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
           variant="ghost"
           size="icon"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || !!filePreview || !!audioPreview}
           className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
         >
           <Plus className="h-5 w-5" />
@@ -285,12 +419,13 @@ export function MessageInput({ onSend }: MessageInputProps) {
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="پیام"
+          disabled={!!filePreview || !!audioPreview}
           className="flex-1 resize-none min-h-[42px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
           rows={1}
         />
 
         {/* Send or Mic Button */}
-        {message.trim() ? (
+        {message.trim() && !filePreview && !audioPreview ? (
           <Button
             onClick={handleSend}
             className="h-10 w-10 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
@@ -312,7 +447,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
         ) : (
           <Button
             onClick={startRecording}
-            disabled={uploading}
+            disabled={uploading || !!filePreview || !!audioPreview}
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
