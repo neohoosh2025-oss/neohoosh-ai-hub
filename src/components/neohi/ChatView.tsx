@@ -244,8 +244,10 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       {/* Messages */}
       <MessageList messages={messages} loading={loading} />
 
-      {/* Spacer for bottom input */}
-      <div className="h-[72px]"></div>
+      {/* Message Input - Always show for DM and Group */}
+      {(chat.type === "dm" || chat.type === "group") && (
+        <MessageInput onSend={handleSendMessage} />
+      )}
 
       {/* Info Panel */}
       <AnimatePresence>
