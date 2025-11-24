@@ -120,7 +120,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section - Optimized for Mobile */}
-      <section className="relative pt-16 sm:pt-20 md:pt-24 pb-20 sm:pb-28 md:pb-32 overflow-hidden">
+      <section className="relative pt-28 sm:pt-32 md:pt-36 pb-20 sm:pb-28 md:pb-32 overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
@@ -136,8 +136,8 @@ const Home = () => {
           >
             {/* Logo Removed - Clean Design */}
 
-            {/* Badge - Responsive */}
-            <motion.div variants={fadeInUp} className="flex justify-center">
+            {/* Badge - Responsive with More Top Spacing */}
+            <motion.div variants={fadeInUp} className="flex justify-center pt-8 sm:pt-12 md:pt-16">
               <Badge className="px-4 sm:px-6 py-2 sm:py-2.5 text-sm sm:text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
                 <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-2 animate-pulse" />
                 نسل جدید هوش مصنوعی
