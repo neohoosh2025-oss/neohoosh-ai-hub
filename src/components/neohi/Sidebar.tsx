@@ -227,10 +227,10 @@ export function Sidebar({
         <Button
           onClick={() => navigate("/neohi?tab=settings")}
           variant="ghost"
-          className="w-full justify-start gap-3 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+          className="w-full justify-center gap-3 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
         >
           <Settings className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
-          <span className="font-medium">تنظیمات</span>
+          <span className="font-medium">Settings</span>
         </Button>
       </div>
     </div>
