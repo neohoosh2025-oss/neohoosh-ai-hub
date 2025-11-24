@@ -14,6 +14,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -101,12 +102,15 @@ export function MessageInput({ onSend }: MessageInputProps) {
       
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        await uploadAudio(audioBlob);
+        
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(audioBlob);
+        setAudioPreview(previewUrl);
         
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
         
-        // Reset state
+        // Reset recording state
         setRecordingTime(0);
         if (recordingIntervalRef.current) {
           clearInterval(recordingIntervalRef.current);
@@ -179,7 +183,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
         .from("neohi-media")
         .getPublicUrl(fileName);
 
-      onSend("🎤 پیام صوتی", publicUrl, "audio");
+      onSend("🎤 پیام صوتی", publicUrl, "voice");
       
       toast({
         title: "ارسال شد",
@@ -197,8 +201,50 @@ export function MessageInput({ onSend }: MessageInputProps) {
     }
   };
 
+  const handleSendAudio = async () => {
+    if (!audioPreview) return;
+    
+    const response = await fetch(audioPreview);
+    const audioBlob = await response.blob();
+    
+    URL.revokeObjectURL(audioPreview);
+    setAudioPreview(null);
+    
+    await uploadAudio(audioBlob);
+  };
+
+  const handleCancelAudio = () => {
+    if (audioPreview) {
+      URL.revokeObjectURL(audioPreview);
+      setAudioPreview(null);
+    }
+  };
+
   return (
     <div className="p-3 bg-neohi-bg-sidebar">
+      {/* Audio Preview */}
+      {audioPreview && (
+        <div className="mb-3 p-3 bg-neohi-bg-hover rounded-2xl border border-neohi-border">
+          <p className="text-sm text-neohi-text-secondary mb-2">پیش‌نمایش پیام صوتی:</p>
+          <audio src={audioPreview} controls className="w-full mb-3" />
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSendAudio}
+              className="flex-1 bg-neohi-accent hover:bg-neohi-accent/90 text-white"
+            >
+              ارسال
+            </Button>
+            <Button
+              onClick={handleCancelAudio}
+              variant="outline"
+              className="flex-1"
+            >
+              لغو
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <div className="flex items-end gap-2">
         {/* Attachment Button */}
         <Button
