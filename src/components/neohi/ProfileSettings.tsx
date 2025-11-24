@@ -84,7 +84,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       setUploading(true);
 
       const fileExt = file.name.split(".").pop();
-      const filePath = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `${userId}/avatar-${Date.now()}.${fileExt}`;
 
       const { error: uploadError, data } = await supabase.storage
         .from("neohi-avatars")
