@@ -89,6 +89,35 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        neohi: {
+          bg: {
+            main: "hsl(var(--neohi-bg-main))",
+            chat: "hsl(var(--neohi-bg-chat))",
+            sidebar: "hsl(var(--neohi-bg-sidebar))",
+            hover: "hsl(var(--neohi-bg-hover))",
+          },
+          text: {
+            primary: "hsl(var(--neohi-text-primary))",
+            secondary: "hsl(var(--neohi-text-secondary))",
+            muted: "hsl(var(--neohi-text-muted))",
+          },
+          accent: {
+            DEFAULT: "hsl(var(--neohi-accent))",
+            hover: "hsl(var(--neohi-accent-hover))",
+            light: "hsl(var(--neohi-accent-light))",
+          },
+          bubble: {
+            user: "hsl(var(--neohi-bubble-user))",
+            other: "hsl(var(--neohi-bubble-other))",
+            userText: "hsl(var(--neohi-bubble-user-text))",
+          },
+          border: {
+            DEFAULT: "hsl(var(--neohi-border))",
+            light: "hsl(var(--neohi-border-light))",
+          },
+          online: "hsl(var(--neohi-online))",
+          unread: "hsl(var(--neohi-unread))",
+        },
       },
       fontFamily: {
         sans: ['Vazirmatn', 'Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],

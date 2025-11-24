@@ -74,13 +74,13 @@ export function Sidebar({
         onClick={() => onChatSelect(chat.id)}
         className={cn(
           "w-full px-4 py-3 flex items-start gap-3 transition-colors relative",
-          "border-b border-[hsl(var(--neohi-border))]",
-          isSelected && "bg-[hsl(var(--neohi-accent-light))]"
+          "border-b border-neohi-border",
+          isSelected && "bg-neohi-accent-light"
         )}
       >
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center overflow-hidden">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-neohi-accent to-primary flex items-center justify-center overflow-hidden">
             {chat.avatar_url ? (
               <img src={chat.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -88,7 +88,7 @@ export function Sidebar({
             )}
           </div>
           {chat.is_online && (
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-[hsl(var(--neohi-online))] border-2 border-[hsl(var(--neohi-bg-sidebar))] rounded-full" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-neohi-online border-2 border-neohi-bg-sidebar rounded-full" />
           )}
         </div>
 
@@ -98,12 +98,12 @@ export function Sidebar({
             <h3 className={cn(
               "font-medium text-sm truncate",
               hasUnread 
-                ? "text-[hsl(var(--neohi-text-primary))] font-semibold" 
-                : "text-[hsl(var(--neohi-text-primary))]"
+                ? "text-neohi-text-primary font-semibold" 
+                : "text-neohi-text-primary"
             )}>
               {chat.name || "Unknown"}
             </h3>
-            <span className="text-xs text-[hsl(var(--neohi-text-secondary))] ml-2 flex-shrink-0">
+            <span className="text-xs text-neohi-text-secondary ml-2 flex-shrink-0">
               {getTimeDisplay(chat.last_message_at)}
             </span>
           </div>
@@ -112,13 +112,13 @@ export function Sidebar({
             <p className={cn(
               "text-xs truncate",
               hasUnread
-                ? "text-[hsl(var(--neohi-text-primary))] font-medium"
-                : "text-[hsl(var(--neohi-text-secondary))]"
+                ? "text-neohi-text-primary font-medium"
+                : "text-neohi-text-secondary"
             )}>
               {chat.last_message?.content || "No messages yet"}
             </p>
             {hasUnread && (
-              <span className="ml-2 px-1.5 py-0.5 bg-[hsl(var(--neohi-unread))] text-white text-xs rounded-full font-medium min-w-[18px] text-center flex-shrink-0">
+              <span className="ml-2 px-1.5 py-0.5 bg-neohi-unread text-white text-xs rounded-full font-medium min-w-[18px] text-center flex-shrink-0">
                 {chat.unread_count}
               </span>
             )}
@@ -129,15 +129,15 @@ export function Sidebar({
   };
 
   return (
-    <div className="h-full w-full md:w-80 lg:w-96 bg-[hsl(var(--neohi-bg-sidebar))] flex flex-col border-r border-[hsl(var(--neohi-border))]">
+    <div className="h-full w-full md:w-80 lg:w-96 bg-neohi-bg-sidebar flex flex-col border-r border-neohi-border">
       {/* Header */}
-      <div className="p-4 border-b border-[hsl(var(--neohi-border))]">
+      <div className="p-4 border-b border-neohi-border">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neohi-accent to-primary flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-[hsl(var(--neohi-text-primary))]">NeoHi</h1>
+            <h1 className="text-xl font-bold text-neohi-text-primary">NeoHi</h1>
           </div>
           
           <div className="flex items-center gap-1">
@@ -145,7 +145,7 @@ export function Sidebar({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-accent))]"
+                className="h-9 w-9 rounded-xl hover:bg-neohi-bg-hover text-neohi-accent"
               >
                 <Home className="h-5 w-5" />
               </Button>
@@ -154,7 +154,7 @@ export function Sidebar({
               variant="ghost"
               size="icon"
               onClick={onNewChat}
-              className="h-9 w-9 rounded-xl hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-accent))]"
+              className="h-9 w-9 rounded-xl hover:bg-neohi-bg-hover text-neohi-accent"
             >
               <Plus className="h-5 w-5" />
             </Button>
@@ -163,12 +163,12 @@ export function Sidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--neohi-text-secondary))]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neohi-text-secondary" />
           <Input
             placeholder="Search chats..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-[hsl(var(--neohi-bg-hover))] border-none text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-muted))] h-10 rounded-xl"
+            className="pl-10 bg-neohi-bg-hover border-none text-neohi-text-primary placeholder:text-neohi-text-muted h-10 rounded-xl"
           />
         </div>
       </div>
@@ -184,11 +184,11 @@ export function Sidebar({
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center h-full p-8 text-center"
             >
-              <MessageCircle className="h-16 w-16 text-[hsl(var(--neohi-text-muted))] mb-4" />
-              <p className="text-[hsl(var(--neohi-text-secondary))] text-sm">
+              <MessageCircle className="h-16 w-16 text-neohi-text-muted mb-4" />
+              <p className="text-neohi-text-secondary text-sm">
                 {searchQuery ? "No chats found" : "No chats yet"}
               </p>
-              <p className="text-[hsl(var(--neohi-text-muted))] text-xs mt-1">
+              <p className="text-neohi-text-muted text-xs mt-1">
                 Click + to start a conversation
               </p>
             </motion.div>
@@ -196,7 +196,7 @@ export function Sidebar({
             <div key="chats">
               {pinnedChats.length > 0 && (
                 <div>
-                  <div className="px-4 py-2 text-xs font-medium text-[hsl(var(--neohi-text-muted))] uppercase tracking-wider">
+                  <div className="px-4 py-2 text-xs font-medium text-neohi-text-muted uppercase tracking-wider">
                     Pinned
                   </div>
                   {pinnedChats.map((chat) => (
@@ -208,7 +208,7 @@ export function Sidebar({
               {regularChats.length > 0 && (
                 <div>
                   {pinnedChats.length > 0 && (
-                    <div className="px-4 py-2 text-xs font-medium text-[hsl(var(--neohi-text-muted))] uppercase tracking-wider">
+                    <div className="px-4 py-2 text-xs font-medium text-neohi-text-muted uppercase tracking-wider">
                       All Chats
                     </div>
                   )}
@@ -223,22 +223,22 @@ export function Sidebar({
       </ScrollArea>
 
       {/* Bottom Navigation - Contacts & Settings */}
-      <div className="p-4 border-t border-[hsl(var(--neohi-border))]">
+      <div className="p-4 border-t border-neohi-border">
         <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={() => navigate("/neohi?tab=contacts")}
             variant="ghost"
-            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-accent))] hover:text-white transition-all duration-300 text-[hsl(var(--neohi-text-primary))] rounded-xl group"
+            className="justify-center gap-2 h-12 hover:bg-neohi-accent hover:text-white transition-all duration-300 text-neohi-text-primary rounded-xl group"
           >
-            <Users className="h-5 w-5 text-[hsl(var(--neohi-accent))] group-hover:text-white transition-colors" />
+            <Users className="h-5 w-5 text-neohi-accent group-hover:text-white transition-colors" />
             <span className="font-medium text-sm">Contacts</span>
           </Button>
           <Button
             onClick={() => navigate("/neohi?tab=settings")}
             variant="ghost"
-            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-accent))] hover:text-white transition-all duration-300 text-[hsl(var(--neohi-text-primary))] rounded-xl group"
+            className="justify-center gap-2 h-12 hover:bg-neohi-accent hover:text-white transition-all duration-300 text-neohi-text-primary rounded-xl group"
           >
-            <Settings className="h-5 w-5 text-[hsl(var(--neohi-accent))] group-hover:text-white transition-colors" />
+            <Settings className="h-5 w-5 text-neohi-accent group-hover:text-white transition-colors" />
             <span className="font-medium text-sm">Settings</span>
           </Button>
         </div>
