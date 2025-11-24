@@ -251,7 +251,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
             <div className="flex-1 text-right min-w-0">
               <h2 className="text-neohi-text-primary font-semibold text-[15px] truncate leading-tight">
-                {chat.name || "کاربر"}
+                {chat.type === "dm" ? (otherUserData?.display_name || "کاربر") : (chat.name || "کاربر")}
               </h2>
               <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end">
                 {chat.type === "channel" ? (
