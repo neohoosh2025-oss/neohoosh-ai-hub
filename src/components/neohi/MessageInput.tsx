@@ -74,9 +74,49 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   return (
-    <div className="bg-neohi-bg-sidebar border-t border-neohi-border px-4 py-3 shrink-0 safe-area-bottom">
-      <div className="flex items-end gap-3 max-w-4xl mx-auto">
-        {/* Add Button */}
+    <div className="min-h-[60px] max-h-[180px] p-2.5 bg-neohi-bg-sidebar">
+      <div className="flex items-end gap-2">
+        {/* Attachment Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="h-9 w-9 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
+        >
+          <Plus className="h-[18px] w-[18px]" />
+        </Button>
+
+        {/* Message Input - Telegram Style */}
+        <Textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="اكتب رسالة..."
+          className="resize-none min-h-[40px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[20px] px-4 py-2.5 text-[15px] leading-[1.4]"
+          rows={1}
+        />
+
+        {/* Send or Mic Button */}
+        {message.trim() ? (
+          <Button
+            onClick={handleSend}
+            className="h-9 w-9 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
+            size="icon"
+          >
+            <Send className="h-[18px] w-[18px]" />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
+          >
+            <Mic className="h-[18px] w-[18px]" />
+          </Button>
+        )}
+
+        {/* Hidden File Input */}
         <input
           type="file"
           ref={fileInputRef}
@@ -84,55 +124,6 @@ export function MessageInput({ onSend }: MessageInputProps) {
           accept="image/*,video/*"
           className="hidden"
         />
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="text-neohi-accent hover:bg-neohi-bg-hover shrink-0 transition-all h-11 w-11 rounded-full"
-        >
-          <Plus className="h-5 w-5" />
-        </Button>
-
-        {/* Text Input Container */}
-        <div className="flex-1 bg-neohi-bg-message rounded-3xl px-4 py-2.5 border border-neohi-border transition-all focus-within:border-neohi-accent focus-within:shadow-sm">
-          <div className="flex items-center gap-2">
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="پیامی بنویسید..."
-              className="min-h-[24px] max-h-24 resize-none bg-transparent border-none text-neohi-text-primary placeholder:text-neohi-text-muted focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-[15px] leading-6"
-              rows={1}
-            />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-neohi-text-muted hover:bg-transparent shrink-0 h-7 w-7"
-            >
-              <Smile className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Send/Voice Button */}
-        {message.trim() ? (
-          <Button
-            onClick={handleSend}
-            size="icon"
-            className="bg-neohi-accent hover:bg-neohi-accent-hover text-white rounded-full shrink-0 shadow-lg transition-all h-11 w-11"
-          >
-            <Send className="h-5 w-5" />
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-neohi-accent hover:bg-neohi-bg-hover shrink-0 transition-all h-11 w-11 rounded-full"
-          >
-            <Mic className="h-5 w-5" />
-          </Button>
-        )}
       </div>
     </div>
   );

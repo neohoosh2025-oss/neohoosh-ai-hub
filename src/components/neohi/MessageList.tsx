@@ -55,8 +55,8 @@ export function MessageList({ messages, loading }: MessageListProps) {
   }
 
   return (
-    <div className="h-full overflow-y-auto px-3 py-4 bg-[hsl(var(--neohi-bg-chat))]">
-      <div className="space-y-2 pb-4">
+    <div className="h-full w-full overflow-y-auto bg-[hsl(var(--neohi-bg-chat))]" style={{ scrollBehavior: 'smooth' }}>
+      <div className="flex flex-col px-3 py-3 min-h-full">
         <AnimatePresence initial={false}>
           {messages.map((message, index) => {
             const isOwn = message.sender_id === currentUserId;
@@ -76,35 +76,35 @@ export function MessageList({ messages, loading }: MessageListProps) {
                   stiffness: 400,
                   damping: 25,
                 }}
-                className={`flex items-end gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
+                className={`flex items-end gap-1.5 mb-1 ${isOwn ? "flex-row-reverse ml-auto" : "flex-row mr-auto"}`}
               >
                 {/* Avatar */}
-                <div className="w-8 h-8 shrink-0">
+                <div className="w-8 h-8 flex-shrink-0">
                   {showAvatar && message.sender && (
                     <Avatar className="h-8 w-8 ring-1 ring-[hsl(var(--neohi-border))]">
                       <AvatarImage src={message.sender.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-xs font-medium">
+                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-[11px] font-medium">
                         {message.sender.display_name?.charAt(0)?.toUpperCase() || "U"}
                       </AvatarFallback>
                     </Avatar>
                   )}
                 </div>
 
-                {/* Message Bubble */}
-                <div className={`flex flex-col max-w-[75%] ${isOwn ? "items-end" : "items-start"}`}>
+                {/* Message Bubble (Telegram Style) */}
+                <div className={`flex flex-col max-w-[70%] sm:max-w-[65%] ${isOwn ? "items-end" : "items-start"}`}>
                   {!isOwn && message.sender && showAvatar && (
-                    <span className="text-[11px] text-[hsl(var(--neohi-text-secondary))] mb-0.5 px-3 font-medium">
+                    <span className="text-[12px] text-[hsl(var(--neohi-text-secondary))] mb-1 px-3 font-medium">
                       {message.sender.display_name}
                     </span>
                   )}
                   
                   <motion.div
-                    whileHover={{ scale: 1.01 }}
-                    transition={{ type: "spring", stiffness: 500 }}
-                    className={`rounded-2xl px-3 py-2 shadow-sm ${
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className={`rounded-[12px] px-3 py-1.5 shadow-sm ${
                       isOwn
-                        ? "bg-[hsl(var(--neohi-bubble-user))] text-[hsl(var(--neohi-text-primary))] rounded-br-md"
-                        : "bg-[hsl(var(--neohi-bubble-other))] text-[hsl(var(--neohi-text-primary))] rounded-bl-md border border-[hsl(var(--neohi-border))]"
+                        ? "bg-[hsl(var(--neohi-bubble-user))] text-[hsl(var(--neohi-text-primary))] rounded-br-none"
+                        : "bg-[hsl(var(--neohi-bubble-other))] text-[hsl(var(--neohi-text-primary))] rounded-bl-none border border-[hsl(var(--neohi-border))]"
                     }`}
                   >
                     {message.media_url && (
@@ -130,17 +130,17 @@ export function MessageList({ messages, loading }: MessageListProps) {
                     )}
                     
                     {message.content && (
-                      <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">
+                      <p className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words mb-0.5">
                         {message.content}
                       </p>
                     )}
                     
-                    <div className={`flex items-center justify-end gap-1 mt-1 text-[11px] ${
-                      isOwn ? "text-[hsl(var(--neohi-text-secondary))]" : "text-[hsl(var(--neohi-text-secondary))]"
+                    <div className={`flex items-center gap-1 mt-0.5 text-[11px] ${
+                      isOwn ? "justify-end text-[hsl(var(--neohi-text-secondary))]/80" : "justify-end text-[hsl(var(--neohi-text-secondary))]/70"
                     }`}>
-                      <span>{formatTime(message.created_at)}</span>
+                      <span className="leading-none">{formatTime(message.created_at)}</span>
                       {isOwn && (
-                        <CheckCheck className="h-3 w-3 text-[hsl(var(--neohi-status-read))]" />
+                        <CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--neohi-status-read))]" />
                       )}
                     </div>
                   </motion.div>
