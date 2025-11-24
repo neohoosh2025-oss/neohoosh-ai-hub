@@ -223,11 +223,8 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               )}
               <div className="text-center">
                 <h3 className="text-[hsl(var(--neohi-text-primary))] font-bold text-2xl">
-                  {displayName || username}
+                  {displayName || "کاربر"}
                 </h3>
-                <p className="text-[hsl(var(--neohi-text-secondary))] text-sm mt-1" dir="ltr">
-                  {username}
-                </p>
                 {createdAt && (
                   <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
                     عضو از {new Date(createdAt).toLocaleDateString('fa-IR')}

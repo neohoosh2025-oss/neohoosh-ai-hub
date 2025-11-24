@@ -111,9 +111,6 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
               <span>{getStatusText()}</span>
             )}
           </p>
-          {user.username && (
-            <p className="text-neohi-text-secondary text-sm mt-1">@{user.username}</p>
-          )}
         </div>
       </div>
 
