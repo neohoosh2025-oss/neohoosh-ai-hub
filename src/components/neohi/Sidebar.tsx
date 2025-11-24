@@ -224,21 +224,21 @@ export function Sidebar({
 
       {/* Bottom Navigation - Contacts & Settings */}
       <div className="p-4 border-t border-[hsl(var(--neohi-border))]">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <Button
             onClick={() => navigate("/neohi?tab=contacts")}
             variant="ghost"
-            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-accent))] hover:text-white transition-all duration-300 text-[hsl(var(--neohi-text-primary))] rounded-xl group"
           >
-            <Users className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
+            <Users className="h-5 w-5 text-[hsl(var(--neohi-accent))] group-hover:text-white transition-colors" />
             <span className="font-medium text-sm">Contacts</span>
           </Button>
           <Button
             onClick={() => navigate("/neohi?tab=settings")}
             variant="ghost"
-            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+            className="justify-center gap-2 h-12 hover:bg-[hsl(var(--neohi-accent))] hover:text-white transition-all duration-300 text-[hsl(var(--neohi-text-primary))] rounded-xl group"
           >
-            <Settings className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
+            <Settings className="h-5 w-5 text-[hsl(var(--neohi-accent))] group-hover:text-white transition-colors" />
             <span className="font-medium text-sm">Settings</span>
           </Button>
         </div>
