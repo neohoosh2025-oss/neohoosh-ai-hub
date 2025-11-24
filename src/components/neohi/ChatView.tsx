@@ -198,54 +198,68 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-full w-full bg-[hsl(var(--neohi-bg-chat))] flex flex-col overflow-hidden" dir="ltr">
-      {/* Header - Mobile Optimized */}
-      <header className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-3 md:px-4 py-2.5 md:py-3 backdrop-blur-md z-10 sticky top-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 flex-shrink-0"
-              onClick={onBack}
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            
-            <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-2 ring-[hsl(var(--neohi-border))] cursor-pointer flex-shrink-0" onClick={() => setShowInfo(true)}>
+    <div className="h-full w-full bg-neohi-bg-chat flex flex-col overflow-hidden" dir="ltr">
+      {/* Header - Ultra Clean */}
+      <header className="bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 py-3.5 z-10 sticky top-0 safe-area-top">
+        <div className="flex items-center justify-between gap-3">
+          {/* Back Button - Mobile Only */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="md:hidden h-10 w-10 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary transition-all"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+
+          {/* Chat Info - Clickable */}
+          <button
+            onClick={() => setShowInfo(true)}
+            className="flex items-center gap-3 flex-1 hover:bg-neohi-bg-hover rounded-xl px-2 py-1.5 transition-all group min-w-0"
+          >
+            <Avatar className="h-11 w-11 ring-2 ring-neohi-border flex-shrink-0">
               <AvatarImage src={chat.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white font-semibold text-sm">
+              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-blue-600 text-white font-bold text-base">
                 {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
-            <div className="cursor-pointer flex-1 min-w-0" onClick={() => setShowInfo(true)}>
-              <h2 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-sm md:text-[15px] truncate">
-                {chat.name || "Chat"}
+            <div className="flex-1 text-left min-w-0">
+              <h2 className="text-neohi-text-primary font-bold text-base truncate group-hover:text-neohi-accent transition-colors">
+                {chat.name || "گفتگو"}
               </h2>
-              <p className="text-[hsl(var(--neohi-status-online))] text-[10px] md:text-xs flex items-center gap-1 truncate">
+              <p className="text-neohi-text-secondary text-xs flex items-center gap-1.5 truncate">
                 {chat.type === "channel" ? (
-                  "Channel"
+                  "کانال"
                 ) : chat.type === "group" ? (
-                  "Group"
+                  "گروه"
                 ) : (
                   <>
-                    <span className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-[hsl(var(--neohi-status-online))] animate-pulse"></span>
-                    Online
+                    <span className="w-2 h-2 rounded-full bg-neohi-online"></span>
+                    آنلاین
                   </>
                 )}
               </p>
             </div>
-          </div>
+          </button>
 
-          <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
+          {/* Actions */}
+          <div className="flex items-center gap-1 flex-shrink-0">
             {chat.type === "dm" && (
               <>
-                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden sm:flex">
-                  <Phone className="h-4 w-4 md:h-5 md:w-5" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden sm:flex"
+                >
+                  <Phone className="h-5 w-5" />
                 </Button>
-                <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden sm:flex">
-                  <Video className="h-4 w-4 md:h-5 md:w-5" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden sm:flex"
+                >
+                  <Video className="h-5 w-5" />
                 </Button>
               </>
             )}
@@ -253,12 +267,16 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               variant="ghost" 
               size="icon" 
               onClick={() => setShowInfo(true)}
-              className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10"
+              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full"
             >
-              <Info className="h-4 w-4 md:h-5 md:w-5" />
+              <Info className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-[hsl(var(--neohi-accent))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all h-9 w-9 md:h-10 md:w-10 hidden md:flex">
-              <MoreVertical className="h-4 w-4 md:h-5 md:w-5" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-10 w-10 rounded-full hidden md:flex"
+            >
+              <MoreVertical className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -272,26 +290,26 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         <MessageInput onSend={handleSendMessage} />
       )}
 
-      {/* Info Panel - Mobile Optimized with Full Screen Overlay */}
+      {/* Info Panel - Modern Slide-in */}
       <AnimatePresence>
         {showInfo && (
           <>
-            {/* Mobile Backdrop */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowInfo(false)}
-              className="fixed inset-0 bg-black/40 z-40 md:hidden backdrop-blur-sm"
+              className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
             />
             
-            {/* Info Panel - Slide from right on mobile, side panel on desktop */}
+            {/* Info Panel */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed md:absolute top-0 right-0 bottom-0 w-full sm:w-[85%] md:w-80 bg-[hsl(var(--neohi-bg-sidebar))] shadow-2xl z-50 overflow-y-auto"
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="fixed md:absolute top-0 left-0 bottom-0 w-full sm:w-[90%] md:w-80 bg-neohi-bg-sidebar shadow-2xl z-50 overflow-y-auto safe-area-inset"
             >
               {chat.type === "group" ? (
                 <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
