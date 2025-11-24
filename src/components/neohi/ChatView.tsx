@@ -66,7 +66,34 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .eq("id", chatId)
       .single();
     
-    if (data) setChat(data);
+    if (data) {
+      let chatData = { ...data };
+
+      // For DMs, get the other user's info
+      if (data.type === "dm" && currentUser) {
+        const { data: members } = await supabase
+          .from("neohi_chat_members")
+          .select("user_id")
+          .eq("chat_id", chatId);
+
+        const otherUserId = members?.find((m: any) => m.user_id !== currentUser.id)?.user_id;
+        
+        if (otherUserId) {
+          const { data: otherUser } = await supabase
+            .from("neohi_users")
+            .select("display_name, avatar_url")
+            .eq("id", otherUserId)
+            .single();
+
+          if (otherUser) {
+            chatData.name = otherUser.display_name;
+            chatData.avatar_url = otherUser.avatar_url;
+          }
+        }
+      }
+
+      setChat(chatData);
+    }
   };
 
   const loadMessages = async () => {

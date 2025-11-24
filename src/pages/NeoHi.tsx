@@ -106,6 +106,31 @@ export default function NeoHi() {
           .map((cm: any) => cm.chats)
           .filter(Boolean)
           .map(async (chat: any) => {
+            let chatData = { ...chat };
+
+            // For DMs, get the other user's info
+            if (chat.type === "dm") {
+              const { data: members } = await supabase
+                .from("neohi_chat_members")
+                .select("user_id")
+                .eq("chat_id", chat.id);
+
+              const otherUserId = members?.find((m: any) => m.user_id !== user.id)?.user_id;
+              
+              if (otherUserId) {
+                const { data: otherUser } = await supabase
+                  .from("neohi_users")
+                  .select("display_name, avatar_url")
+                  .eq("id", otherUserId)
+                  .single();
+
+                if (otherUser) {
+                  chatData.name = otherUser.display_name;
+                  chatData.avatar_url = otherUser.avatar_url;
+                }
+              }
+            }
+
             // Get last message
             const { data: lastMessage } = await supabase
               .from("neohi_messages")
@@ -125,7 +150,7 @@ export default function NeoHi() {
               .eq("is_deleted", false);
 
             return {
-              ...chat,
+              ...chatData,
               last_message: lastMessage
                 ? {
                     content: lastMessage.content,
