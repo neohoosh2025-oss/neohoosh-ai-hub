@@ -80,7 +80,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
 
   const startRecording = async () => {
     try {
-      // Request microphone access with explanation
+      // Request microphone permission - browser will show native permission dialog
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -89,6 +89,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
         } 
       });
       
+      // Permission granted - start recording
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm;codecs=opus'
       });
@@ -130,22 +131,36 @@ export function MessageInput({ onSend }: MessageInputProps) {
         description: "میکروفون فعال است",
       });
     } catch (error: any) {
-      console.error("Recording error:", error);
+      console.error("Microphone access error:", error);
       
-      let errorMessage = "دسترسی به میکروفن رد شد";
-      let errorDescription = "لطفاً در تنظیمات مرورگر، دسترسی به میکروفون را مجاز کنید";
+      // Handle different error types with user-friendly messages
+      let errorTitle = "خطا در دسترسی به میکروفون";
+      let errorDescription = "";
       
-      if (error.name === "NotAllowedError") {
-        errorDescription = "برای ضبط پیام صوتی، باید دسترسی به میکروفون را در تنظیمات مرورگر مجاز کنید.\n\n۱. روی آیکون قفل در نوار آدرس کلیک کنید\n۲. دسترسی میکروفون را مجاز کنید\n۳. صفحه را رفرش کنید";
-      } else if (error.name === "NotFoundError") {
-        errorDescription = "میکروفونی پیدا نشد. لطفاً میکروفون را به دستگاه خود وصل کنید";
+      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
+        errorTitle = "دسترسی به میکروفون رد شد";
+        errorDescription = "برای ضبط پیام صوتی، باید دسترسی به میکروفون را مجاز کنید:\n\n۱. روی آیکون قفل 🔒 در نوار آدرس کلیک کنید\n۲. دسترسی میکروفون را روی 'مجاز' تغییر دهید\n۳. صفحه را رفرش کنید و دوباره تلاش کنید";
+      } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+        errorTitle = "میکروفون پیدا نشد";
+        errorDescription = "هیچ میکروفونی یافت نشد. لطفاً مطمئن شوید که میکروفون به دستگاه متصل است و توسط برنامه دیگری استفاده نمی‌شود.";
+      } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
+        errorTitle = "میکروفون در دسترس نیست";
+        errorDescription = "میکروفون توسط برنامه دیگری در حال استفاده است. لطفاً سایر برنامه‌ها را ببندید و دوباره امتحان کنید.";
+      } else if (error.name === "OverconstrainedError") {
+        errorTitle = "خطا در تنظیمات میکروفون";
+        errorDescription = "تنظیمات درخواستی برای میکروفون پشتیبانی نمی‌شود. لطفاً میکروفون دیگری امتحان کنید.";
+      } else if (error.name === "SecurityError") {
+        errorTitle = "خطای امنیتی";
+        errorDescription = "دسترسی به میکروفون به دلایل امنیتی مسدود شده است. مطمئن شوید که از HTTPS استفاده می‌کنید.";
+      } else {
+        errorDescription = "مشکلی در دسترسی به میکروفون پیش آمد. لطفاً دوباره تلاش کنید یا از مرورگر دیگری استفاده کنید.";
       }
       
       toast({
-        title: errorMessage,
+        title: errorTitle,
         description: errorDescription,
         variant: "destructive",
-        duration: 8000,
+        duration: 10000,
       });
     }
   };
