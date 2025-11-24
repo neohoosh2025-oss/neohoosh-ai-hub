@@ -261,8 +261,10 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         )}
       </AnimatePresence>
 
-      {/* Bottom Navigation */}
-      <BottomNavigation />
+      {/* Bottom Navigation - Only on Mobile */}
+      <div className="md:hidden">
+        <BottomNavigation />
+      </div>
     </div>
   );
 }
