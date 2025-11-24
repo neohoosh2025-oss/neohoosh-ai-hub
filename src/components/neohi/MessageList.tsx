@@ -122,14 +122,6 @@ export function MessageList({ messages, loading }: MessageListProps) {
                               alt="Shared"
                               className="rounded-2xl w-full h-auto border border-[hsl(var(--neohi-border))]/50"
                             />
-                            <a
-                              href={message.media_url}
-                              download
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
                           </motion.div>
                         )}
 
@@ -145,14 +137,6 @@ export function MessageList({ messages, loading }: MessageListProps) {
                               controls
                               className="w-full h-auto bg-black/5"
                             />
-                            <a
-                              href={message.media_url}
-                              download
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm hover:bg-black/80 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all z-10"
-                            >
-                              <Download className="h-4 w-4" />
-                            </a>
                           </motion.div>
                         )}
 
