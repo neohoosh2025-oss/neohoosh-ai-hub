@@ -55,7 +55,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
   }
 
   return (
-    <ScrollArea className="flex-1 px-3 py-4 bg-[hsl(var(--neohi-bg-chat))]">
+    <ScrollArea className="h-full w-full px-3 py-4 bg-[hsl(var(--neohi-bg-chat))]">
       <div className="space-y-2 pb-4">
         <AnimatePresence initial={false}>
           {messages.map((message, index) => {

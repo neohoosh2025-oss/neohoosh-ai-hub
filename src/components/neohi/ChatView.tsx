@@ -198,9 +198,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   }
 
   return (
-    <div className="h-full w-full bg-neohi-bg-chat flex flex-col overflow-hidden" dir="ltr">
+    <div className="h-full w-full bg-neohi-bg-chat flex flex-col" dir="ltr">
       {/* Header - Ultra Clean */}
-      <header className="bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 py-3.5 z-10 sticky top-0 safe-area-top">
+      <header className="bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 py-3.5 z-10 flex-shrink-0 safe-area-top">
         <div className="flex items-center justify-between gap-3">
           {/* Back Button - Mobile Only */}
           <Button
@@ -283,11 +283,15 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       </header>
 
       {/* Messages */}
-      <MessageList messages={messages} loading={loading} />
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <MessageList messages={messages} loading={loading} />
+      </div>
 
       {/* Message Input - Mobile Optimized */}
       {(chat.type === "dm" || chat.type === "group") && (
-        <MessageInput onSend={handleSendMessage} />
+        <div className="flex-shrink-0">
+          <MessageInput onSend={handleSendMessage} />
+        </div>
       )}
 
       {/* Info Panel - Modern Slide-in */}
