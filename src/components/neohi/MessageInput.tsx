@@ -74,7 +74,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
   };
 
   return (
-    <div className="min-h-[60px] max-h-[180px] p-2.5 bg-neohi-bg-sidebar">
+    <div className="p-3 bg-neohi-bg-sidebar">
       <div className="flex items-end gap-2">
         {/* Attachment Button */}
         <Button
@@ -82,9 +82,9 @@ export function MessageInput({ onSend }: MessageInputProps) {
           size="icon"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="h-9 w-9 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
+          className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
         >
-          <Plus className="h-[18px] w-[18px]" />
+          <Plus className="h-5 w-5" />
         </Button>
 
         {/* Message Input - Telegram Style */}
@@ -93,7 +93,7 @@ export function MessageInput({ onSend }: MessageInputProps) {
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="اكتب رسالة..."
-          className="resize-none min-h-[40px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[20px] px-4 py-2.5 text-[15px] leading-[1.4]"
+          className="flex-1 resize-none min-h-[42px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
           rows={1}
         />
 
@@ -101,18 +101,18 @@ export function MessageInput({ onSend }: MessageInputProps) {
         {message.trim() ? (
           <Button
             onClick={handleSend}
-            className="h-9 w-9 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
+            className="h-10 w-10 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
             size="icon"
           >
-            <Send className="h-[18px] w-[18px]" />
+            <Send className="h-5 w-5" />
           </Button>
         ) : (
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
+            className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
           >
-            <Mic className="h-[18px] w-[18px]" />
+            <Mic className="h-5 w-5" />
           </Button>
         )}
 
