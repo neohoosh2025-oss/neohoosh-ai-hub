@@ -145,7 +145,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   };
 
   const subscribeToMessages = () => {
-    const channel = supabase
+    const messagesChannel = supabase
       .channel(`messages-${chatId}`)
       .on(
         "postgres_changes",
@@ -173,8 +173,35 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       )
       .subscribe();
 
+    // Subscribe to other user's status changes for DMs
+    let userStatusChannel: any = null;
+    if (chat?.type === "dm" && otherUserId) {
+      userStatusChannel = supabase
+        .channel(`user-status-${otherUserId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "neohi_users",
+            filter: `id=eq.${otherUserId}`,
+          },
+          (payload) => {
+            setOtherUserData((prev: any) => ({
+              ...prev,
+              is_online: payload.new.is_online,
+              last_seen: payload.new.last_seen,
+            }));
+          }
+        )
+        .subscribe();
+    }
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      if (userStatusChannel) {
+        supabase.removeChannel(userStatusChannel);
+      }
     };
   };
 
