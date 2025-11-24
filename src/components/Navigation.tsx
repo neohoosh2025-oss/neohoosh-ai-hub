@@ -48,20 +48,20 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-xl border-b border-border/50 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 sm:h-18 md:h-20">
+    <nav className="fixed top-0 w-full z-50 bg-background/98 backdrop-blur-xl border-b border-border shadow-sm">
+      <div className="container mx-auto">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo - Responsive */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+          <Link to="/" className="flex items-center gap-2 group">
             <img 
               src={neohooshLogo} 
               alt="NeoHoosh Logo" 
-              className="h-10 sm:h-12 md:h-14 w-auto transition-all duration-300 group-hover:scale-105"
+              className="h-10 md:h-14 w-auto transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {links.map((link) => (
               <Link
                 key={link.path}
@@ -115,7 +115,7 @@ const Navigation = () => {
             <ThemeToggle />
             <LanguageToggle />
             <Link to={user ? "/profile" : "/auth"}>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="h-10 w-10">
                 <User className="h-5 w-5" />
               </Button>
             </Link>
@@ -123,45 +123,46 @@ const Navigation = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
+              className="h-10 w-10"
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Menu - Optimized */}
+        {/* Mobile Menu - Enhanced */}
         {isOpen && (
-          <div className="lg:hidden pb-4 sm:pb-6 space-y-2 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="lg:hidden pb-4 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto animate-fade-in-up">
             {links.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 onClick={() => setIsOpen(false)}
-                className={`block py-3 px-4 rounded-xl text-sm sm:text-base font-medium transition-all ${
+                className={`block py-3.5 px-4 rounded-xl text-base font-medium transition-all ${
                   link.highlight
                     ? "bg-primary/10 text-primary"
                     : location.pathname === link.path
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
             
-            <div className="border-t border-border/50 my-3" />
+            <div className="border-t border-border my-3" />
             
             {user ? (
               <>
                 <Link to="/profile" onClick={() => setIsOpen(false)}>
-                  <Button variant="outline" className="w-full justify-start gap-3 py-6 text-base" size="lg">
+                  <Button variant="outline" className="w-full justify-start gap-3 py-6 text-base rounded-xl" size="lg">
                     <User className="h-5 w-5" />
                     {t("profile")}
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
-                  className="w-full justify-start gap-3 py-6 text-base"
+                  className="w-full justify-start gap-3 py-6 text-base rounded-xl"
                   size="lg"
                   onClick={() => {
                     handleLogout();
@@ -174,7 +175,7 @@ const Navigation = () => {
               </>
             ) : (
               <Link to="/auth?from=chat" onClick={() => setIsOpen(false)}>
-                <Button className="w-full py-6 text-base shadow-md" size="lg">
+                <Button className="w-full py-6 text-base shadow-md rounded-xl" size="lg">
                   {t("login")}
                 </Button>
               </Link>
