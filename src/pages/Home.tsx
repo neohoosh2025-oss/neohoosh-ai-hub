@@ -204,14 +204,14 @@ const Home = () => {
                   <ArrowLeft className="mr-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Link to="/dashboard" className="w-full sm:w-auto">
+              <Link to="/profile" className="w-full sm:w-auto">
                 <Button 
                   size="lg" 
                   variant="outline" 
                   className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 border-2 border-border/50 hover:border-primary/50 hover:bg-primary/5"
                 >
                   <Rocket className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-                  ورود به داشبورد
+                  ورود به پروفایل
                 </Button>
               </Link>
             </motion.div>

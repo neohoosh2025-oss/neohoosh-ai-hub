@@ -22,7 +22,7 @@ const Auth = () => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        navigate("/profile");
       }
     };
     checkUser();
@@ -52,7 +52,7 @@ const Auth = () => {
           title: t("contact.success") || "موفق",
           description: "حساب شما ایجاد شد. در حال ورود...",
         });
-        navigate("/dashboard");
+        navigate("/profile");
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -67,7 +67,7 @@ const Auth = () => {
           variant: "destructive",
         });
       } else {
-        navigate("/dashboard");
+        navigate("/profile");
       }
     }
     setLoading(false);
