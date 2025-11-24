@@ -78,8 +78,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     
     if (error) {
       console.error("Error marking messages as read:", error);
-    } else {
-      console.log("Messages marked as read for chat:", chatId);
     }
   };
 
