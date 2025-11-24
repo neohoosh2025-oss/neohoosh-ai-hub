@@ -129,7 +129,7 @@ export function Sidebar({
   };
 
   return (
-    <div className="h-full w-full md:w-80 lg:w-96 bg-[hsl(var(--neohi-bg-sidebar))] flex flex-col border-l border-[hsl(var(--neohi-border))]">
+    <div className="h-full w-full md:w-80 lg:w-96 bg-[hsl(var(--neohi-bg-sidebar))] flex flex-col border-r border-[hsl(var(--neohi-border))]">
       {/* Header */}
       <div className="p-4 border-b border-[hsl(var(--neohi-border))]">
         <div className="flex items-center justify-between mb-4">
