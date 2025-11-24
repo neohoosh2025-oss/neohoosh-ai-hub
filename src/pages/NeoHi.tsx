@@ -200,8 +200,7 @@ export default function NeoHi() {
           schema: "public",
           table: "neohi_messages",
         },
-        (payload) => {
-          console.log("Message change detected:", payload);
+        () => {
           loadChats();
         }
       )
@@ -212,8 +211,18 @@ export default function NeoHi() {
           schema: "public",
           table: "neohi_chat_members",
         },
-        (payload) => {
-          console.log("Chat member update detected:", payload);
+        () => {
+          loadChats();
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "neohi_chats",
+        },
+        () => {
           loadChats();
         }
       )
