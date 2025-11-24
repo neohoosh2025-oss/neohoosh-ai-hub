@@ -36,12 +36,19 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getCurrentUser();
-    loadChat();
-    loadMessages();
-    markMessagesAsRead();
-    const cleanup = subscribeToMessages();
-    return cleanup;
+    const init = async () => {
+      await getCurrentUser();
+      await loadChat();
+      await loadMessages();
+      await markMessagesAsRead();
+      const cleanup = subscribeToMessages();
+      return cleanup;
+    };
+    
+    const cleanup = init();
+    return () => {
+      cleanup.then(fn => fn && fn());
+    };
   }, [chatId]);
 
   useEffect(() => {
@@ -60,14 +67,14 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   };
 
   const markMessagesAsRead = async () => {
-    if (!currentUser) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    // Update last_read_at for this chat member
     await supabase
       .from("neohi_chat_members")
       .update({ last_read_at: new Date().toISOString() })
       .eq("chat_id", chatId)
-      .eq("user_id", currentUser.id);
+      .eq("user_id", user.id);
   };
 
   const loadChat = async () => {
