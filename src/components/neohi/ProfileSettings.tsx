@@ -155,28 +155,26 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   }
 
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden" dir="rtl">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden">
       {/* Header */}
       <motion.header
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md"
       >
-        <div className="flex items-center justify-between relative">
+        <div className="flex items-center justify-center relative">
           <Button
             variant="ghost"
             size="icon"
-            className="text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+            className="absolute left-0 text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
             onClick={onBack}
           >
             <ArrowRight className="h-6 w-6" />
           </Button>
           
-          <span className="absolute left-1/2 -translate-x-1/2 text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">
+          <span className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">
             Profile
           </span>
-          
-          <div className="w-10" />
         </div>
       </motion.header>
 
