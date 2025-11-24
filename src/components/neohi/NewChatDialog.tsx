@@ -112,7 +112,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
         }
       }
 
-      // Create new DM - DO NOT send created_by, let RLS/trigger handle it
+      // Create new DM - trigger will auto-set created_by
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
@@ -175,7 +175,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error("Not authenticated");
 
-      // DO NOT send created_by, let RLS/trigger handle it
+      // Trigger will auto-set created_by and add creator to members
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
@@ -187,14 +187,12 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
       if (chatError) throw chatError;
 
-      const members = [
-        { chat_id: chat.id, user_id: currentUser.id, role: "owner" },
-        ...selectedUsers.map((userId) => ({
-          chat_id: chat.id,
-          user_id: userId,
-          role: "member",
-        })),
-      ];
+      // Trigger already added owner, only add other members
+      const members = selectedUsers.map((userId) => ({
+        chat_id: chat.id,
+        user_id: userId,
+        role: "member",
+      }));
 
       const { error: membersError } = await supabase
         .from("neohi_chat_members")
@@ -236,7 +234,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) throw new Error("Not authenticated");
 
-      // DO NOT send created_by, let RLS/trigger handle it
+      // Trigger will auto-set created_by and add creator as owner
       const { data: chat, error: chatError } = await supabase
         .from("neohi_chats")
         .insert({
@@ -249,15 +247,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
       if (chatError) throw chatError;
 
-      const { error: memberError } = await supabase
-        .from("neohi_chat_members")
-        .insert({
-          chat_id: chat.id,
-          user_id: currentUser.id,
-          role: "owner",
-        });
-
-      if (memberError) throw memberError;
+      // No need to manually add creator - trigger handles it!
 
       toast({
         title: "Success",
