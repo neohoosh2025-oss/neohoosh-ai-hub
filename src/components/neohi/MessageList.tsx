@@ -55,7 +55,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
   }
 
   return (
-    <ScrollArea className="h-full w-full px-3 py-4 bg-[hsl(var(--neohi-bg-chat))]">
+    <div className="h-full overflow-y-auto px-3 py-4 bg-[hsl(var(--neohi-bg-chat))]">
       <div className="space-y-2 pb-4">
         <AnimatePresence initial={false}>
           {messages.map((message, index) => {
@@ -151,6 +151,6 @@ export function MessageList({ messages, loading }: MessageListProps) {
         </AnimatePresence>
         <div ref={scrollRef} />
       </div>
-    </ScrollArea>
+    </div>
   );
 }
