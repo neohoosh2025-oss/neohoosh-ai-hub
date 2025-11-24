@@ -15,6 +15,7 @@ interface MessageListProps {
 export function MessageList({ messages, loading }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     getCurrentUser();
@@ -26,7 +27,20 @@ export function MessageList({ messages, loading }: MessageListProps) {
 
   const getCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUserId(user.id);
+    if (user) {
+      setCurrentUserId(user.id);
+      
+      // Fetch current user's profile
+      const { data: profile } = await supabase
+        .from("neohi_users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (profile) {
+        setCurrentUser(profile);
+      }
+    }
   };
 
   const scrollToBottom = () => {
@@ -82,11 +96,22 @@ export function MessageList({ messages, loading }: MessageListProps) {
               >
                 {/* Avatar */}
                 <div className="w-8 h-8 flex-shrink-0">
-                  {showAvatar && message.sender && (
+                  {/* Show avatar for other users when it's the last message in sequence */}
+                  {!isOwn && showAvatar && message.sender && (
                     <Avatar className="h-8 w-8 ring-1 ring-[hsl(var(--neohi-border))]">
                       <AvatarImage src={message.sender.avatar_url || undefined} />
                       <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-[11px] font-medium">
                         {message.sender.display_name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  
+                  {/* Show avatar for own messages */}
+                  {isOwn && currentUser && (
+                    <Avatar className="h-8 w-8 ring-1 ring-[hsl(var(--neohi-border))]">
+                      <AvatarImage src={currentUser.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-[11px] font-medium">
+                        {currentUser.display_name?.charAt(0)?.toUpperCase() || "M"}
                       </AvatarFallback>
                     </Avatar>
                   )}
