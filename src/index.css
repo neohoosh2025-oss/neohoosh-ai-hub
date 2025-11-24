@@ -15,10 +15,10 @@ All colors MUST be HSL.
 
     /* ===== NEOHI LIGHT MODE COLORS ===== */
     /* Background System */
-    --neohi-bg-main: 244 247 250;           /* #F4F7FA - Main background */
+    --neohi-bg-main: 210 20% 98%;           /* #F9FAFB - Main background */
     --neohi-bg-chat: 0 0% 100%;             /* #FFFFFF - Chat panel */
-    --neohi-bg-sidebar: 238 242 247;        /* #EEF2F7 - Sidebar */
-    --neohi-bg-hover: 220 14% 96%;          /* Hover states */
+    --neohi-bg-sidebar: 210 20% 96%;        /* #F3F4F6 - Sidebar */
+    --neohi-bg-hover: 210 20% 94%;          /* Hover states */
     
     /* Text Colors */
     --neohi-text-primary: 222 47% 11%;      /* #1E293B - Primary text */
@@ -36,8 +36,8 @@ All colors MUST be HSL.
     --neohi-bubble-user-text: 214 95% 35%;  /* User bubble text */
     
     /* Borders & Dividers */
-    --neohi-border: 0 0% 0% / 0.08;         /* rgba(0,0,0,0.08) */
-    --neohi-border-light: 0 0% 0% / 0.05;   /* Lighter border */
+    --neohi-border: 220 13% 91%;            /* Light gray border */
+    --neohi-border-light: 220 13% 95%;      /* Lighter border */
     
     /* Status Colors */
     --neohi-online: 142 71% 45%;            /* Green - Online */
@@ -223,8 +223,8 @@ All colors MUST be HSL.
     --neohi-bubble-user-text: 214 100% 75%; /* Lighter user text */
     
     /* Borders & Dividers */
-    --neohi-border: 0 0% 100% / 0.08;       /* rgba(255,255,255,0.08) */
-    --neohi-border-light: 0 0% 100% / 0.05; /* Lighter border */
+    --neohi-border: 220 13% 18%;            /* Dark gray border */
+    --neohi-border-light: 220 13% 20%;      /* Lighter border */
     
     /* Status Colors */
     --neohi-online: 142 71% 55%;            /* Brighter green */
