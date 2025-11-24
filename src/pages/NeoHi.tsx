@@ -88,6 +88,7 @@ export default function NeoHi() {
       .select(`
         chat_id,
         is_muted,
+        last_read_at,
         chats:neohi_chats(
           id,
           type,
@@ -140,13 +141,30 @@ export default function NeoHi() {
               .limit(1)
               .maybeSingle();
 
-            // Get unread count
-            const { count: unreadCount } = await supabase
-              .from("neohi_messages")
-              .select("*", { count: "exact", head: true })
-              .eq("chat_id", chat.id)
-              .neq("sender_id", user.id)
-              .eq("is_deleted", false);
+            // Get unread count - messages after last_read_at
+            const chatMember = chatMembers.find((cm: any) => cm.chat_id === chat.id);
+            const lastReadAt = chatMember?.last_read_at;
+            
+            let unreadCount = 0;
+            if (lastReadAt) {
+              const { count } = await supabase
+                .from("neohi_messages")
+                .select("*", { count: "exact", head: true })
+                .eq("chat_id", chat.id)
+                .neq("sender_id", user.id)
+                .eq("is_deleted", false)
+                .gt("created_at", lastReadAt);
+              unreadCount = count || 0;
+            } else {
+              // If no last_read_at, count all messages from others
+              const { count } = await supabase
+                .from("neohi_messages")
+                .select("*", { count: "exact", head: true })
+                .eq("chat_id", chat.id)
+                .neq("sender_id", user.id)
+                .eq("is_deleted", false);
+              unreadCount = count || 0;
+            }
 
             return {
               ...chatData,
