@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, Download } from "lucide-react";
+import { CheckCheck } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
+import { VideoPlayer } from "./VideoPlayer";
 import { FileMessage } from "./FileMessage";
 
 interface MessageListProps {
@@ -127,17 +128,7 @@ export function MessageList({ messages, loading }: MessageListProps) {
 
                         {/* Videos */}
                         {message.message_type === "video" && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="relative group max-w-[280px] rounded-2xl overflow-hidden border border-[hsl(var(--neohi-border))]/50"
-                          >
-                            <video
-                              src={message.media_url}
-                              controls
-                              className="w-full h-auto bg-black/5"
-                            />
-                          </motion.div>
+                          <VideoPlayer src={message.media_url} isOwn={isOwn} />
                         )}
 
                         {/* Voice Messages */}
