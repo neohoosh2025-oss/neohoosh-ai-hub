@@ -9,6 +9,7 @@ import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
 import { Sidebar } from "@/components/neohi/Sidebar";
 import StoriesPage from "@/pages/StoriesPage";
+import BottomNavigation from "@/components/neohi/BottomNavigation";
 
 interface Chat {
   id: string;
@@ -274,6 +275,7 @@ export default function NeoHi() {
           onChatSelect={setSelectedChatId}
           onNewChat={() => setShowNewChat(true)}
         />
+        <BottomNavigation />
       </div>
 
       {/* Desktop Empty State */}
