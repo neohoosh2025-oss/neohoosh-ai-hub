@@ -49,6 +49,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
     bio?: string;
     phone?: string;
     avatar_url?: string;
+    username?: string;
   }) => {
     if (!userId) return;
 
@@ -224,12 +225,12 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                 <h3 className="text-[hsl(var(--neohi-text-primary))] font-bold text-2xl">
                   {displayName || username}
                 </h3>
-                <p className="text-[hsl(var(--neohi-text-secondary))] text-sm mt-1">
+                <p className="text-[hsl(var(--neohi-text-secondary))] text-sm mt-1" dir="ltr">
                   @{username}
                 </p>
                 {createdAt && (
                   <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
-                    Joined {new Date(createdAt).toLocaleDateString()}
+                    عضو از {new Date(createdAt).toLocaleDateString('fa-IR')}
                   </p>
                 )}
               </div>
@@ -252,14 +253,22 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               <div className="space-y-2">
                 <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
                   <AtSign className="h-4 w-4" />
-                  Username
+                  نام کاربری
                 </Label>
-                <Input
-                  value={username}
-                  disabled
-                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-secondary))] cursor-not-allowed"
-                />
-                <p className="text-[hsl(var(--neohi-text-secondary))] text-xs">Username cannot be changed</p>
+                <div className="relative">
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(var(--neohi-text-secondary))]">
+                    @
+                  </span>
+                  <Input
+                    value={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      autoSave({ username: e.target.value });
+                    }}
+                    className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] pr-8"
+                    dir="ltr"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
