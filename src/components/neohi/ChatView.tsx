@@ -244,12 +244,8 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       {/* Messages */}
       <MessageList messages={messages} loading={loading} />
 
-      {/* Message Input - Always show for DM and Group */}
-      <div className="border-t border-[hsl(var(--neohi-border))]">
-        {(chat.type === "dm" || chat.type === "group") && (
-          <MessageInput onSend={handleSendMessage} />
-        )}
-      </div>
+      {/* Spacer for bottom input */}
+      <div className="h-[72px]"></div>
 
       {/* Info Panel */}
       <AnimatePresence>
