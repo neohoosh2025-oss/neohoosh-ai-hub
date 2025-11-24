@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, MessageCircle, Phone, Video, Image as ImageIcon, FileText, Link2, Trash2, Ban, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ArrowLeft, MessageCircle, Phone, Video, Image as ImageIcon, FileText, Link2, Trash2, Ban, AlertTriangle, X } from "lucide-react";
 import { motion } from "framer-motion";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileProps {
   userId: string;
@@ -15,6 +16,7 @@ interface UserProfileProps {
 export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps) {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -91,12 +93,17 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
       {/* Hero Avatar - Overlapping Cover */}
       <div className="px-6 -mt-16 mb-6">
         <div className="flex flex-col items-center">
-          <Avatar className="h-32 w-32 ring-4 ring-neohi-bg-main shadow-2xl">
-            <AvatarImage src={user.avatar_url || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-primary text-white text-4xl font-bold">
-              {user.display_name?.charAt(0)?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <div 
+            className="cursor-pointer"
+            onClick={() => user.avatar_url && setShowAvatarDialog(true)}
+          >
+            <Avatar className="h-32 w-32 ring-4 ring-neohi-bg-main shadow-2xl">
+              <AvatarImage src={user.avatar_url || undefined} />
+              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-primary text-white text-4xl font-bold">
+                {user.display_name?.charAt(0)?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           <h2 className="text-2xl font-bold text-neohi-text-primary mt-4">
             {user.display_name || "کاربر"}
           </h2>
@@ -225,6 +232,27 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
           گزارش کاربر
         </Button>
       </div>
+
+      {/* Avatar Dialog */}
+      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none overflow-hidden">
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <button
+              onClick={() => setShowAvatarDialog(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <motion.img 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              src={user.avatar_url} 
+              alt="Profile" 
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
