@@ -129,7 +129,7 @@ export function Sidebar({
   };
 
   return (
-    <div className="h-full w-full md:w-80 lg:w-96 bg-neohi-bg-sidebar flex flex-col border-r border-neohi-border" dir="ltr">
+    <div className="h-full w-full md:w-80 lg:w-96 bg-neohi-bg-sidebar flex flex-col border-l border-neohi-border">
       {/* Header */}
       <div className="p-4 border-b border-neohi-border">
         <div className="flex items-center justify-between mb-4">
