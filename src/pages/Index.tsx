@@ -76,7 +76,7 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section - Modern Futuristic */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      <section className="relative pt-28 md:pt-32 pb-24 md:pb-32 overflow-hidden">
         {/* Animated Background */}
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0" style={{ background: 'var(--gradient-mesh)' }} />
@@ -88,15 +88,15 @@ const Index = () => {
             initial="initial"
             animate="animate"
             variants={staggerContainer}
-            className="max-w-6xl mx-auto text-center space-y-8"
+            className="max-w-6xl mx-auto text-center space-y-6 md:space-y-8"
           >
             {/* Logo */}
-            <motion.div variants={fadeInUp} className="flex justify-center mb-4">
+            <motion.div variants={fadeInUp} className="flex justify-center mb-2 md:mb-4">
               <div className="relative">
                 <img 
                   src={logo} 
                   alt="NeoHoosh" 
-                  className="w-24 h-24 md:w-32 md:h-32 drop-shadow-2xl"
+                  className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 drop-shadow-2xl"
                 />
                 <div className="absolute inset-0 bg-primary/20 blur-3xl animate-pulse"></div>
               </div>
@@ -104,8 +104,8 @@ const Index = () => {
 
             {/* Badge */}
             <motion.div variants={fadeInUp} className="flex justify-center">
-              <Badge className="px-6 py-2.5 text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
-                <Sparkles className="w-4 h-4 ml-2 animate-pulse" />
+              <Badge className="px-5 py-2 md:px-6 md:py-2.5 text-sm md:text-base shadow-glow bg-primary/10 border-primary/30 text-primary hover:bg-primary/20">
+                <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4 ml-2 animate-pulse" />
                 نسل جدید هوش مصنوعی
               </Badge>
             </motion.div>
@@ -113,7 +113,7 @@ const Index = () => {
             {/* Main Heading - Emotional & Powerful */}
             <motion.h1 
               variants={fadeInUp}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold leading-tight font-display"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight font-display px-4"
             >
               <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
                 نسل جدید هوش مصنوعی
@@ -127,7 +127,7 @@ const Index = () => {
             {/* Sub Heading */}
             <motion.p 
               variants={fadeInUp}
-              className="text-xl md:text-2xl lg:text-3xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed font-light px-4"
             >
               ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد.
             </motion.p>
