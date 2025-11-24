@@ -160,7 +160,7 @@ const Home = () => {
             {/* Sub Heading - Readable on Mobile */}
             <motion.p 
               variants={fadeInUp}
-              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light px-2"
+              className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed font-light px-2 mb-6 sm:mb-8"
             >
               ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد
             </motion.p>
@@ -195,7 +195,7 @@ const Home = () => {
             {/* CTA Buttons - Mobile Friendly */}
             <motion.div 
               variants={fadeInUp}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center pt-4 sm:pt-6 px-2"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center pt-8 sm:pt-10 px-2"
             >
               <Link to="/chat" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 shadow-glow-strong hover:shadow-glow-accent-strong transition-all group">
