@@ -177,7 +177,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           </Button>
           
           <span className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">
-            اطلاعات کاربر
+            Profile
           </span>
         </div>
       </motion.header>
