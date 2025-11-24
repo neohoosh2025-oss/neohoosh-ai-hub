@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, MessageCircle, Home } from "lucide-react";
+import { Search, Plus, MessageCircle, Home, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,6 +36,7 @@ export function Sidebar({
   onChatSelect, 
   onNewChat
 }: SidebarProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredChats = chats.filter((chat) =>
@@ -220,6 +221,18 @@ export function Sidebar({
           )}
         </AnimatePresence>
       </ScrollArea>
+
+      {/* Settings Button at Bottom */}
+      <div className="p-4 border-t border-[hsl(var(--neohi-border))]">
+        <Button
+          onClick={() => navigate("/neohi?tab=settings")}
+          variant="ghost"
+          className="w-full justify-start gap-3 h-12 hover:bg-[hsl(var(--neohi-bg-hover))] text-[hsl(var(--neohi-text-primary))]"
+        >
+          <Settings className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))]" />
+          <span className="font-medium">تنظیمات</span>
+        </Button>
+      </div>
     </div>
   );
 }
