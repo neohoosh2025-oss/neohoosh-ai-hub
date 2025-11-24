@@ -255,20 +255,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                   <AtSign className="h-4 w-4" />
                   نام کاربری
                 </Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[hsl(var(--neohi-text-secondary))]">
-                    @
-                  </span>
-                  <Input
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      autoSave({ username: e.target.value });
-                    }}
-                    className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] pl-8"
-                    dir="ltr"
-                  />
-                </div>
+                <Input
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    autoSave({ username: e.target.value });
+                  }}
+                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))]"
+                  dir="ltr"
+                />
               </div>
 
               <div className="space-y-2">
