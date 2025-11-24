@@ -162,7 +162,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         animate={{ y: 0, opacity: 1 }}
         className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md"
       >
-        <div className="flex items-center justify-start">
+        <div className="flex items-center justify-between relative">
           <Button
             variant="ghost"
             size="icon"
@@ -171,6 +171,12 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           >
             <ArrowRight className="h-6 w-6" />
           </Button>
+          
+          <span className="absolute left-1/2 -translate-x-1/2 text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">
+            Profile
+          </span>
+          
+          <div className="w-10" />
         </div>
       </motion.header>
 
