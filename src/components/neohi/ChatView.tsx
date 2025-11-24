@@ -40,8 +40,11 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
   useEffect(() => {
     const init = async () => {
-      await getCurrentUser();
-      await loadChat();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser(user);
+        await loadChatWithUser(user);
+      }
       await loadMessages();
       await markMessagesAsRead();
       const cleanup = subscribeToMessages();
@@ -84,7 +87,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     }
   };
 
-  const loadChat = async () => {
+  const loadChatWithUser = async (user: any) => {
     const { data } = await supabase
       .from("neohi_chats")
       .select("*")
@@ -95,13 +98,13 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       let chatData: any = { ...data };
 
       // For DMs, get the other user's info
-      if (data.type === "dm" && currentUser) {
+      if (data.type === "dm" && user) {
         const { data: members } = await supabase
           .from("neohi_chat_members")
           .select("user_id")
           .eq("chat_id", chatId);
 
-        const otherUid = members?.find((m: any) => m.user_id !== currentUser.id)?.user_id;
+        const otherUid = members?.find((m: any) => m.user_id !== user.id)?.user_id;
         
         if (otherUid) {
           setOtherUserId(otherUid);
