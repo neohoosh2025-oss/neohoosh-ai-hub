@@ -226,7 +226,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
                   {displayName || username}
                 </h3>
                 <p className="text-[hsl(var(--neohi-text-secondary))] text-sm mt-1" dir="ltr">
-                  @{username}
+                  {username}
                 </p>
                 {createdAt && (
                   <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
