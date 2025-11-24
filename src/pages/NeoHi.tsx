@@ -255,7 +255,7 @@ export default function NeoHi() {
 
   // Main View - Sidebar + Welcome Screen
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex overflow-hidden">
+    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex overflow-hidden" dir="ltr">
       {/* Sidebar */}
       <Sidebar
         chats={chats}
