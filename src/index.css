@@ -13,41 +13,44 @@ All colors MUST be HSL.
        Modern Messenger Platform
        ======================================== */
 
-    /* ===== NEOHI LIGHT MODE COLORS ===== */
-    /* Background System */
-    --neohi-bg-main: 220 15% 95%;           /* #F1F2F4 - Main background */
-    --neohi-bg-chat: 220 15% 98%;           /* #FAFBFC - Chat panel */
-    --neohi-bg-sidebar: 220 15% 93%;        /* #ECEDEF - Sidebar */
-    --neohi-bg-hover: 220 15% 90%;          /* Hover states */
+    /* ===== NEOHI MODERN DESIGN SYSTEM ===== */
+    /* Background System - Ultra Clean */
+    --neohi-bg-main: 0 0% 100%;              /* Pure white background */
+    --neohi-bg-chat: 210 20% 98%;            /* #F8FAFC - Ultra light blue */
+    --neohi-bg-sidebar: 0 0% 100%;           /* White sidebar */
+    --neohi-bg-hover: 210 25% 96%;           /* Light hover */
+    --neohi-bg-message: 0 0% 100%;           /* White message bg */
     
-    /* Text Colors */
-    --neohi-text-primary: 222 47% 11%;      /* #1E293B - Primary text */
-    --neohi-text-secondary: 220 9% 46%;     /* #6B7785 - Secondary text */
-    --neohi-text-muted: 220 9% 60%;         /* Muted text */
+    /* Text Colors - High Contrast */
+    --neohi-text-primary: 222 47% 11%;       /* #0F172A - Deep text */
+    --neohi-text-secondary: 215 16% 47%;     /* #64748B - Medium text */
+    --neohi-text-muted: 215 20% 65%;         /* #94A3B8 - Light text */
     
-    /* Accent & Brand */
-    --neohi-accent: 214 95% 62%;            /* #4C8BF5 - Main accent blue */
-    --neohi-accent-hover: 214 95% 55%;      /* Darker accent */
-    --neohi-accent-light: 214 100% 97%;     /* #E7F1FF - Light accent bg */
+    /* Accent & Brand - Vibrant Blue */
+    --neohi-accent: 221 83% 53%;             /* #2563EB - Vibrant blue */
+    --neohi-accent-hover: 221 83% 48%;       /* Darker on hover */
+    --neohi-accent-light: 221 100% 96%;      /* #EFF6FF - Light bg */
+    --neohi-accent-gradient: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
     
-    /* Chat Bubbles */
-    --neohi-bubble-user: 214 100% 97%;      /* #E7F1FF - User bubble */
-    --neohi-bubble-other: 220 15% 96%;      /* Light gray - Other bubble */
-    --neohi-bubble-user-text: 214 95% 35%;  /* User bubble text */
+    /* Chat Bubbles - Modern Contrast */
+    --neohi-bubble-sent: 221 83% 53%;        /* Blue bubble for sent */
+    --neohi-bubble-received: 210 20% 96%;    /* Light gray for received */
+    --neohi-bubble-sent-text: 0 0% 100%;     /* White text on blue */
+    --neohi-bubble-received-text: 222 47% 11%; /* Dark text on light */
     
-    /* Borders & Dividers */
-    --neohi-border: 220 13% 88%;            /* Light gray border */
-    --neohi-border-light: 220 13% 92%;      /* Lighter border */
+    /* Borders & Dividers - Subtle */
+    --neohi-border: 214 32% 91%;             /* #E2E8F0 - Subtle border */
+    --neohi-border-light: 210 20% 96%;       /* Ultra subtle */
     
     /* Status Colors */
-    --neohi-online: 142 71% 45%;            /* Green - Online */
-    --neohi-unread: 0 72% 51%;              /* Red - Unread badge */
+    --neohi-online: 142 76% 36%;             /* #10B981 - Green */
+    --neohi-typing: 221 83% 53%;             /* Blue typing */
     
-    /* Shadows */
-    --neohi-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --neohi-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --neohi-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --neohi-shadow-chat: 0 2px 8px rgb(0 0 0 / 0.04);
+    /* Shadows - Modern Depth */
+    --neohi-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+    --neohi-shadow-md: 0 2px 8px 0 rgb(0 0 0 / 0.04);
+    --neohi-shadow-lg: 0 8px 16px -4px rgb(0 0 0 / 0.08);
+    --neohi-shadow-message: 0 1px 2px 0 rgb(0 0 0 / 0.04);
 
     /* ===== ORIGINAL NEOHOOSH COLORS (Keep for compatibility) ===== */
     --primary-50: 195 92% 95%;
@@ -200,35 +203,38 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* ===== NEOHI DARK MODE COLORS ===== */
+    /* ===== NEOHI DARK MODE - PREMIUM ===== */
     /* Background System */
-    --neohi-bg-main: 217 19% 7%;            /* #111315 - Main background */
-    --neohi-bg-sidebar: 220 18% 10%;        /* #181A1D - Sidebar */
-    --neohi-bg-chat: 218 17% 13%;           /* #1F2226 - Chat panel */
-    --neohi-bg-hover: 220 14% 16%;          /* Hover states */
+    --neohi-bg-main: 222 47% 4%;             /* #06070A - Deep dark */
+    --neohi-bg-sidebar: 220 26% 7%;          /* #0D1015 - Sidebar dark */
+    --neohi-bg-chat: 218 28% 9%;             /* #11151B - Chat dark */
+    --neohi-bg-hover: 215 28% 12%;           /* Hover dark */
+    --neohi-bg-message: 220 24% 11%;         /* Message bg dark */
     
     /* Text Colors */
-    --neohi-text-primary: 0 0% 90%;         /* #E5E5E5 - Primary text */
-    --neohi-text-secondary: 220 9% 62%;     /* #9CA3AF - Secondary text */
-    --neohi-text-muted: 220 9% 50%;         /* Muted text */
+    --neohi-text-primary: 210 40% 98%;       /* #F8FAFC - Light text */
+    --neohi-text-secondary: 215 20% 65%;     /* #94A3B8 - Medium text */
+    --neohi-text-muted: 215 16% 47%;         /* #64748B - Muted text */
     
-    /* Accent & Brand (Same in dark) */
-    --neohi-accent: 214 95% 62%;            /* #4C8BF5 */
-    --neohi-accent-hover: 214 95% 70%;      /* Lighter on hover in dark */
-    --neohi-accent-light: 214 50% 15%;      /* Dark accent bg */
+    /* Accent & Brand */
+    --neohi-accent: 217 91% 60%;             /* #3B82F6 - Bright blue */
+    --neohi-accent-hover: 217 91% 65%;       /* Lighter on hover */
+    --neohi-accent-light: 221 39% 11%;       /* #0F1729 - Dark accent bg */
+    --neohi-accent-gradient: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
     
     /* Chat Bubbles */
-    --neohi-bubble-user: 214 44% 18%;       /* #24344E - User bubble */
-    --neohi-bubble-other: 220 15% 15%;      /* #26282D - Other bubble */
-    --neohi-bubble-user-text: 214 100% 75%; /* Lighter user text */
+    --neohi-bubble-sent: 217 91% 60%;        /* Blue bubble */
+    --neohi-bubble-received: 220 24% 13%;    /* Dark gray bubble */
+    --neohi-bubble-sent-text: 0 0% 100%;     /* White text */
+    --neohi-bubble-received-text: 210 40% 98%; /* Light text */
     
     /* Borders & Dividers */
-    --neohi-border: 220 13% 18%;            /* Dark gray border */
-    --neohi-border-light: 220 13% 20%;      /* Lighter border */
+    --neohi-border: 217 33% 17%;             /* #1E293B - Border */
+    --neohi-border-light: 220 24% 11%;       /* Subtle border */
     
     /* Status Colors */
-    --neohi-online: 142 71% 55%;            /* Brighter green */
-    --neohi-unread: 0 72% 60%;              /* Brighter red */
+    --neohi-online: 142 76% 36%;             /* #10B981 - Green */
+    --neohi-typing: 217 91% 60%;             /* Blue typing */
 
     /* Original Dark Mode */
     --background: 222 47% 4%;
@@ -453,13 +459,13 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  /* Safe Area Support */
+  /* Safe Area Support - iOS Devices */
   .safe-area-top {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(env(safe-area-inset-top), 0.75rem);
   }
   
   .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
   }
   
   .safe-area-left {
@@ -471,10 +477,36 @@ All colors MUST be HSL.
   }
   
   .safe-area-inset {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: max(env(safe-area-inset-top), 0.75rem);
+    padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+  }
+
+  /* Mobile Optimizations */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  @media (max-width: 768px) {
+    * {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+    
+    body {
+      overflow-x: hidden;
+      overscroll-behavior-y: none;
+    }
+    
+    input, textarea {
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
   }
 
   /* ===== PREMIUM EFFECTS ===== */

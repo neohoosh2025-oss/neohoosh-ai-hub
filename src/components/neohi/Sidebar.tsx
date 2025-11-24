@@ -68,58 +68,60 @@ export function Sidebar({
 
     return (
       <motion.button
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        whileHover={{ backgroundColor: "hsl(var(--neohi-bg-hover))" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => onChatSelect(chat.id)}
         className={cn(
-          "w-full px-3 md:px-4 py-2.5 md:py-3 flex items-start gap-2.5 md:gap-3 transition-colors relative",
-          "border-b border-neohi-border active:bg-neohi-bg-hover",
-          isSelected && "bg-neohi-accent-light"
+          "w-full px-4 py-3.5 flex items-center gap-3 transition-all duration-200 relative group",
+          "hover:bg-neohi-bg-hover active:bg-neohi-bg-chat",
+          isSelected && "bg-neohi-accent-light border-r-2 border-neohi-accent"
         )}
       >
-        {/* Avatar - Mobile Optimized */}
+        {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-neohi-accent to-primary flex items-center justify-center overflow-hidden">
+          <div className={cn(
+            "w-14 h-14 rounded-full flex items-center justify-center overflow-hidden transition-transform duration-200 group-hover:scale-105",
+            chat.avatar_url ? "bg-neohi-bg-hover" : "bg-gradient-to-br from-neohi-accent to-blue-600"
+          )}>
             {chat.avatar_url ? (
               <img src={chat.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              <MessageCircle className="w-5 h-5 md:w-6 md:h-6 text-white" />
+              <MessageCircle className="w-6 h-6 text-white" />
             )}
           </div>
           {chat.is_online && (
-            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 md:w-3 md:h-3 bg-neohi-online border-2 border-neohi-bg-sidebar rounded-full" />
+            <div className="absolute bottom-0.5 left-0.5 w-3.5 h-3.5 bg-neohi-online border-2 border-neohi-bg-sidebar rounded-full" />
           )}
         </div>
 
-        {/* Content - Mobile Optimized */}
-        <div className="flex-1 min-w-0 text-left">
-          <div className="flex items-center justify-between mb-0.5">
+        {/* Content */}
+        <div className="flex-1 min-w-0 text-right">
+          <div className="flex items-center justify-between mb-1">
             <h3 className={cn(
-              "font-medium text-sm truncate",
+              "font-semibold text-base truncate",
               hasUnread 
-                ? "text-neohi-text-primary font-semibold" 
+                ? "text-neohi-text-primary" 
                 : "text-neohi-text-primary"
             )}>
-              {chat.name || "Unknown"}
+              {chat.name || "ناشناس"}
             </h3>
-            <span className="text-[10px] md:text-xs text-neohi-text-secondary ml-2 flex-shrink-0">
+            <span className="text-xs text-neohi-text-muted mr-2 flex-shrink-0">
               {getTimeDisplay(chat.last_message_at)}
             </span>
           </div>
           
           <div className="flex items-center justify-between gap-2">
             <p className={cn(
-              "text-xs md:text-sm truncate",
+              "text-sm truncate flex-1",
               hasUnread
                 ? "text-neohi-text-primary font-medium"
                 : "text-neohi-text-secondary"
             )}>
-              {chat.last_message?.content || "No messages yet"}
+              {chat.last_message?.content || "هنوز پیامی نیست"}
             </p>
             {hasUnread && (
-              <div className="ml-2 w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 animate-pulse" />
+              <div className="mr-2 w-2 h-2 bg-neohi-accent rounded-full flex-shrink-0" />
             )}
           </div>
         </div>
@@ -128,51 +130,46 @@ export function Sidebar({
   };
 
   return (
-    <div className="h-full w-full md:w-80 lg:w-96 bg-neohi-bg-sidebar flex flex-col">
-      {/* Header - Mobile Optimized */}
-      <div className="p-3 md:p-4 border-b border-neohi-border bg-neohi-bg-sidebar sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-neohi-accent to-primary flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
-            </div>
-            <h1 className="text-lg md:text-xl font-bold text-neohi-text-primary">NeoHi</h1>
-          </div>
+    <div className="h-full w-full md:w-80 lg:w-96 bg-neohi-bg-sidebar flex flex-col border-l border-neohi-border">
+      {/* Header - Clean & Modern */}
+      <div className="px-4 pt-5 pb-4 border-b border-neohi-border bg-neohi-bg-sidebar sticky top-0 z-10 safe-area-top">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-neohi-text-primary">پیام‌ها</h1>
           
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             <Link to="/">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 md:h-9 md:w-9 rounded-xl hover:bg-neohi-bg-hover text-neohi-accent"
+                className="h-10 w-10 rounded-full hover:bg-neohi-bg-hover text-neohi-text-secondary transition-all"
               >
-                <Home className="h-4 w-4 md:h-5 md:w-5" />
+                <Home className="h-5 w-5" />
               </Button>
             </Link>
             <Button
               variant="ghost"
               size="icon"
               onClick={onNewChat}
-              className="h-8 w-8 md:h-9 md:w-9 rounded-xl hover:bg-neohi-bg-hover text-neohi-accent"
+              className="h-10 w-10 rounded-full bg-neohi-accent text-white hover:bg-neohi-accent-hover transition-all shadow-md"
             >
-              <Plus className="h-4 w-4 md:h-5 md:w-5" />
+              <Plus className="h-5 w-5" />
             </Button>
           </div>
         </div>
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neohi-text-secondary" />
+          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neohi-text-muted" />
           <Input
-            placeholder="Search chats..."
+            placeholder="جستجو..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-neohi-bg-hover border-none text-neohi-text-primary placeholder:text-neohi-text-muted h-9 md:h-10 rounded-xl text-sm"
+            className="pr-10 bg-neohi-bg-hover border-transparent text-neohi-text-primary placeholder:text-neohi-text-muted h-11 rounded-full text-sm focus:bg-neohi-bg-chat focus:border-neohi-accent transition-all"
           />
         </div>
       </div>
 
-      {/* Chat List - Mobile Optimized */}
+      {/* Chat List */}
       <ScrollArea className="flex-1">
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (
@@ -183,20 +180,20 @@ export function Sidebar({
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center h-64 p-6 text-center"
             >
-              <MessageCircle className="h-12 w-12 md:h-16 md:w-16 text-neohi-text-muted mb-3" />
-              <p className="text-neohi-text-secondary text-sm">
-                {searchQuery ? "No chats found" : "No chats yet"}
+              <MessageCircle className="h-16 w-16 text-neohi-text-muted mb-4 opacity-50" />
+              <p className="text-neohi-text-secondary text-base font-medium">
+                {searchQuery ? "چتی پیدا نشد" : "هنوز چتی ندارید"}
               </p>
-              <p className="text-neohi-text-muted text-xs mt-1">
-                Click + to start a conversation
+              <p className="text-neohi-text-muted text-sm mt-2">
+                برای شروع گفتگو روی + کلیک کنید
               </p>
             </motion.div>
           ) : (
-            <div key="chats" className="pb-16 md:pb-0">
+            <div key="chats" className="pb-20 md:pb-4">
               {pinnedChats.length > 0 && (
                 <div>
-                  <div className="px-3 md:px-4 py-2 text-xs font-medium text-neohi-text-muted uppercase tracking-wider bg-neohi-bg-sidebar sticky top-0">
-                    Pinned
+                  <div className="px-4 py-2 text-xs font-semibold text-neohi-text-muted uppercase tracking-wider bg-neohi-bg-sidebar sticky top-0">
+                    سنجاق‌شده
                   </div>
                   {pinnedChats.map((chat) => (
                     <ChatItem key={chat.id} chat={chat} />
@@ -207,8 +204,8 @@ export function Sidebar({
               {regularChats.length > 0 && (
                 <div>
                   {pinnedChats.length > 0 && (
-                    <div className="px-3 md:px-4 py-2 text-xs font-medium text-neohi-text-muted uppercase tracking-wider bg-neohi-bg-sidebar sticky top-0">
-                      All Chats
+                    <div className="px-4 py-2 text-xs font-semibold text-neohi-text-muted uppercase tracking-wider bg-neohi-bg-sidebar sticky top-0">
+                      همه چت‌ها
                     </div>
                   )}
                   {regularChats.map((chat) => (
@@ -221,24 +218,24 @@ export function Sidebar({
         </AnimatePresence>
       </ScrollArea>
 
-      {/* Bottom Navigation - Mobile Optimized */}
-      <div className="p-2 md:p-3 border-t border-neohi-border bg-neohi-bg-sidebar">
+      {/* Bottom Navigation */}
+      <div className="p-3 border-t border-neohi-border bg-neohi-bg-sidebar safe-area-bottom">
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={() => navigate("/neohi?tab=contacts")}
             variant="ghost"
-            className="justify-center gap-2 h-10 md:h-12 hover:bg-neohi-accent hover:text-white transition-all duration-300 text-neohi-text-primary rounded-xl group"
+            className="justify-center gap-2 h-12 hover:bg-neohi-accent hover:text-white transition-all duration-200 text-neohi-text-primary rounded-xl group"
           >
-            <Users className="h-4 w-4 md:h-5 md:w-5 text-neohi-accent group-hover:text-white transition-colors" />
-            <span className="font-medium text-xs md:text-sm">Contacts</span>
+            <Users className="h-5 w-5 text-neohi-accent group-hover:text-white transition-colors" />
+            <span className="font-medium text-sm">مخاطبین</span>
           </Button>
           <Button
             onClick={() => navigate("/neohi?tab=settings")}
             variant="ghost"
-            className="justify-center gap-2 h-10 md:h-12 hover:bg-neohi-accent hover:text-white transition-all duration-300 text-neohi-text-primary rounded-xl group"
+            className="justify-center gap-2 h-12 hover:bg-neohi-accent hover:text-white transition-all duration-200 text-neohi-text-primary rounded-xl group"
           >
-            <Settings className="h-4 w-4 md:h-5 md:w-5 text-neohi-accent group-hover:text-white transition-colors" />
-            <span className="font-medium text-xs md:text-sm">Settings</span>
+            <Settings className="h-5 w-5 text-neohi-accent group-hover:text-white transition-colors" />
+            <span className="font-medium text-sm">تنظیمات</span>
           </Button>
         </div>
       </div>
