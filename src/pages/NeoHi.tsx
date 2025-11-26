@@ -8,6 +8,7 @@ import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
 import { Sidebar } from "@/components/neohi/Sidebar";
+import ChatBot from "@/components/ChatBot";
 import StoriesPage from "@/pages/StoriesPage";
 
 interface Chat {
@@ -387,6 +388,9 @@ export default function NeoHi() {
           setShowNewChat(false);
         }}
       />
+
+      {/* ChatBot - NEOHoosh AI Assistant */}
+      <ChatBot />
     </div>
   );
 }

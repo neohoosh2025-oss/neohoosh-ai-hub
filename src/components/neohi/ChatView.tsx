@@ -375,6 +375,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
             onSend={handleSendMessage}
             replyMessage={replyMessage}
             onCancelReply={() => setReplyMessage(null)}
+            chatId={chatId}
           />
         </div>
       )}
