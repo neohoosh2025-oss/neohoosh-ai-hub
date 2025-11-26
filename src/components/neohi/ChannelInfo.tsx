@@ -310,25 +310,27 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
       </Dialog>
 
       {/* Avatar Dialog */}
-      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none overflow-hidden">
-          <div className="relative w-full h-full flex items-center justify-center p-4">
-            <button
-              onClick={() => setShowAvatarDialog(false)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm"
-            >
-              <X className="h-6 w-6" />
-            </button>
-            <motion.img 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              src={chat.avatar_url} 
-              alt="Channel" 
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {chat?.avatar_url && (
+        <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+          <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-none overflow-hidden">
+            <div className="relative w-full h-full flex items-center justify-center p-4">
+              <button
+                onClick={() => setShowAvatarDialog(false)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              <motion.img 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src={chat.avatar_url} 
+                alt="Channel" 
+                className="max-w-full max-h-full object-contain rounded-lg"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </AnimatePresence>
   );
 }
