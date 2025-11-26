@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ForwardDialog } from "./ForwardDialog";
-import { AIMessageMenu } from "./AIMessageMenu";
 
 interface MessageListProps {
   messages: any[];
@@ -173,22 +172,8 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                       </span>
                     )}
                     
-                    {/* AI Message Menu or Regular Menu */}
-                    {message.is_ai_message ? (
-                      <AIMessageMenu 
-                        message={message}
-                        isOwn={isOwn}
-                        onAction={(action, result) => {
-                          if (action === "followup") {
-                            onReply?.(message);
-                          } else if (result?.text) {
-                            // Handle enhanced response
-                            toast.success("پاسخ جدید دریافت شد");
-                          }
-                        }}
-                      />
-                    ) : (
-                      <DropdownMenu>
+                    {/* Delete Menu */}
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
@@ -233,7 +218,6 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    )}
                   </div>
                   
                   <motion.div
