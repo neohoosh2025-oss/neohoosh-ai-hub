@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ForwardDialog } from "./ForwardDialog";
+import { AIMessageMenu } from "./AIMessageMenu";
+import { NEOHI_BOT_ID } from "@/constants/neohi";
 
 interface MessageListProps {
   messages: any[];
@@ -172,52 +174,67 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                       </span>
                     )}
                     
-                    {/* Delete Menu */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className={`h-6 w-6 p-0 opacity-0 group-hover/message:opacity-100 transition-opacity ${
-                            isOwn ? "order-first" : "order-last ml-auto"
-                          }`}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align={isOwn ? "end" : "start"}>
-                        <DropdownMenuItem
-                          onClick={() => onReply?.(message)}
-                          className="gap-2"
-                        >
-                          <Reply className="h-4 w-4" />
-                          <span>ریپلای</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setForwardMessage(message)}
-                          className="gap-2"
-                        >
-                          <Forward className="h-4 w-4" />
-                          <span>فوروارد</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteForMe(message.id)}
-                          className="gap-2"
-                        >
-                          <Trash className="h-4 w-4" />
-                          <span>حذف برای من</span>
-                        </DropdownMenuItem>
-                        {isOwn && (
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteForEveryone(message.id)}
-                            className="gap-2 text-destructive focus:text-destructive"
+                    {/* AI Message Menu or Regular Menu */}
+                    {message.sender_id === NEOHI_BOT_ID ? (
+                      <AIMessageMenu 
+                        message={message}
+                        isOwn={isOwn}
+                        onAction={(action, result) => {
+                          if (action === "followup") {
+                            onReply?.(message);
+                          } else if (result?.text) {
+                            // Handle enhanced response
+                            toast.success("پاسخ جدید دریافت شد");
+                          }
+                        }}
+                      />
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-6 w-6 p-0 opacity-0 group-hover/message:opacity-100 transition-opacity ${
+                              isOwn ? "order-first" : "order-last ml-auto"
+                            }`}
                           >
-                            <Trash2 className="h-4 w-4" />
-                            <span>حذف برای همه</span>
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={isOwn ? "end" : "start"}>
+                          <DropdownMenuItem
+                            onClick={() => onReply?.(message)}
+                            className="gap-2"
+                          >
+                            <Reply className="h-4 w-4" />
+                            <span>ریپلای</span>
                           </DropdownMenuItem>
-                        )}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem
+                            onClick={() => setForwardMessage(message)}
+                            className="gap-2"
+                          >
+                            <Forward className="h-4 w-4" />
+                            <span>فوروارد</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteForMe(message.id)}
+                            className="gap-2"
+                          >
+                            <Trash className="h-4 w-4" />
+                            <span>حذف برای من</span>
+                          </DropdownMenuItem>
+                          {isOwn && (
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteForEveryone(message.id)}
+                              className="gap-2 text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>حذف برای همه</span>
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                   
                   <motion.div
