@@ -305,6 +305,16 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
       });
 
       if (error) {
+        // Check if it's a payment error (402)
+        if (error.message?.includes('Payment required') || error.message?.includes('402')) {
+          toast({
+            title: "💳 نیاز به شارژ اعتبار",
+            description: "لطفاً برای استفاده از AI، اعتبار Lovable AI خود را شارژ کنید",
+            variant: "destructive",
+            duration: 6000,
+          });
+          return;
+        }
         throw error;
       }
 
@@ -346,6 +356,16 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
       });
 
       if (error) {
+        // Check if it's a payment error (402)
+        if (error.message?.includes('Payment required') || error.message?.includes('402')) {
+          toast({
+            title: "💳 نیاز به شارژ اعتبار",
+            description: "لطفاً برای تولید تصویر با AI، اعتبار Lovable AI خود را شارژ کنید",
+            variant: "destructive",
+            duration: 6000,
+          });
+          return;
+        }
         throw error;
       }
 
