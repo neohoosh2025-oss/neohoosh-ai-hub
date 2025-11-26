@@ -20,6 +20,7 @@ import {
   Bell,
   Palette,
   Globe,
+  Sparkles,
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -335,6 +336,14 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
             </h4>
 
             <div className="space-y-2">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/ai-settings')}
+                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
+              >
+                <Sparkles className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
+                تنظیمات AI Assistant
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"

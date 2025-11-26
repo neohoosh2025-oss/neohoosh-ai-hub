@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 import MemoryManagement from "./pages/MemoryManagement";
 import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
+import AISettings from "./pages/AISettings";
 import DesignSystem from "./pages/DesignSystem";
 import Pricing from "./pages/Pricing";
 import Tools from "./pages/Tools";
@@ -43,6 +44,7 @@ const App = () => (
             <Routes>
               {/* Full-screen routes without Navigation/Footer */}
               <Route path="/neohi" element={<NeoHi />} />
+              <Route path="/ai-settings" element={<AISettings />} />
               <Route path="/design-system" element={<DesignSystem />} />
               <Route path="/chat" element={<Chat />} />
               
