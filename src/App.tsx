@@ -8,31 +8,41 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import { PageTransition } from "./components/PageTransition";
+import { lazy, Suspense } from "react";
 
+// Eager load only critical pages
 import Home from "./pages/Home";
-import Articles from "./pages/Articles";
-import ArticleDetail from "./pages/ArticleDetail";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import Services from "./pages/Services";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Chat from "./pages/Chat";
-import Admin from "./pages/Admin";
-import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
-import Profile from "./pages/Profile";
 
-import MemoryManagement from "./pages/MemoryManagement";
-import AdminTranslate from "./pages/AdminTranslate";
-import NeoHi from "./pages/NeoHi";
-import DesignSystem from "./pages/DesignSystem";
-import Pricing from "./pages/Pricing";
-import Tools from "./pages/Tools";
-import ImageGenerator from "./pages/ImageGenerator";
-import VoiceToText from "./pages/VoiceToText";
-import TextToVoice from "./pages/TextToVoice";
-import CodeGenerator from "./pages/CodeGenerator";
+// Lazy load all other pages
+const Articles = lazy(() => import("./pages/Articles"));
+const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Services = lazy(() => import("./pages/Services"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const MemoryManagement = lazy(() => import("./pages/MemoryManagement"));
+const AdminTranslate = lazy(() => import("./pages/AdminTranslate"));
+const NeoHi = lazy(() => import("./pages/NeoHi"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Tools = lazy(() => import("./pages/Tools"));
+const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
+const VoiceToText = lazy(() => import("./pages/VoiceToText"));
+const TextToVoice = lazy(() => import("./pages/TextToVoice"));
+const CodeGenerator = lazy(() => import("./pages/CodeGenerator"));
+
+// Loading fallback
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-pulse text-muted-foreground">در حال بارگذاری...</div>
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -44,48 +54,51 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              {/* Full-screen routes without Navigation/Footer */}
-              <Route path="/neohi" element={<NeoHi />} />
-              <Route path="/design-system" element={<DesignSystem />} />
-              <Route path="/chat" element={<Chat />} />
-              
-              
-              {/* Regular routes with Navigation/Footer */}
-              <Route path="*" element={
-                <div className="min-h-screen flex flex-col">
-                  <Navigation />
-                  <main className="flex-1">
-                    <PageTransition>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/articles" element={<Articles />} />
-                        <Route path="/articles/:id" element={<ArticleDetail />} />
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/products/:id" element={<ProductDetail />} />
-                        <Route path="/services" element={<Services />} />
-                        <Route path="/pricing" element={<Pricing />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/tools" element={<Tools />} />
-                        <Route path="/tools/image-generator" element={<ImageGenerator />} />
-                        <Route path="/tools/voice-to-text" element={<VoiceToText />} />
-                        <Route path="/tools/text-to-voice" element={<TextToVoice />} />
-                        <Route path="/tools/code-generator" element={<CodeGenerator />} />
-                        <Route path="/memory" element={<MemoryManagement />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/admin/translate" element={<AdminTranslate />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/profile" element={<Profile />} />
-                        
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </PageTransition>
-                  </main>
-                  <Footer />
-                </div>
-              } />
-            </Routes>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Full-screen routes without Navigation/Footer */}
+                <Route path="/neohi" element={<NeoHi />} />
+                <Route path="/design-system" element={<DesignSystem />} />
+                <Route path="/chat" element={<Chat />} />
+                
+                {/* Regular routes with Navigation/Footer */}
+                <Route path="*" element={
+                  <div className="min-h-screen flex flex-col">
+                    <Navigation />
+                    <main className="flex-1">
+                      <PageTransition>
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/articles" element={<Articles />} />
+                            <Route path="/articles/:id" element={<ArticleDetail />} />
+                            <Route path="/products" element={<Products />} />
+                            <Route path="/products/:id" element={<ProductDetail />} />
+                            <Route path="/services" element={<Services />} />
+                            <Route path="/pricing" element={<Pricing />} />
+                            <Route path="/about" element={<About />} />
+                            <Route path="/contact" element={<Contact />} />
+                            <Route path="/tools" element={<Tools />} />
+                            <Route path="/tools/image-generator" element={<ImageGenerator />} />
+                            <Route path="/tools/voice-to-text" element={<VoiceToText />} />
+                            <Route path="/tools/text-to-voice" element={<TextToVoice />} />
+                            <Route path="/tools/code-generator" element={<CodeGenerator />} />
+                            <Route path="/memory" element={<MemoryManagement />} />
+                            <Route path="/admin" element={<Admin />} />
+                            <Route path="/admin/translate" element={<AdminTranslate />} />
+                            <Route path="/auth" element={<Auth />} />
+                            <Route path="/profile" element={<Profile />} />
+                            
+                            <Route path="*" element={<NotFound />} />
+                          </Routes>
+                        </Suspense>
+                      </PageTransition>
+                    </main>
+                    <Footer />
+                  </div>
+                } />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>

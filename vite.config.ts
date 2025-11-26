@@ -16,32 +16,62 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    // Optimize build output
     target: "esnext",
     minify: "terser",
     terserOptions: {
       compress: {
         drop_console: mode === "production",
         drop_debugger: true,
+        pure_funcs: mode === "production" ? ["console.log", "console.info"] : [],
+      },
+      mangle: {
+        safari10: true,
       },
     },
-    // Code splitting optimization
     rollupOptions: {
       output: {
-        manualChunks: {
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": ["framer-motion", "lucide-react"],
-          "supabase": ["@supabase/supabase-js"],
-          "query": ["@tanstack/react-query"],
+        manualChunks: (id) => {
+          // React core
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "react-core";
+          }
+          // Router
+          if (id.includes("node_modules/react-router")) {
+            return "react-router";
+          }
+          // UI libraries
+          if (id.includes("node_modules/framer-motion")) {
+            return "framer-motion";
+          }
+          if (id.includes("node_modules/lucide-react")) {
+            return "lucide-icons";
+          }
+          // Radix UI components
+          if (id.includes("node_modules/@radix-ui")) {
+            return "radix-ui";
+          }
+          // Supabase
+          if (id.includes("node_modules/@supabase")) {
+            return "supabase";
+          }
+          // React Query
+          if (id.includes("node_modules/@tanstack/react-query")) {
+            return "react-query";
+          }
+          // Other vendor
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
         },
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
-    // Increase chunk size warning limit
-    chunkSizeWarningLimit: 1000,
-    // Enable CSS code splitting
+    chunkSizeWarningLimit: 600,
     cssCodeSplit: true,
-    // Source maps only in dev
-    sourcemap: mode === "development",
+    sourcemap: false,
+    reportCompressedSize: false,
   },
   // Optimize dependencies
   optimizeDeps: {
@@ -51,6 +81,8 @@ export default defineConfig(({ mode }) => ({
       "react-router-dom",
       "framer-motion",
       "@supabase/supabase-js",
+      "@tanstack/react-query",
     ],
+    exclude: ["@radix-ui"],
   },
 }));
