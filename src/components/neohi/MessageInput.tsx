@@ -619,7 +619,8 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
           onKeyPress={handleKeyPress}
           placeholder="پیام"
           disabled={!!filePreview || !!audioPreview || aiLoading || imageGenerating}
-          className="flex-1 resize-none min-h-[42px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
+          autoGrow
+          className="flex-1 resize-none min-h-[42px] max-h-[160px] overflow-y-auto bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
           rows={1}
         />
 
