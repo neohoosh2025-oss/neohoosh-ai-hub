@@ -338,10 +338,14 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
         throw error;
       }
 
-      toast({
-        title: "✨ پاسخ AI",
-        description: "NEOHi Assistant پاسخ داد",
-      });
+      // Fill the input with AI response instead of sending automatically
+      if (data?.response) {
+        setMessage(data.response);
+        toast({
+          title: "✨ پاسخ AI آماده است",
+          description: "می‌توانید پاسخ را ویرایش کرده و ارسال کنید",
+        });
+      }
 
     } catch (error: any) {
       console.error('AI error:', error);

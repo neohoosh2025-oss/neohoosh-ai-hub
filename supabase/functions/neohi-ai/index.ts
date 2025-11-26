@@ -121,27 +121,8 @@ serve(async (req) => {
 
     console.log('AI response received:', aiResponse.substring(0, 100) + '...');
 
-    // Save AI response to database
-    const { error: insertError } = await supabase
-      .from('neohi_messages')
-      .insert({
-        chat_id: chatId,
-        sender_id: user.id,
-        content: aiResponse,
-        is_ai_message: true,
-        message_type: 'text'
-      });
-
-    if (insertError) {
-      console.error('Error saving AI message:', insertError);
-    }
-
-    // Update chat last message time
-    await supabase
-      .from('neohi_chats')
-      .update({ last_message_at: new Date().toISOString() })
-      .eq('id', chatId);
-
+    // Return AI response without saving to database
+    // User will edit and send manually
     return new Response(
       JSON.stringify({ response: aiResponse }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
