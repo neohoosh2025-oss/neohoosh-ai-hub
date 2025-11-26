@@ -1,22 +1,25 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply } from "lucide-react";
+import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { motion } from "framer-motion";
 
 interface MessageInputProps {
   onSend: (content: string, mediaUrl?: string, messageType?: string, replyTo?: string) => void;
   replyMessage?: any;
   onCancelReply?: () => void;
+  chatId?: string;
 }
 
-export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInputProps) {
+export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: MessageInputProps) {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const [filePreview, setFilePreview] = useState<{
     file: File;
     url: string;
@@ -281,6 +284,46 @@ export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInp
     }
   };
 
+  const handleAskAI = async () => {
+    if (!message.trim() || !chatId) return;
+
+    setAiLoading(true);
+    try {
+      // Send user message first
+      onSend(message.trim(), undefined, undefined, replyMessage?.id);
+      const userMessage = message.trim();
+      setMessage("");
+      onCancelReply?.();
+
+      // Call AI
+      const { data, error } = await supabase.functions.invoke('neohi-ai', {
+        body: {
+          chatId,
+          message: userMessage
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "✨ پاسخ AI",
+        description: "NEOHi Assistant پاسخ داد",
+      });
+
+    } catch (error: any) {
+      console.error('AI error:', error);
+      toast({
+        title: "خطا",
+        description: error.message || "مشکلی در دریافت پاسخ AI پیش آمد",
+        variant: "destructive",
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="bg-neohi-bg-sidebar">
       {/* Reply Preview */}
@@ -438,7 +481,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInp
           variant="ghost"
           size="icon"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || !!filePreview || !!audioPreview}
+          disabled={uploading || !!filePreview || !!audioPreview || aiLoading}
           className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
         >
           <Plus className="h-5 w-5" />
@@ -450,13 +493,35 @@ export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInp
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="پیام"
-          disabled={!!filePreview || !!audioPreview}
+          disabled={!!filePreview || !!audioPreview || aiLoading}
           className="flex-1 resize-none min-h-[42px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
           rows={1}
         />
 
+        {/* AI Button */}
+        {chatId && message.trim() && !filePreview && !audioPreview && (
+          <Button
+            onClick={handleAskAI}
+            disabled={aiLoading}
+            className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
+            size="icon"
+            title="پرسیدن از AI"
+          >
+            {aiLoading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Sparkles className="h-5 w-5" />
+              </motion.div>
+            ) : (
+              <Sparkles className="h-5 w-5" />
+            )}
+          </Button>
+        )}
+
         {/* Send or Mic Button */}
-        {message.trim() && !filePreview && !audioPreview ? (
+        {message.trim() && !filePreview && !audioPreview && !aiLoading ? (
           <Button
             onClick={handleSend}
             className="h-10 w-10 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
@@ -478,7 +543,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply }: MessageInp
         ) : (
           <Button
             onClick={startRecording}
-            disabled={uploading || !!filePreview || !!audioPreview}
+            disabled={uploading || !!filePreview || !!audioPreview || aiLoading}
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
