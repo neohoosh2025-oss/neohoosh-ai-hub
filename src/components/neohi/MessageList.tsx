@@ -283,7 +283,7 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                       </div>
                     )}
                     
-                    {message.content && (
+                    {message.content && !["image", "video", "voice", "audio", "document", "file"].includes(message.message_type || "") && (
                       <p className="text-[15px] leading-[1.4] whitespace-pre-wrap break-words mb-0.5">
                         {message.content}
                       </p>
