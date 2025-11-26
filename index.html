@@ -3,17 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.png" type="image/png">
-    <link rel="manifest" href="/manifest.json">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#8b5cf6" />
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/src/assets/neohoosh-logo-new.png" as="image" type="image/png" />
-    <link rel="preload" href="/src/index.css" as="style" />
-    
     <!-- Primary Meta Tags -->
     <title>نئوهوش | دنیای هوش مصنوعی برای همه</title>
     <meta name="title" content="نئوهوش | پلتفرم هوش مصنوعی فارسی" />
@@ -39,34 +33,11 @@
     <meta name="twitter:image" content="https://neohoosh-ai.ir/og-image.png" />
     <meta name="twitter:site" content="@neohoosh" />
     
-    <!-- Preconnect to external domains -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Critical Font Subset - Inline -->
-    <style>
-      @font-face {
-        font-family: 'Vazirmatn';
-        font-style: normal;
-        font-weight: 400;
-        font-display: swap;
-        src: local('Vazirmatn');
-      }
-    </style>
-    
-    <!-- Async load full fonts -->
-    <link 
-      rel="stylesheet" 
-      href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" 
-      media="print"
-      onload="this.media='all'"
-    />
-    <link 
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" 
-      media="print"
-      onload="this.media='all'"
-    />
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -101,16 +72,5 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker Disabled -->
-    <script>
-      // Unregister any existing service workers to prevent caching issues
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-    </script>
   </body>
 </html>
