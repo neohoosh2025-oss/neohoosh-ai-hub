@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.neohi-ai]
 verify_jwt = false
+
+[functions.generate-ai-image]
+verify_jwt = false

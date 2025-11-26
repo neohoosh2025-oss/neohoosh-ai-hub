@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply, Sparkles } from "lucide-react";
+import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply, Sparkles, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
@@ -20,6 +20,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [imageGenerating, setImageGenerating] = useState(false);
   const [filePreview, setFilePreview] = useState<{
     file: File;
     url: string;
@@ -324,6 +325,47 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
     }
   };
 
+  const handleGenerateImage = async () => {
+    if (!message.trim() || !chatId) return;
+
+    setImageGenerating(true);
+    try {
+      const imagePrompt = message.trim();
+      setMessage("");
+
+      toast({
+        title: "🎨 در حال تولید تصویر...",
+        description: "لطفاً صبر کنید",
+      });
+
+      const { data, error } = await supabase.functions.invoke('generate-ai-image', {
+        body: {
+          chatId,
+          prompt: imagePrompt
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "✅ تصویر تولید شد",
+        description: "تصویر با موفقیت ساخته شد",
+      });
+
+    } catch (error: any) {
+      console.error('Image generation error:', error);
+      toast({
+        title: "خطا",
+        description: error.message || "مشکلی در تولید تصویر پیش آمد",
+        variant: "destructive",
+      });
+    } finally {
+      setImageGenerating(false);
+    }
+  };
+
   return (
     <div className="bg-neohi-bg-sidebar">
       {/* Reply Preview */}
@@ -481,7 +523,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
           variant="ghost"
           size="icon"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading || !!filePreview || !!audioPreview || aiLoading}
+          disabled={uploading || !!filePreview || !!audioPreview || aiLoading || imageGenerating}
           className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
         >
           <Plus className="h-5 w-5" />
@@ -493,35 +535,56 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="پیام"
-          disabled={!!filePreview || !!audioPreview || aiLoading}
+          disabled={!!filePreview || !!audioPreview || aiLoading || imageGenerating}
           className="flex-1 resize-none min-h-[42px] max-h-[120px] bg-neohi-bg-hover border-neohi-border text-neohi-text-primary placeholder:text-neohi-text-secondary rounded-[22px] px-4 py-2.5 text-[15px] leading-[1.4]"
           rows={1}
         />
 
         {/* AI Button */}
         {chatId && message.trim() && !filePreview && !audioPreview && (
-          <Button
-            onClick={handleAskAI}
-            disabled={aiLoading}
-            className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
-            size="icon"
-            title="پرسیدن از AI"
-          >
-            {aiLoading ? (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
+          <>
+            <Button
+              onClick={handleAskAI}
+              disabled={aiLoading || imageGenerating}
+              className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
+              size="icon"
+              title="پرسیدن از AI"
+            >
+              {aiLoading ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles className="h-5 w-5" />
+                </motion.div>
+              ) : (
                 <Sparkles className="h-5 w-5" />
-              </motion.div>
-            ) : (
-              <Sparkles className="h-5 w-5" />
-            )}
-          </Button>
+              )}
+            </Button>
+
+            <Button
+              onClick={handleGenerateImage}
+              disabled={aiLoading || imageGenerating}
+              className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white flex-shrink-0"
+              size="icon"
+              title="تولید تصویر با AI"
+            >
+              {imageGenerating ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                >
+                  <Wand2 className="h-5 w-5" />
+                </motion.div>
+              ) : (
+                <Wand2 className="h-5 w-5" />
+              )}
+            </Button>
+          </>
         )}
 
         {/* Send or Mic Button */}
-        {message.trim() && !filePreview && !audioPreview && !aiLoading ? (
+        {message.trim() && !filePreview && !audioPreview && !aiLoading && !imageGenerating ? (
           <Button
             onClick={handleSend}
             className="h-10 w-10 rounded-full bg-neohi-accent hover:bg-neohi-accent/90 text-white flex-shrink-0"
@@ -543,7 +606,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
         ) : (
           <Button
             onClick={startRecording}
-            disabled={uploading || !!filePreview || !!audioPreview || aiLoading}
+            disabled={uploading || !!filePreview || !!audioPreview || aiLoading || imageGenerating}
             variant="ghost"
             size="icon"
             className="h-10 w-10 rounded-full text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent flex-shrink-0"
