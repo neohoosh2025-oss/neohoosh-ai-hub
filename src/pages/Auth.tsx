@@ -7,70 +7,104 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Phone, Cpu, Orbit, Sparkles } from "lucide-react";
+import { Phone, Cpu, Orbit, Sparkles, Eye, EyeOff } from "lucide-react";
+import type { Session, User } from "@supabase/supabase-js";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed:', event);
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        // Redirect to profile if logged in
+        if (session?.user) {
+          navigate("/profile");
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      
       if (session) {
         navigate("/profile");
       }
-    };
-    checkUser();
+    });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) {
-        toast({
-          title: t("contact.error") || "خطا",
-          description: error.message,
-          variant: "destructive",
+    try {
+      if (isForgotPassword) {
+        // Handle password reset
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
         });
-      } else {
+
+        if (error) throw error;
+
         toast({
-          title: t("contact.success") || "موفق",
+          title: "ایمیل ارسال شد",
+          description: "لینک بازیابی رمز عبور به ایمیل شما ارسال شد",
+        });
+        setIsForgotPassword(false);
+        setEmail("");
+      } else if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "موفق",
           description: "حساب شما ایجاد شد. در حال ورود...",
         });
-        navigate("/profile");
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast({
-          title: t("contact.error") || "خطا",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Navigation will happen via onAuthStateChange
       } else {
-        navigate("/profile");
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        // Navigation will happen via onAuthStateChange
       }
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: error.message || "مشکلی پیش آمد",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -113,10 +147,13 @@ const Auth = () => {
 
         <div className="bg-background/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-8 shadow-2xl">
           <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary to-neohoosh-blue bg-clip-text text-transparent">
-            {t("auth.title") || "ورود به سیستم"}
+            {isForgotPassword ? "بازیابی رمز عبور" : (t("auth.title") || "ورود به سیستم")}
           </h1>
           <p className="text-center text-muted-foreground mb-8">
-            {t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید"}
+            {isForgotPassword 
+              ? "ایمیل خود را وارد کنید تا لینک بازیابی برایتان ارسال شود"
+              : (t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید")
+            }
           </p>
 
           <form onSubmit={handleAuth} className="space-y-4">
@@ -134,33 +171,84 @@ const Auth = () => {
                 dir="ltr"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">رمز عبور</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                disabled={loading}
-                className="bg-background/50"
-                dir="ltr"
-                minLength={6}
-              />
-            </div>
+            
+            {!isForgotPassword && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">رمز عبور</Label>
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="h-auto p-0 text-xs text-primary"
+                    onClick={() => setIsForgotPassword(true)}
+                  >
+                    فراموشی رمز عبور؟
+                  </Button>
+                </div>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    disabled={loading}
+                    className="bg-background/50 pl-10"
+                    dir="ltr"
+                    minLength={6}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "در حال پردازش..." : (isSignUp ? "ثبت نام" : "ورود")}
+              {loading ? "در حال پردازش..." : (
+                isForgotPassword ? "ارسال لینک بازیابی" : 
+                isSignUp ? "ثبت نام" : "ورود"
+              )}
             </Button>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              className="w-full"
-              onClick={() => setIsSignUp(!isSignUp)}
-              disabled={loading}
-            >
-              {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
-            </Button>
+            
+            {!isForgotPassword && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                className="w-full"
+                onClick={() => setIsSignUp(!isSignUp)}
+                disabled={loading}
+              >
+                {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
+              </Button>
+            )}
+            
+            {isForgotPassword && (
+              <Button 
+                type="button" 
+                variant="ghost" 
+                className="w-full"
+                onClick={() => {
+                  setIsForgotPassword(false);
+                  setEmail("");
+                }}
+                disabled={loading}
+              >
+                بازگشت به صفحه ورود
+              </Button>
+            )}
           </form>
         </div>
       </div>
