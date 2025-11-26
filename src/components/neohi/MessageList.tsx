@@ -16,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ForwardDialog } from "./ForwardDialog";
 import { AIMessageMenu } from "./AIMessageMenu";
-import { NEOHI_BOT_ID } from "@/constants/neohi";
 
 interface MessageListProps {
   messages: any[];
@@ -175,7 +174,7 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                     )}
                     
                     {/* AI Message Menu or Regular Menu */}
-                    {message.sender_id === NEOHI_BOT_ID ? (
+                    {message.is_ai_message ? (
                       <AIMessageMenu 
                         message={message}
                         isOwn={isOwn}

@@ -509,6 +509,7 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          is_ai_message: boolean | null
           is_deleted: boolean | null
           is_edited: boolean | null
           media_url: string | null
@@ -522,6 +523,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_ai_message?: boolean | null
           is_deleted?: boolean | null
           is_edited?: boolean | null
           media_url?: string | null
@@ -535,6 +537,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_ai_message?: boolean | null
           is_deleted?: boolean | null
           is_edited?: boolean | null
           media_url?: string | null
