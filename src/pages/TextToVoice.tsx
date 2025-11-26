@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,7 +14,7 @@ const TextToVoice = () => {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useState<HTMLAudioElement | null>(null)[0];
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const voices = [
     { id: "alloy", name: "Alloy - خنثی" },
@@ -57,11 +57,11 @@ const TextToVoice = () => {
   const togglePlay = () => {
     if (!audioUrl) return;
 
-    if (audioRef) {
+    if (audioRef.current) {
       if (isPlaying) {
-        audioRef.pause();
+        audioRef.current.pause();
       } else {
-        audioRef.play();
+        audioRef.current.play();
       }
       setIsPlaying(!isPlaying);
     }
@@ -214,9 +214,8 @@ const TextToVoice = () => {
                     
                     <audio
                       ref={(ref) => {
+                        audioRef.current = ref;
                         if (ref) {
-                          //@ts-ignore
-                          audioRef = ref;
                           ref.onended = () => setIsPlaying(false);
                         }
                       }}
