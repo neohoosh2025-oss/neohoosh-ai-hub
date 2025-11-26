@@ -18,5 +18,12 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "esnext",
     minify: "terser",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   },
 }));
