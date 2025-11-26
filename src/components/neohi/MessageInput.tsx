@@ -305,16 +305,36 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
       });
 
       if (error) {
+        console.error('AI invoke error:', error);
+        
         // Check if it's a payment error (402)
-        if (error.message?.includes('Payment required') || error.message?.includes('402')) {
+        const errorStr = JSON.stringify(error);
+        const errorMsg = error.message || '';
+        
+        if (errorMsg.includes('Payment required') || 
+            errorMsg.includes('402') || 
+            errorStr.includes('402') ||
+            errorStr.includes('Payment required')) {
           toast({
             title: "💳 نیاز به شارژ اعتبار",
-            description: "لطفاً برای استفاده از AI، اعتبار Lovable AI خود را شارژ کنید",
+            description: "برای استفاده از AI، باید اعتبار Lovable AI خود را شارژ کنید. این قابلیت نیاز به اعتبار دارد.",
             variant: "destructive",
-            duration: 6000,
+            duration: 8000,
           });
           return;
         }
+        
+        // Check for rate limit
+        if (errorMsg.includes('Rate limit') || errorMsg.includes('429')) {
+          toast({
+            title: "⏳ محدودیت استفاده",
+            description: "لطفاً چند لحظه صبر کنید و دوباره تلاش کنید",
+            variant: "destructive",
+            duration: 5000,
+          });
+          return;
+        }
+        
         throw error;
       }
 
@@ -356,16 +376,36 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
       });
 
       if (error) {
+        console.error('Image generation invoke error:', error);
+        
         // Check if it's a payment error (402)
-        if (error.message?.includes('Payment required') || error.message?.includes('402')) {
+        const errorStr = JSON.stringify(error);
+        const errorMsg = error.message || '';
+        
+        if (errorMsg.includes('Payment required') || 
+            errorMsg.includes('402') || 
+            errorStr.includes('402') ||
+            errorStr.includes('Payment required')) {
           toast({
             title: "💳 نیاز به شارژ اعتبار",
-            description: "لطفاً برای تولید تصویر با AI، اعتبار Lovable AI خود را شارژ کنید",
+            description: "برای تولید تصویر با AI، باید اعتبار Lovable AI خود را شارژ کنید. این قابلیت نیاز به اعتبار دارد.",
             variant: "destructive",
-            duration: 6000,
+            duration: 8000,
           });
           return;
         }
+        
+        // Check for rate limit
+        if (errorMsg.includes('Rate limit') || errorMsg.includes('429')) {
+          toast({
+            title: "⏳ محدودیت استفاده",
+            description: "لطفاً چند لحظه صبر کنید و دوباره تلاش کنید",
+            variant: "destructive",
+            duration: 5000,
+          });
+          return;
+        }
+        
         throw error;
       }
 
