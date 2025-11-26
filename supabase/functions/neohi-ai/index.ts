@@ -22,11 +22,11 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!OPENROUTER_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error('Missing required environment variables');
     }
 
@@ -77,44 +77,49 @@ serve(async (req) => {
 هدف تو:
 کمک به کاربران در هر زمینه‌ای که نیاز دارند، از مشاوره تا سرگرمی.`;
 
-    // Call Lovable AI
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    console.log('Calling OpenRouter with Grok model...');
+
+    // Call OpenRouter API directly
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://neohoosh.com',
+        'X-Title': 'NEOHi Assistant'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'x-ai/grok-4.1-fast:free',
         messages: [
           { role: 'system', content: systemPrompt },
           ...conversationHistory,
           { role: 'user', content: message }
         ],
-        stream: false,
       }),
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenRouter API error:', response.status, errorText);
+      
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          JSON.stringify({ error: 'محدودیت تعداد درخواست‌ها. لطفاً چند لحظه صبر کنید.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your Lovable AI workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
-      throw new Error('AI API request failed');
+      
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data.choices?.[0]?.message?.content;
+
+    if (!aiResponse) {
+      throw new Error('No response from AI');
+    }
+
+    console.log('AI response received:', aiResponse.substring(0, 100) + '...');
 
     // Save AI response to database
     const { error: insertError } = await supabase
