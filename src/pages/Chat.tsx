@@ -10,7 +10,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image";
 
@@ -509,7 +508,7 @@ const Chat = () => {
           </h1>
         </div>
         
-        <ThemeToggle />
+        <div className="w-10" />
       </div>
       
       <div className="flex-1 flex overflow-hidden">

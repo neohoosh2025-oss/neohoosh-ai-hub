@@ -2,7 +2,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, LogOut, User } from "lucide-react";
 import { useState, useEffect } from "react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import neohooshLogo from "@/assets/neohoosh-logo.png";
@@ -84,7 +83,6 @@ const Navigation = () => {
               </Link>
             ))}
             <div className="flex items-center gap-2">
-              <ThemeToggle />
               <LanguageToggle />
             </div>
             {user ? (
@@ -115,7 +113,6 @@ const Navigation = () => {
 
           {/* Mobile Controls */}
           <div className="flex lg:hidden items-center gap-2">
-            <ThemeToggle />
             <LanguageToggle />
             <Link to={user ? "/profile" : "/auth"}>
               <Button variant="ghost" size="icon" className="h-10 w-10">
