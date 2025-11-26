@@ -10,6 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface ArticleTranslation {
   language: string;
@@ -246,9 +247,11 @@ const ArticleDetail = () => {
                 {/* Featured Image */}
                 {article.image_url && (
                   <div className="mb-6 md:mb-12 rounded-2xl md:rounded-3xl overflow-hidden shadow-xl md:shadow-2xl shadow-primary/10">
-                    <img
+                    <OptimizedImage
                       src={article.image_url}
                       alt={getArticleText('title')}
+                      width={1200}
+                      height={600}
                       className="w-full h-auto object-cover max-w-full"
                     />
                   </div>
@@ -375,9 +378,11 @@ const ArticleDetail = () => {
                   <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover-scale">
                     {related.image_url && (
                       <div className="relative overflow-hidden h-32 md:h-40 bg-muted">
-                        <img
+                        <OptimizedImage
                           src={related.image_url}
                           alt={getRelatedArticleText(related, 'title')}
+                          width={400}
+                          height={160}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 max-w-full"
                         />
                       </div>

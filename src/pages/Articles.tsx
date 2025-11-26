@@ -7,6 +7,7 @@ import { ArrowLeft, Clock, Calendar, Search, Grid3x3, List, TrendingUp, Sparkles
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface ArticleTranslation {
   language: string;
@@ -257,9 +258,11 @@ const Articles = () => {
                       <div className="grid md:grid-cols-2 gap-0">
                         {featuredArticle.image_url && (
                           <div className="relative overflow-hidden h-full min-h-[400px]">
-                            <img
+                            <OptimizedImage
                               src={featuredArticle.image_url}
                               alt={getArticleText(featuredArticle, 'title')}
+                              width={800}
+                              height={400}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -317,9 +320,11 @@ const Articles = () => {
                             <div className={`relative overflow-hidden bg-muted ${
                               viewMode === "list" ? "w-72 h-full" : "h-52"
                             }`}>
-                              <img
+                              <OptimizedImage
                                 src={article.image_url}
                                 alt={getArticleText(article, 'title')}
+                                width={viewMode === "list" ? 288 : 400}
+                                height={viewMode === "list" ? 300 : 208}
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

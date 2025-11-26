@@ -30,6 +30,7 @@ import {
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/neohoosh-logo-new.png";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 interface Article {
   id: string;
@@ -588,9 +589,11 @@ const Index = () => {
                     <Card className="overflow-hidden h-full hover:shadow-xl hover:-translate-y-1 transition-all group border-2 border-border/50 hover:border-primary/50">
                       {article.image_url && (
                         <div className="aspect-video overflow-hidden bg-muted">
-                          <img
+                          <OptimizedImage
                             src={article.image_url}
                             alt={article.title}
+                            width={400}
+                            height={225}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         </div>
