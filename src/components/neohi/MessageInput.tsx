@@ -623,7 +623,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
           rows={1}
         />
 
-        {/* AI Button - Always visible when no message */}
+        {/* AI Button - Only visible when input is empty */}
         {chatId && !message.trim() && !filePreview && !audioPreview && (
           <Button
             onClick={() => setShowAIDialog(true)}
@@ -643,49 +643,6 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
               <Sparkles className="h-5 w-5" />
             )}
           </Button>
-        )}
-        
-        {/* AI Buttons when message is present */}
-        {chatId && message.trim() && !filePreview && !audioPreview && (
-          <>
-            <Button
-              onClick={() => setShowAIDialog(true)}
-              disabled={aiLoading || imageGenerating}
-              className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
-              size="icon"
-              title="پاسخ هوشمند با AI"
-            >
-              {aiLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Sparkles className="h-5 w-5" />
-                </motion.div>
-              ) : (
-                <Sparkles className="h-5 w-5" />
-              )}
-            </Button>
-
-            <Button
-              onClick={handleGenerateImage}
-              disabled={aiLoading || imageGenerating}
-              className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white flex-shrink-0"
-              size="icon"
-              title="تولید تصویر با AI"
-            >
-              {imageGenerating ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  <Wand2 className="h-5 w-5" />
-                </motion.div>
-              ) : (
-                <Wand2 className="h-5 w-5" />
-              )}
-            </Button>
-          </>
         )}
 
         {/* Send or Mic Button */}
