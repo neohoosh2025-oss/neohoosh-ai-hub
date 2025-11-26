@@ -79,18 +79,8 @@ export function FileMessage({ url, type, fileName, isOwn = false }: FileMessageP
         <Icon className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
       </div>
 
-      {/* File Info */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[hsl(var(--neohi-text-primary))] truncate">
-          {displayName}
-        </p>
-        <p className="text-xs text-[hsl(var(--neohi-text-secondary))] mt-0.5">
-          {isDownloading ? "در حال دانلود..." : "کلیک برای دانلود"}
-        </p>
-      </div>
-
       {/* Download Icon */}
-      <Download className="h-4 w-4 text-[hsl(var(--neohi-text-secondary))] flex-shrink-0" />
+      <Download className="h-5 w-5 text-[hsl(var(--neohi-text-secondary))] flex-shrink-0" />
     </motion.div>
   );
 }
