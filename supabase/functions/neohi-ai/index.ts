@@ -13,11 +13,11 @@ serve(async (req) => {
   }
 
   try {
-    const { chatId, message } = await req.json();
+    const { chatId, conversationHistory, customPrompt } = await req.json();
     
-    if (!chatId || !message) {
+    if (!chatId || !conversationHistory) {
       return new Response(
-        JSON.stringify({ error: 'chatId and message are required' }),
+        JSON.stringify({ error: 'chatId and conversationHistory are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -30,42 +30,8 @@ serve(async (req) => {
       throw new Error('Missing required environment variables');
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Get auth user
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid token' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Get conversation history from chat
-    const { data: messages } = await supabase
-      .from('neohi_messages')
-      .select('content, sender_id, is_ai_message')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: true })
-      .limit(20);
-
-    const conversationHistory = messages?.map(msg => ({
-      role: msg.is_ai_message ? 'assistant' : 'user',
-      content: msg.content || ''
-    })) || [];
-
     // System prompt for NEOHI AI
-    const systemPrompt = `تو NEOHi Assistant هستی، یک دستیار هوشمند فارسی که در پلتفرم NEOHi Community فعالیت می‌کنه.
+    let systemPrompt = `تو NEOHi Assistant هستی، یک دستیار هوشمند فارسی که در پلتفرم NEOHi Community فعالیت می‌کنه.
 
 ویژگی‌های تو:
 - همیشه به فارسی پاسخ میدی
@@ -76,6 +42,11 @@ serve(async (req) => {
 
 هدف تو:
 کمک به کاربران در هر زمینه‌ای که نیاز دارند، از مشاوره تا سرگرمی.`;
+
+    // Add custom prompt if provided
+    if (customPrompt) {
+      systemPrompt += `\n\nدستورالعمل خاص کاربر برای این پاسخ:\n${customPrompt}`;
+    }
 
     console.log('Calling OpenRouter with Grok model...');
 
@@ -92,8 +63,7 @@ serve(async (req) => {
         model: 'x-ai/grok-4.1-fast:free',
         messages: [
           { role: 'system', content: systemPrompt },
-          ...conversationHistory,
-          { role: 'user', content: message }
+          ...conversationHistory
         ],
       }),
     });
