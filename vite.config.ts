@@ -21,8 +21,11 @@ export default defineConfig(({ mode }) => ({
       'react',
       'react-dom',
       'react/jsx-runtime',
+      '@tanstack/react-query',
       'next-themes',
       '@radix-ui/react-dialog',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-dropdown-menu',
       'framer-motion'
     ],
   },
