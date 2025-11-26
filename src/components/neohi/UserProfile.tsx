@@ -59,7 +59,7 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
   return (
     <AnimatePresence>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="max-w-md w-[95vw] max-h-[90vh] p-0 bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl overflow-hidden">
+        <DialogContent className="max-w-md w-[95vw] max-h-[90vh] p-0 bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl overflow-hidden [&>button]:hidden">
           {loading ? (
             <div className="h-[500px] flex items-center justify-center">
               <motion.div
