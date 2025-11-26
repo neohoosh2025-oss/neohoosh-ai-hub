@@ -1,10 +1,18 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply, Sparkles, Wand2 } from "lucide-react";
+import { Plus, Send, Mic, Square, X, FileText, Image as ImageIcon, Video, Music, Reply, Sparkles, Wand2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 interface MessageInputProps {
   onSend: (content: string, mediaUrl?: string, messageType?: string, replyTo?: string) => void;
@@ -21,6 +29,8 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [imageGenerating, setImageGenerating] = useState(false);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
   const [filePreview, setFilePreview] = useState<{
     file: File;
     url: string;
@@ -286,28 +296,37 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
   };
 
   const handleAskAI = async () => {
-    if (!message.trim() || !chatId) return;
+    if (!chatId) return;
 
     setAiLoading(true);
+    setShowAIDialog(false);
+    
     try {
-      // Send user message first
-      onSend(message.trim(), undefined, undefined, replyMessage?.id);
-      const userMessage = message.trim();
-      setMessage("");
-      onCancelReply?.();
+      // Get conversation history
+      const { data: messages } = await supabase
+        .from('neohi_messages')
+        .select('content, sender_id, is_ai_message')
+        .eq('chat_id', chatId)
+        .order('created_at', { ascending: true })
+        .limit(20);
 
-      // Call AI
+      const conversationHistory = messages?.map(msg => ({
+        role: msg.is_ai_message ? 'assistant' : 'user',
+        content: msg.content || ''
+      })) || [];
+
+      // Call AI with custom prompt
       const { data, error } = await supabase.functions.invoke('neohi-ai', {
         body: {
           chatId,
-          message: userMessage
+          conversationHistory,
+          customPrompt: aiPrompt.trim() || undefined
         }
       });
 
       if (error) {
         console.error('AI invoke error:', error);
         
-        // Check if it's a payment error (402)
         const errorStr = JSON.stringify(error);
         const errorMsg = error.message || '';
         
@@ -317,14 +336,13 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
             errorStr.includes('Payment required')) {
           toast({
             title: "💳 نیاز به شارژ اعتبار",
-            description: "برای استفاده از AI، باید اعتبار Lovable AI خود را شارژ کنید. این قابلیت نیاز به اعتبار دارد.",
+            description: "برای استفاده از AI، باید اعتبار Lovable AI خود را شارژ کنید.",
             variant: "destructive",
             duration: 8000,
           });
           return;
         }
         
-        // Check for rate limit
         if (errorMsg.includes('Rate limit') || errorMsg.includes('429')) {
           toast({
             title: "⏳ محدودیت استفاده",
@@ -338,9 +356,10 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
         throw error;
       }
 
-      // Fill the input with AI response instead of sending automatically
+      // Fill the input with AI response
       if (data?.response) {
         setMessage(data.response);
+        setAiPrompt("");
         toast({
           title: "✨ پاسخ AI آماده است",
           description: "می‌توانید پاسخ را ویرایش کرده و ارسال کنید",
@@ -604,15 +623,37 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
           rows={1}
         />
 
-        {/* AI Button */}
+        {/* AI Button - Always visible when no message */}
+        {chatId && !message.trim() && !filePreview && !audioPreview && (
+          <Button
+            onClick={() => setShowAIDialog(true)}
+            disabled={aiLoading || imageGenerating}
+            className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
+            size="icon"
+            title="پاسخ هوشمند با AI"
+          >
+            {aiLoading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Sparkles className="h-5 w-5" />
+              </motion.div>
+            ) : (
+              <Sparkles className="h-5 w-5" />
+            )}
+          </Button>
+        )}
+        
+        {/* AI Buttons when message is present */}
         {chatId && message.trim() && !filePreview && !audioPreview && (
           <>
             <Button
-              onClick={handleAskAI}
+              onClick={() => setShowAIDialog(true)}
               disabled={aiLoading || imageGenerating}
               className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white flex-shrink-0"
               size="icon"
-              title="پرسیدن از AI"
+              title="پاسخ هوشمند با AI"
             >
               {aiLoading ? (
                 <motion.div
@@ -689,6 +730,61 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
         />
       </div>
       </div>
+      
+      {/* AI Settings Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>✨ تنظیمات پاسخ هوشمند</DialogTitle>
+            <DialogDescription>
+              مشخص کنید AI چگونه به آخرین پیام پاسخ دهد
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="ai-prompt">دستورالعمل برای AI</Label>
+              <Textarea
+                id="ai-prompt"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="مثال: یک پاسخ رسمی و مودبانه با حداکثر 100 کلمه بنویس که لحن دوستانه داشته باشد"
+                className="min-h-[120px] resize-none"
+                dir="rtl"
+              />
+              <p className="text-sm text-muted-foreground">
+                می‌توانید لحن، طول و سبک پاسخ را مشخص کنید. اگر خالی بگذارید، AI خودش تصمیم می‌گیرد.
+              </p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAIDialog(false);
+                  setAiPrompt("");
+                }}
+              >
+                انصراف
+              </Button>
+              <Button
+                onClick={handleAskAI}
+                disabled={aiLoading}
+              >
+                {aiLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 ml-2 animate-spin" />
+                    در حال ایجاد...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 ml-2" />
+                    ایجاد پاسخ
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
