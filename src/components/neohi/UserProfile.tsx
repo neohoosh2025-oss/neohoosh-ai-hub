@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ArrowLeft, MessageCircle, Phone, Video, Image as ImageIcon, FileText, Link2, Trash2, Ban, AlertTriangle, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { MessageCircle, Phone, Video, BellOff, MoreHorizontal, Image as ImageIcon, FileText, Link2, Trash2, Ban, AlertTriangle, X, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileProps {
@@ -54,184 +54,178 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
     return "اخیراً";
   };
 
-  if (loading) {
-    return (
-      <div className="h-full flex items-center justify-center bg-neohi-bg-main">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 border-3 border-neohi-accent border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
-
-  if (!user) return null;
+  if (!user && !loading) return null;
 
   return (
-    <div className="h-full overflow-y-auto bg-neohi-bg-main">
-      {/* Fixed Header */}
-      <header className="sticky top-0 z-10 h-[50px] bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-4 flex items-center justify-center relative">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute left-4 h-9 w-9 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-base font-semibold text-neohi-text-primary">Profile</h1>
-      </header>
+    <AnimatePresence>
+      <Dialog open={true} onOpenChange={onClose}>
+        <DialogContent className="max-w-md w-[95vw] max-h-[90vh] p-0 bg-background/95 backdrop-blur-xl border-border/50 shadow-2xl overflow-hidden">
+          {loading ? (
+            <div className="h-[500px] flex items-center justify-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full"
+              />
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-y-auto max-h-[90vh]"
+            >
+              {/* Header Section */}
+              <div className="relative pt-8 pb-6 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
+                <button
+                  onClick={onClose}
+                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground transition-all hover:scale-110"
+                >
+                  <X className="h-4 w-4" />
+                </button>
 
-      {/* Cover Section */}
-      <div className="h-[130px] bg-gradient-to-br from-neohi-accent/20 to-primary/20 relative overflow-hidden">
-        {user.avatar_url && (
-          <div className="absolute inset-0 bg-cover bg-center blur-2xl opacity-40" style={{ backgroundImage: `url(${user.avatar_url})` }} />
-        )}
-      </div>
-
-      {/* Hero Avatar - Overlapping Cover */}
-      <div className="px-6 -mt-16 mb-6">
-        <div className="flex flex-col items-center">
-          <div 
-            className="cursor-pointer"
-            onClick={() => user.avatar_url && setShowAvatarDialog(true)}
-          >
-            <Avatar className="h-32 w-32 ring-4 ring-neohi-bg-main shadow-2xl">
-              <AvatarImage src={user.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-primary text-white text-4xl font-bold">
-                {user.display_name?.charAt(0)?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-          <h2 className="text-2xl font-bold text-neohi-text-primary mt-4">
-            {user.display_name || "کاربر"}
-          </h2>
-          <p className="text-neohi-text-secondary text-sm mt-1 flex items-center gap-2">
-            {user.is_online ? (
-              <>
-                <span className="w-2 h-2 rounded-full bg-neohi-online animate-pulse"></span>
-                آنلاین
-              </>
-            ) : (
-              <span>{getStatusText()}</span>
-            )}
-          </p>
-        </div>
-      </div>
-
-      {/* Bio Section */}
-      {user.bio && (
-        <div className="px-6 mb-6">
-          <div className="bg-neohi-bg-sidebar rounded-2xl p-4 border border-neohi-border">
-            <h3 className="text-xs text-neohi-text-secondary mb-2 font-medium">درباره</h3>
-            <p className="text-neohi-text-primary text-sm leading-relaxed">{user.bio}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Contact Info */}
-      {user.phone && (
-        <div className="px-6 mb-6">
-          <div className="bg-neohi-bg-sidebar rounded-2xl p-4 border border-neohi-border">
-            <h3 className="text-xs text-neohi-text-secondary mb-2 font-medium">شماره تماس</h3>
-            <p className="text-neohi-text-primary text-sm">{user.phone}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Main Action Buttons */}
-      <div className="px-6 mb-6 grid grid-cols-3 gap-3">
-        <Button
-          onClick={onSendMessage}
-          className="flex flex-col items-center gap-2 h-auto py-4 bg-neohi-accent hover:bg-neohi-accent/90 text-white rounded-2xl"
-        >
-          <MessageCircle className="h-5 w-5" />
-          <span className="text-xs">پیام</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="flex flex-col items-center gap-2 h-auto py-4 rounded-2xl border-neohi-border hover:bg-neohi-bg-hover text-neohi-text-primary"
-        >
-          <Phone className="h-5 w-5" />
-          <span className="text-xs">تماس</span>
-        </Button>
-        <Button
-          variant="outline"
-          className="flex flex-col items-center gap-2 h-auto py-4 rounded-2xl border-neohi-border hover:bg-neohi-bg-hover text-neohi-text-primary"
-        >
-          <Video className="h-5 w-5" />
-          <span className="text-xs">ویدیو</span>
-        </Button>
-      </div>
-
-      {/* Media Section */}
-      <div className="px-6 mb-6">
-        <div className="bg-neohi-bg-sidebar rounded-2xl p-4 border border-neohi-border">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-neohi-text-primary">رسانه و فایل‌ها</h3>
-            <Button variant="ghost" size="sm" className="text-neohi-accent text-xs h-auto p-0">
-              مشاهده همه
-            </Button>
-          </div>
-          
-          {/* Media Grid */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="aspect-square bg-neohi-bg-hover rounded-xl flex items-center justify-center border border-neohi-border">
-                <ImageIcon className="h-6 w-6 text-neohi-text-secondary" />
-              </div>
-            ))}
-          </div>
-
-          {/* File Types */}
-          <div className="space-y-2">
-            <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-neohi-bg-hover transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-blue-500" />
+                {/* Profile Photo */}
+                <div className="relative inline-block mb-4">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="cursor-pointer"
+                    onClick={() => user.avatar_url && setShowAvatarDialog(true)}
+                  >
+                    <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl">
+                      <AvatarImage src={user.avatar_url || undefined} />
+                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground text-3xl font-bold">
+                        {user.display_name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                  <div className="absolute -bottom-1 right-0 w-6 h-6 rounded-full bg-green-500 ring-4 ring-background" />
                 </div>
-                <span className="text-sm text-neohi-text-primary">فایل‌ها</span>
-              </div>
-              <span className="text-xs text-neohi-text-secondary">0</span>
-            </button>
-            <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-neohi-bg-hover transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
-                  <Link2 className="h-5 w-5 text-green-500" />
-                </div>
-                <span className="text-sm text-neohi-text-primary">لینک‌ها</span>
-              </div>
-              <span className="text-xs text-neohi-text-secondary">0</span>
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Danger Zone */}
-      <div className="px-6 pb-6 space-y-3">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3 h-12 rounded-2xl border-neohi-border hover:bg-red-500/10 hover:border-red-500/50 text-neohi-text-primary hover:text-red-500"
-        >
-          <Trash2 className="h-5 w-5" />
-          پاک کردن چت
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3 h-12 rounded-2xl border-neohi-border hover:bg-orange-500/10 hover:border-orange-500/50 text-neohi-text-primary hover:text-orange-500"
-        >
-          <Ban className="h-5 w-5" />
-          مسدود کردن کاربر
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3 h-12 rounded-2xl border-neohi-border hover:bg-yellow-500/10 hover:border-yellow-500/50 text-neohi-text-primary hover:text-yellow-500"
-        >
-          <AlertTriangle className="h-5 w-5" />
-          گزارش کاربر
-        </Button>
-      </div>
+                {/* User Name & Status */}
+                <h2 className="text-xl font-bold text-foreground mb-1 flex items-center justify-center gap-2">
+                  {user.display_name || "کاربر"}
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                </h2>
+                <p className="text-muted-foreground text-sm">{getStatusText()}</p>
+                <p className="text-muted-foreground text-xs mt-1">@{user.username}</p>
+              </div>
+
+              {/* Action Buttons Row */}
+              <div className="flex items-center justify-center gap-4 px-6 py-5 border-y border-border/50">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onSendMessage}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-blue-500/10 hover:bg-blue-500/20 flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-blue-500/30">
+                    <MessageCircle className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">پیام</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-green-500/10 hover:bg-green-500/20 flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-green-500/30">
+                    <Phone className="h-6 w-6 text-green-500" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">تماس</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-muted/30">
+                    <BellOff className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">سکوت</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex flex-col items-center gap-1.5 group"
+                >
+                  <div className="w-14 h-14 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-muted/30">
+                    <MoreHorizontal className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <span className="text-xs text-muted-foreground">بیشتر</span>
+                </motion.button>
+              </div>
+
+              {/* Info Section */}
+              <div className="px-6 py-4 space-y-1">
+                {user.phone && (
+                  <div className="flex items-center justify-between py-3 hover:bg-muted/30 rounded-lg px-3 transition-colors cursor-pointer">
+                    <span className="text-sm text-muted-foreground">شماره تماس</span>
+                    <span className="text-sm text-foreground font-medium">{user.phone}</span>
+                  </div>
+                )}
+                
+                {user.bio && (
+                  <div className="py-3 px-3">
+                    <span className="text-sm text-muted-foreground block mb-1">درباره</span>
+                    <p className="text-sm text-foreground leading-relaxed">{user.bio}</p>
+                  </div>
+                )}
+
+                <div className="h-px bg-border/50 my-2" />
+
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  className="w-full flex items-center justify-between py-3 px-3 hover:bg-muted/30 rounded-lg transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <ImageIcon className="h-5 w-5 text-primary" />
+                    <span className="text-sm text-foreground">رسانه و فایل‌ها</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">156</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  className="w-full flex items-center justify-between py-3 px-3 hover:bg-muted/30 rounded-lg transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-5 w-5 text-blue-500" />
+                    <span className="text-sm text-foreground">فایل‌ها</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">23</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  className="w-full flex items-center justify-between py-3 px-3 hover:bg-muted/30 rounded-lg transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <Link2 className="h-5 w-5 text-green-500" />
+                    <span className="text-sm text-foreground">لینک‌ها</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">8</span>
+                </motion.button>
+              </div>
+
+              {/* Danger Zone */}
+              <div className="px-6 py-4 space-y-2 border-t border-border/50 mt-4">
+                <p className="text-xs text-muted-foreground mb-3">منطقه خطر</p>
+                <motion.button
+                  whileHover={{ x: 4 }}
+                  className="w-full flex items-center gap-3 py-2.5 px-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                >
+                  <Ban className="h-5 w-5" />
+                  <span className="text-sm font-medium">مسدود کردن کاربر</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Avatar Dialog */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
@@ -253,6 +247,6 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </AnimatePresence>
   );
 }
