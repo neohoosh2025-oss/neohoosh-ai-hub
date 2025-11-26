@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { OptimizedImage } from "@/components/OptimizedImage";
 import logo from "@/assets/neohoosh-logo-new.png";
 
 interface Article {
@@ -610,9 +611,11 @@ const Home = () => {
                     <Card className="overflow-hidden group cursor-pointer h-full hover:shadow-xl hover:shadow-primary/10 transition-all">
                       {article.image_url && (
                         <div className="relative overflow-hidden h-44 sm:h-48">
-                          <img
+                          <OptimizedImage
                             src={article.image_url}
                             alt={article.title}
+                            width={400}
+                            height={192}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                           <div className="absolute top-3 right-3">

@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import neohooshLogo from "@/assets/neohoosh-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 const Navigation = () => {
   const location = useLocation();
@@ -53,9 +54,11 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo - Responsive */}
           <Link to="/" className="flex items-center gap-2 group">
-            <img 
+            <OptimizedImage 
               src={neohooshLogo} 
               alt="NeoHoosh Logo" 
+              width={150}
+              height={56}
               className="h-10 md:h-14 w-auto transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
