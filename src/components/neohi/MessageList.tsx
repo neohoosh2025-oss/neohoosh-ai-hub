@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ForwardDialog } from "./ForwardDialog";
+import { MediaViewer } from "./MediaViewer";
 
 interface MessageListProps {
   messages: any[];
@@ -28,6 +29,7 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [forwardMessage, setForwardMessage] = useState<any>(null);
+  const [mediaViewer, setMediaViewer] = useState<{ url: string; type: "image" | "video" } | null>(null);
 
   useEffect(() => {
     getCurrentUser();
@@ -236,7 +238,8 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                           <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="relative group max-w-[280px]"
+                            className="relative group max-w-[280px] cursor-pointer"
+                            onClick={() => setMediaViewer({ url: message.media_url, type: "image" })}
                           >
                             <img
                               src={message.media_url}
@@ -248,7 +251,12 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
 
                         {/* Videos */}
                         {message.message_type === "video" && (
-                          <VideoPlayer src={message.media_url} isOwn={isOwn} />
+                          <div 
+                            className="cursor-pointer"
+                            onClick={() => setMediaViewer({ url: message.media_url, type: "video" })}
+                          >
+                            <VideoPlayer src={message.media_url} isOwn={isOwn} />
+                          </div>
                         )}
 
                         {/* Voice Messages */}
@@ -310,6 +318,13 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
         open={!!forwardMessage}
         onClose={() => setForwardMessage(null)}
         message={forwardMessage}
+      />
+
+      <MediaViewer
+        open={!!mediaViewer}
+        onClose={() => setMediaViewer(null)}
+        mediaUrl={mediaViewer?.url || ""}
+        mediaType={mediaViewer?.type || "image"}
       />
     </div>
   );
