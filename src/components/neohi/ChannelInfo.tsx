@@ -33,11 +33,16 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [pinnedCount, setPinnedCount] = useState(0);
+  const [mediaCount, setMediaCount] = useState(0);
+  const [filesCount, setFilesCount] = useState(0);
+  const [linksCount, setLinksCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
     loadChannelInfo();
     loadSubscriberCount();
+    loadMediaCounts();
   }, [chatId]);
 
   const loadChannelInfo = async () => {
@@ -66,6 +71,41 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
       .eq("chat_id", chatId);
 
     if (count) setSubscribersCount(count);
+  };
+
+  const loadMediaCounts = async () => {
+    // Count pinned messages (this would need a pinned field in messages table)
+    // For now, we'll set it to 0 as there's no pinned field
+    setPinnedCount(0);
+
+    // Count images and videos
+    const { count: mediaCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["image", "video"]);
+
+    // Count files and documents
+    const { count: filesCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["file", "document"]);
+
+    // Count messages with links
+    const { data: messages } = await supabase
+      .from("neohi_messages")
+      .select("content")
+      .eq("chat_id", chatId)
+      .eq("message_type", "text");
+
+    const linkCount = messages?.filter(m => 
+      m.content && (m.content.includes("http://") || m.content.includes("https://"))
+    ).length || 0;
+
+    setMediaCount(mediaCount || 0);
+    setFilesCount(filesCount || 0);
+    setLinksCount(linkCount);
   };
 
   const toggleMute = () => {
@@ -235,7 +275,7 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
                     <Pin className="h-5 w-5 text-purple-500" />
                     <span className="text-sm text-foreground">پیام‌های پین شده</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">3</span>
+                  <span className="text-xs text-muted-foreground">{pinnedCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -246,7 +286,7 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
                     <ImageIcon className="h-5 w-5 text-primary" />
                     <span className="text-sm text-foreground">رسانه و فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">532</span>
+                  <span className="text-xs text-muted-foreground">{mediaCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -257,7 +297,7 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
                     <FileText className="h-5 w-5 text-blue-500" />
                     <span className="text-sm text-foreground">فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">124</span>
+                  <span className="text-xs text-muted-foreground">{filesCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -268,7 +308,7 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
                     <Link2 className="h-5 w-5 text-green-500" />
                     <span className="text-sm text-foreground">لینک‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">89</span>
+                  <span className="text-xs text-muted-foreground">{linksCount}</span>
                 </motion.button>
 
                 <div className="h-px bg-border/50 my-3" />

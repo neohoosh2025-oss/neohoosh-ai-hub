@@ -34,12 +34,16 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [mediaCount, setMediaCount] = useState(0);
+  const [filesCount, setFilesCount] = useState(0);
+  const [linksCount, setLinksCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
     loadChatInfo();
     loadMembers();
     getCurrentUser();
+    loadMediaCounts();
   }, [chatId]);
 
   const getCurrentUser = async () => {
@@ -69,6 +73,37 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
       .eq("chat_id", chatId);
 
     if (data) setMembers(data);
+  };
+
+  const loadMediaCounts = async () => {
+    // Count images and videos
+    const { count: mediaCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["image", "video"]);
+
+    // Count files and documents
+    const { count: filesCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["file", "document"]);
+
+    // Count messages with links
+    const { data: messages } = await supabase
+      .from("neohi_messages")
+      .select("content")
+      .eq("chat_id", chatId)
+      .eq("message_type", "text");
+
+    const linkCount = messages?.filter(m => 
+      m.content && (m.content.includes("http://") || m.content.includes("https://"))
+    ).length || 0;
+
+    setMediaCount(mediaCount || 0);
+    setFilesCount(filesCount || 0);
+    setLinksCount(linkCount);
   };
 
   const handleChangeGroupPhoto = () => {
@@ -220,7 +255,7 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
                     <ImageIcon className="h-5 w-5 text-primary" />
                     <span className="text-sm text-foreground">رسانه و فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">245</span>
+                  <span className="text-xs text-muted-foreground">{mediaCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -231,7 +266,7 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
                     <FileText className="h-5 w-5 text-blue-500" />
                     <span className="text-sm text-foreground">فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">67</span>
+                  <span className="text-xs text-muted-foreground">{filesCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -242,7 +277,7 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
                     <Link2 className="h-5 w-5 text-green-500" />
                     <span className="text-sm text-foreground">لینک‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">34</span>
+                  <span className="text-xs text-muted-foreground">{linksCount}</span>
                 </motion.button>
 
                 <div className="h-px bg-border/50 my-2" />

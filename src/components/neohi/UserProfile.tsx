@@ -17,11 +17,74 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [mediaCount, setMediaCount] = useState(0);
+  const [filesCount, setFilesCount] = useState(0);
+  const [linksCount, setLinksCount] = useState(0);
+  const [chatId, setChatId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadUserProfile();
+    findChatWithUser();
   }, [userId]);
+
+  const findChatWithUser = async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (!currentUser) return;
+
+    // Find DM chat between current user and target user
+    const { data: chats } = await supabase
+      .from("neohi_chats")
+      .select("id")
+      .eq("type", "dm");
+
+    if (chats) {
+      for (const chat of chats) {
+        const { data: members } = await supabase
+          .from("neohi_chat_members")
+          .select("user_id")
+          .eq("chat_id", chat.id);
+
+        const memberIds = members?.map(m => m.user_id) || [];
+        if (memberIds.includes(currentUser.id) && memberIds.includes(userId) && memberIds.length === 2) {
+          setChatId(chat.id);
+          loadMediaCounts(chat.id);
+          break;
+        }
+      }
+    }
+  };
+
+  const loadMediaCounts = async (chatId: string) => {
+    // Count images and videos
+    const { count: mediaCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["image", "video"]);
+
+    // Count files and documents
+    const { count: filesCount } = await supabase
+      .from("neohi_messages")
+      .select("*", { count: "exact", head: true })
+      .eq("chat_id", chatId)
+      .in("message_type", ["file", "document"]);
+
+    // Count messages with links (containing http)
+    const { data: messages } = await supabase
+      .from("neohi_messages")
+      .select("content")
+      .eq("chat_id", chatId)
+      .eq("message_type", "text");
+
+    const linkCount = messages?.filter(m => 
+      m.content && (m.content.includes("http://") || m.content.includes("https://"))
+    ).length || 0;
+
+    setMediaCount(mediaCount || 0);
+    setFilesCount(filesCount || 0);
+    setLinksCount(linkCount);
+  };
 
   const loadUserProfile = async () => {
     setLoading(true);
@@ -99,7 +162,9 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
                       </AvatarFallback>
                     </Avatar>
                   </motion.div>
-                  <div className="absolute -bottom-1 right-0 w-6 h-6 rounded-full bg-green-500 ring-4 ring-background" />
+                  {user.is_online && (
+                    <div className="absolute -bottom-1 right-0 w-6 h-6 rounded-full bg-green-500 ring-4 ring-background" />
+                  )}
                 </div>
 
                 {/* User Name & Status */}
@@ -185,7 +250,7 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
                     <ImageIcon className="h-5 w-5 text-primary" />
                     <span className="text-sm text-foreground">رسانه و فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">156</span>
+                  <span className="text-xs text-muted-foreground">{mediaCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -196,7 +261,7 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
                     <FileText className="h-5 w-5 text-blue-500" />
                     <span className="text-sm text-foreground">فایل‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">23</span>
+                  <span className="text-xs text-muted-foreground">{filesCount}</span>
                 </motion.button>
 
                 <motion.button
@@ -207,7 +272,7 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
                     <Link2 className="h-5 w-5 text-green-500" />
                     <span className="text-sm text-foreground">لینک‌ها</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">8</span>
+                  <span className="text-xs text-muted-foreground">{linksCount}</span>
                 </motion.button>
               </div>
 
