@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   X, 
   Users, 
@@ -37,6 +38,8 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
   const [mediaCount, setMediaCount] = useState(0);
   const [filesCount, setFilesCount] = useState(0);
   const [linksCount, setLinksCount] = useState(0);
+  const [showAdminDialog, setShowAdminDialog] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -106,11 +109,106 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
     setLinksCount(linkCount);
   };
 
-  const handleChangeGroupPhoto = () => {
-    toast({
-      title: "تغییر تصویر گروه",
-      description: "این قابلیت به زودی اضافه خواهد شد",
-    });
+  const handleChangeGroupPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "خطا",
+        description: "لطفا یک فایل تصویری انتخاب کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${chatId}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("neohi-avatars")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("neohi-avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("neohi_chats")
+        .update({ avatar_url: publicUrl })
+        .eq("id", chatId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "موفق",
+        description: "تصویر گروه با موفقیت تغییر یافت",
+      });
+
+      loadChatInfo();
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: error.message || "تغییر تصویر گروه با خطا مواجه شد",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handlePromoteToAdmin = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from("neohi_chat_members")
+        .update({ role: "admin" })
+        .eq("chat_id", chatId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "موفق",
+        description: "کاربر به عنوان ادمین منصوب شد",
+      });
+
+      loadMembers();
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: error.message || "خطا در تغییر نقش",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDemoteFromAdmin = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from("neohi_chat_members")
+        .update({ role: "member" })
+        .eq("chat_id", chatId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      toast({
+        title: "موفق",
+        description: "نقش ادمین کاربر حذف شد",
+      });
+
+      loadMembers();
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: error.message || "خطا در تغییر نقش",
+        variant: "destructive",
+      });
+    }
   };
 
   const toggleMute = () => {
@@ -142,12 +240,6 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
             >
               {/* Header Section */}
               <div className="relative pt-8 pb-6 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
-                <button
-                  onClick={onClose}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground transition-all hover:scale-110"
-                >
-                  <X className="h-4 w-4" />
-                </button>
 
                 {/* Group Photo */}
                 <div className="relative inline-block mb-4">
@@ -162,15 +254,16 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
                         {chat.name?.charAt(0)?.toUpperCase() || "G"}
                       </AvatarFallback>
                     </Avatar>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleChangeGroupPhoto();
-                      }}
-                      className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center text-primary-foreground shadow-lg transition-all hover:scale-110"
-                    >
+                    <label className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center text-primary-foreground shadow-lg transition-all hover:scale-110 cursor-pointer">
                       <Camera className="h-4 w-4" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleChangeGroupPhoto}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
                   </motion.div>
                 </div>
 
@@ -289,7 +382,12 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
                       <Users className="h-5 w-5 text-primary" />
                       <span className="text-sm font-medium text-foreground">اعضا ({members.length})</span>
                     </div>
-                    <button className="text-xs text-primary hover:underline">افزودن</button>
+                    <button 
+                      onClick={() => setShowAdminDialog(true)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      مدیریت
+                    </button>
                   </div>
                   
                   <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -372,6 +470,59 @@ export function GroupInfo({ chatId, onClose }: GroupInfoProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Admin Management Dialog */}
+      <Dialog open={showAdminDialog} onOpenChange={setShowAdminDialog}>
+        <DialogContent className="max-w-md bg-background border-border">
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">مدیریت اعضا</h3>
+            <ScrollArea className="h-[400px]">
+              <div className="space-y-2">
+                {members.map((member) => {
+                  const isOwner = member.role === "owner";
+                  const isAdmin = member.role === "admin";
+                  const isCurrentUser = member.user_id === currentUser?.id;
+                  const currentUserMember = members.find(m => m.user_id === currentUser?.id);
+                  const canManage = currentUserMember?.role === "owner" || currentUserMember?.role === "admin";
+
+                  return (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={member.user?.avatar_url || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                            {member.user?.display_name?.charAt(0)?.toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {member.user?.display_name || "User"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {isOwner ? "مالک" : isAdmin ? "ادمین" : "عضو"}
+                          </p>
+                        </div>
+                      </div>
+                      {canManage && !isOwner && !isCurrentUser && (
+                        <Button
+                          size="sm"
+                          variant={isAdmin ? "destructive" : "default"}
+                          onClick={() => isAdmin ? handleDemoteFromAdmin(member.user_id) : handlePromoteToAdmin(member.user_id)}
+                        >
+                          {isAdmin ? "حذف ادمین" : "انتصاب ادمین"}
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AnimatePresence>
   );
 }
