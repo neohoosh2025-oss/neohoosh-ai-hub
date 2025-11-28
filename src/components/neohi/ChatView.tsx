@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, MoreVertical, Phone, Video, Info } from "lucide-react";
+import { ArrowLeft, MoreVertical, Phone, Video, Info, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
@@ -38,6 +39,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [otherUserData, setOtherUserData] = useState<any>(null);
   const [replyMessage, setReplyMessage] = useState<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -86,6 +90,47 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       supabase.removeChannel(userStatusChannel);
     };
   }, [otherUserId, chat?.type]);
+
+  // Subscribe to typing indicators
+  useEffect(() => {
+    if (!chatId || !currentUser) return;
+
+    const typingChannel = supabase
+      .channel(`typing-${chatId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "neohi_typing_indicators",
+          filter: `chat_id=eq.${chatId}`,
+        },
+        async (payload: any) => {
+          if (payload.new && payload.new.user_id !== currentUser.id && payload.new.is_typing) {
+            // User is typing
+            const { data: user } = await supabase
+              .from("neohi_users")
+              .select("display_name")
+              .eq("id", payload.new.user_id)
+              .single();
+
+            if (user) {
+              setTypingUsers(prev => [...new Set([...prev, user.display_name || "کاربر"])]);
+            }
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+              setTypingUsers(prev => prev.filter(u => u !== (user?.display_name || "کاربر")));
+            }, 3000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(typingChannel);
+    };
+  }, [chatId, currentUser]);
 
   useEffect(() => {
     scrollToBottom();
@@ -265,6 +310,12 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     return "اخیراً";
   };
 
+  const filteredMessages = searchQuery
+    ? messages.filter(m =>
+        m.content?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : messages;
+
   if (!chat) {
     return (
       <div className="h-screen bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
@@ -309,7 +360,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
                 {chat.type === "dm" ? (otherUserData?.display_name || "کاربر") : (chat.name || "کاربر")}
               </h2>
               <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end flex-row-reverse">
-                {chat.type === "channel" ? (
+                {typingUsers.length > 0 ? (
+                  <span className="text-neohi-accent">در حال نوشتن...</span>
+                ) : chat.type === "channel" ? (
                   "کانال"
                 ) : chat.type === "group" ? (
                   "گروه"
@@ -327,6 +380,14 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-0.5 flex-shrink-0">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setShowSearch(!showSearch)}
+              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
+            >
+              <Search className="h-[18px] w-[18px]" />
+            </Button>
             {chat.type === "dm" && (
               <>
                 <Button 
@@ -356,10 +417,38 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         </div>
       </header>
 
+      {/* Search Bar */}
+      {showSearch && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="bg-neohi-bg-sidebar border-b border-neohi-border px-3 py-2"
+        >
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neohi-text-secondary" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="جستجو در پیام‌ها..."
+              className="bg-neohi-bg-chat border-neohi-border text-neohi-text-primary pr-10 pl-10"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neohi-text-secondary hover:text-neohi-text-primary"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
       {/* Messages Area - Scrollable Container (Telegram Style) */}
       <div className="flex-1 overflow-hidden relative">
         <MessageList 
-          messages={messages} 
+          messages={filteredMessages} 
           loading={loading} 
           onMessageDeleted={(messageId) => {
             setMessages(prev => prev.filter(m => m.id !== messageId));
