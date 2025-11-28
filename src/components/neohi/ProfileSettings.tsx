@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { 
   ArrowLeft, 
   Camera, 
@@ -46,6 +47,15 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [createdAt, setCreatedAt] = useState("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
+  
+  // Privacy settings
+  const [privacySettings, setPrivacySettings] = useState({
+    showPhone: true,
+    showOnlineStatus: true,
+    allowStoryViews: true,
+    readReceipts: true,
+  });
 
   // Auto-save with debounce
   const autoSave = useDebounceCallback(async (data: {
@@ -353,10 +363,11 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               </Button>
               <Button
                 variant="ghost"
+                onClick={() => setShowPrivacyDialog(true)}
                 className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
               >
                 <Shield className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                Privacy & Security
+                حریم خصوصی و امنیت
               </Button>
               <Button
                 variant="ghost"
@@ -406,6 +417,90 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
               alt="Profile" 
               className="max-w-full max-h-full object-contain rounded-lg"
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Privacy Settings Dialog */}
+      <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
+        <DialogContent className="sm:max-w-[500px] bg-neohi-bg-sidebar border-neohi-border">
+          <DialogHeader>
+            <DialogTitle className="text-neohi-text-primary flex items-center gap-2">
+              <Shield className="h-5 w-5 text-neohi-accent" />
+              تنظیمات حریم خصوصی
+            </DialogTitle>
+            <DialogDescription className="text-neohi-text-secondary">
+              کنترل کنید چه کسی می‌تواند اطلاعات شما را ببیند
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-neohi-text-primary">نمایش شماره تلفن</Label>
+                <p className="text-sm text-neohi-text-secondary">
+                  دیگران می‌توانند شماره شما را ببینند
+                </p>
+              </div>
+              <Switch
+                checked={privacySettings.showPhone}
+                onCheckedChange={(checked) =>
+                  setPrivacySettings({ ...privacySettings, showPhone: checked })
+                }
+              />
+            </div>
+            <Separator className="bg-neohi-border" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-neohi-text-primary">نمایش وضعیت آنلاین</Label>
+                <p className="text-sm text-neohi-text-secondary">
+                  دیگران می‌توانند ببینند آنلاین هستید یا نه
+                </p>
+              </div>
+              <Switch
+                checked={privacySettings.showOnlineStatus}
+                onCheckedChange={(checked) =>
+                  setPrivacySettings({ ...privacySettings, showOnlineStatus: checked })
+                }
+              />
+            </div>
+            <Separator className="bg-neohi-border" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-neohi-text-primary">مشاهده استوری‌ها</Label>
+                <p className="text-sm text-neohi-text-secondary">
+                  سایرین می‌توانند ببینند استوری‌شان را دیده‌اید
+                </p>
+              </div>
+              <Switch
+                checked={privacySettings.allowStoryViews}
+                onCheckedChange={(checked) =>
+                  setPrivacySettings({ ...privacySettings, allowStoryViews: checked })
+                }
+              />
+            </div>
+            <Separator className="bg-neohi-border" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-neohi-text-primary">تیک خوانده شدن</Label>
+                <p className="text-sm text-neohi-text-secondary">
+                  نمایش وضعیت خوانده شدن پیام‌ها
+                </p>
+              </div>
+              <Switch
+                checked={privacySettings.readReceipts}
+                onCheckedChange={(checked) =>
+                  setPrivacySettings({ ...privacySettings, readReceipts: checked })
+                }
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              onClick={() => setShowPrivacyDialog(false)}
+              className="bg-neohi-accent hover:bg-neohi-accent/90 text-white"
+            >
+              ذخیره تنظیمات
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

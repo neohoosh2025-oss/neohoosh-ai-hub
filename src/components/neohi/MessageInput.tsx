@@ -40,10 +40,68 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const recordingIntervalRef = useRef<number | null>(null);
+  const typingTimeoutRef = useRef<number | null>(null);
   const { toast } = useToast();
+
+  // Send typing indicator
+  const sendTypingIndicator = async (isTyping: boolean) => {
+    if (!chatId) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if record exists
+      const { data: existing } = await supabase
+        .from("neohi_typing_indicators")
+        .select("id")
+        .eq("chat_id", chatId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("neohi_typing_indicators")
+          .update({ is_typing: isTyping, updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+      } else {
+        await supabase
+          .from("neohi_typing_indicators")
+          .insert({
+            chat_id: chatId,
+            user_id: user.id,
+            is_typing: isTyping,
+          });
+      }
+    } catch (error) {
+      console.error("Error sending typing indicator:", error);
+    }
+  };
+
+  const handleMessageChange = (value: string) => {
+    setMessage(value);
+
+    // Send typing indicator
+    if (value.trim()) {
+      sendTypingIndicator(true);
+
+      // Clear existing timeout
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      // Stop typing after 3 seconds of inactivity
+      typingTimeoutRef.current = window.setTimeout(() => {
+        sendTypingIndicator(false);
+      }, 3000);
+    } else {
+      sendTypingIndicator(false);
+    }
+  };
 
   const handleSend = () => {
     if (!message.trim()) return;
+    sendTypingIndicator(false);
     onSend(message.trim(), undefined, undefined, replyMessage?.id);
     setMessage("");
     onCancelReply?.();
@@ -615,7 +673,7 @@ export function MessageInput({ onSend, replyMessage, onCancelReply, chatId }: Me
         {/* Message Input - Telegram Style */}
         <Textarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => handleMessageChange(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="پیام"
           disabled={!!filePreview || !!audioPreview || aiLoading || imageGenerating}

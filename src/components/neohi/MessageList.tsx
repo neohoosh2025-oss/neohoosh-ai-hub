@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CheckCheck, MoreVertical, Trash2, Trash, Reply, Forward } from "lucide-react";
+import { CheckCheck, MoreVertical, Trash2, Trash, Reply, Forward, Pencil, Smile } from "lucide-react";
 import { AudioPlayer } from "./AudioPlayer";
 import { VideoPlayer } from "./VideoPlayer";
 import { FileMessage } from "./FileMessage";
@@ -13,9 +13,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ForwardDialog } from "./ForwardDialog";
 import { MediaViewer } from "./MediaViewer";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface MessageListProps {
   messages: any[];
@@ -31,6 +37,10 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
   const [forwardMessage, setForwardMessage] = useState<any>(null);
   const [mediaViewer, setMediaViewer] = useState<{ url: string; type: "image" | "video" } | null>(null);
   const [repliedMessages, setRepliedMessages] = useState<Record<string, any>>({});
+  const [editingMessage, setEditingMessage] = useState<{ id: string; content: string } | null>(null);
+  const [reactions, setReactions] = useState<Record<string, any[]>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const commonEmojis = ["❤️", "👍", "😂", "😮", "😢", "🙏", "🔥", "👏"];
 
   useEffect(() => {
     getCurrentUser();
@@ -39,6 +49,29 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
   useEffect(() => {
     scrollToBottom();
     loadRepliedMessages();
+    loadReactions();
+  }, [messages]);
+
+  useEffect(() => {
+    // Subscribe to reactions
+    const reactionsChannel = supabase
+      .channel('reactions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'neohi_reactions',
+        },
+        () => {
+          loadReactions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(reactionsChannel);
+    };
   }, [messages]);
 
   const getCurrentUser = async () => {
@@ -92,6 +125,33 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
     }
   };
 
+  const loadReactions = async () => {
+    const messageIds = messages.map(m => m.id);
+    if (messageIds.length === 0) return;
+
+    const { data } = await supabase
+      .from("neohi_reactions")
+      .select(`
+        id,
+        message_id,
+        user_id,
+        emoji,
+        user:neohi_users(display_name)
+      `)
+      .in("message_id", messageIds);
+
+    if (data) {
+      const reactionsMap: Record<string, any[]> = {};
+      data.forEach(reaction => {
+        if (!reactionsMap[reaction.message_id]) {
+          reactionsMap[reaction.message_id] = [];
+        }
+        reactionsMap[reaction.message_id].push(reaction);
+      });
+      setReactions(reactionsMap);
+    }
+  };
+
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString("en-US", {
@@ -132,6 +192,67 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
     } else {
       toast.success("پیام برای همه حذف شد");
       onMessageDeleted?.(messageId);
+    }
+  };
+
+  const handleEditMessage = async () => {
+    if (!editingMessage || !editingMessage.content.trim()) return;
+
+    const { error } = await supabase
+      .from("neohi_messages")
+      .update({ 
+        content: editingMessage.content,
+        is_edited: true 
+      })
+      .eq("id", editingMessage.id);
+
+    if (error) {
+      toast.error("خطا در ویرایش پیام");
+      console.error(error);
+    } else {
+      toast.success("پیام ویرایش شد");
+      setEditingMessage(null);
+      // Update local state
+      const updatedMessages = messages.map(m => 
+        m.id === editingMessage.id 
+          ? { ...m, content: editingMessage.content, is_edited: true }
+          : m
+      );
+      onMessageDeleted?.(editingMessage.id); // Trigger refresh
+    }
+  };
+
+  const handleAddReaction = async (messageId: string, emoji: string) => {
+    if (!currentUserId) return;
+
+    // Check if user already reacted with this emoji
+    const existingReaction = reactions[messageId]?.find(
+      r => r.user_id === currentUserId && r.emoji === emoji
+    );
+
+    if (existingReaction) {
+      // Remove reaction
+      const { error } = await supabase
+        .from("neohi_reactions")
+        .delete()
+        .eq("id", existingReaction.id);
+
+      if (error) {
+        toast.error("خطا در حذف ری‌اکشن");
+      }
+    } else {
+      // Add reaction
+      const { error } = await supabase
+        .from("neohi_reactions")
+        .insert({
+          message_id: messageId,
+          user_id: currentUserId,
+          emoji: emoji,
+        });
+
+      if (error) {
+        toast.error("خطا در افزودن ری‌اکشن");
+      }
     }
   };
 
@@ -231,6 +352,15 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                             <Forward className="h-4 w-4" />
                             <span>فوروارد</span>
                           </DropdownMenuItem>
+                          {isOwn && (
+                            <DropdownMenuItem
+                              onClick={() => setEditingMessage({ id: message.id, content: message.content || "" })}
+                              className="gap-2"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              <span>ویرایش</span>
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => handleDeleteForMe(message.id)}
                             className="gap-2"
@@ -355,11 +485,66 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                       isOwn ? "justify-end text-[hsl(var(--neohi-text-secondary))]/80" : "justify-end text-[hsl(var(--neohi-text-secondary))]/70"
                     }`}>
                       <span className="leading-none">{formatTime(message.created_at)}</span>
+                      {message.is_edited && (
+                        <span className="text-[hsl(var(--neohi-text-secondary))]/60 text-[10px]">(ویرایش شده)</span>
+                      )}
                       {isOwn && (
                         <CheckCheck className="h-3.5 w-3.5 text-[hsl(var(--neohi-status-read))]" />
                       )}
                     </div>
                   </motion.div>
+
+                  {/* Reactions */}
+                  {reactions[message.id] && reactions[message.id].length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(
+                        reactions[message.id].reduce((acc: Record<string, any>, r) => {
+                          if (!acc[r.emoji]) acc[r.emoji] = [];
+                          acc[r.emoji].push(r);
+                          return acc;
+                        }, {})
+                      ).map(([emoji, reactionList]: [string, any]) => (
+                        <button
+                          key={emoji}
+                          onClick={() => handleAddReaction(message.id, emoji)}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all ${
+                            reactionList.some((r: any) => r.user_id === currentUserId)
+                              ? "bg-neohi-accent/20 border border-neohi-accent"
+                              : "bg-neohi-bg-hover border border-neohi-border"
+                          }`}
+                        >
+                          <span>{emoji}</span>
+                          <span className="text-[10px] text-neohi-text-secondary">{reactionList.length}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add Reaction Button */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 opacity-0 group-hover/message:opacity-100 transition-opacity mt-1"
+                      >
+                        <Smile className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-2 bg-neohi-bg-sidebar border-neohi-border">
+                      <div className="flex gap-1">
+                        {commonEmojis.map(emoji => (
+                          <button
+                            key={emoji}
+                            onClick={() => handleAddReaction(message.id, emoji)}
+                            className="text-xl hover:scale-125 transition-transform p-1"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </motion.div>
             );
@@ -367,6 +552,45 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
         </AnimatePresence>
         <div ref={scrollRef} />
       </div>
+
+      {/* Edit Message Dialog */}
+      {editingMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-neohi-bg-sidebar rounded-2xl p-6 max-w-md w-full border border-neohi-border"
+          >
+            <h3 className="text-neohi-text-primary font-semibold text-lg mb-4">ویرایش پیام</h3>
+            <Input
+              value={editingMessage.content}
+              onChange={(e) => setEditingMessage({ ...editingMessage, content: e.target.value })}
+              className="bg-neohi-bg-chat border-neohi-border text-neohi-text-primary mb-4"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleEditMessage();
+                }
+              }}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="ghost"
+                onClick={() => setEditingMessage(null)}
+                className="text-neohi-text-secondary"
+              >
+                لغو
+              </Button>
+              <Button
+                onClick={handleEditMessage}
+                className="bg-neohi-accent hover:bg-neohi-accent/90 text-white"
+              >
+                ذخیره
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <ForwardDialog
         open={!!forwardMessage}
