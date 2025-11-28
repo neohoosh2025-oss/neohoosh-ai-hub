@@ -30,6 +30,7 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [forwardMessage, setForwardMessage] = useState<any>(null);
   const [mediaViewer, setMediaViewer] = useState<{ url: string; type: "image" | "video" } | null>(null);
+  const [repliedMessages, setRepliedMessages] = useState<Record<string, any>>({});
 
   useEffect(() => {
     getCurrentUser();
@@ -37,6 +38,7 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
 
   useEffect(() => {
     scrollToBottom();
+    loadRepliedMessages();
   }, [messages]);
 
   const getCurrentUser = async () => {
@@ -60,6 +62,33 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const loadRepliedMessages = async () => {
+    const replyToIds = messages
+      .filter(m => m.reply_to)
+      .map(m => m.reply_to)
+      .filter(id => id && !repliedMessages[id]);
+
+    if (replyToIds.length === 0) return;
+
+    const { data } = await supabase
+      .from("neohi_messages")
+      .select(`
+        id,
+        content,
+        message_type,
+        sender:neohi_users(display_name)
+      `)
+      .in("id", replyToIds);
+
+    if (data) {
+      const newRepliedMessages: Record<string, any> = {};
+      data.forEach(msg => {
+        newRepliedMessages[msg.id] = msg;
+      });
+      setRepliedMessages(prev => ({ ...prev, ...newRepliedMessages }));
     }
   };
 
@@ -231,6 +260,31 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
                         : "bg-[hsl(var(--neohi-bubble-other))] text-[hsl(var(--neohi-text-primary))] rounded-bl-md border border-[hsl(var(--neohi-border))]"
                     }`}
                   >
+                    {/* Reply Preview */}
+                    {message.reply_to && repliedMessages[message.reply_to] && (
+                      <div className={`mb-2 pb-2 border-b ${
+                        isOwn ? "border-neohi-border/30" : "border-neohi-border/50"
+                      }`}>
+                        <div className={`flex items-start gap-2 p-2 rounded-lg ${
+                          isOwn ? "bg-neohi-bg-hover/20" : "bg-neohi-bg-hover/40"
+                        } border-r-2 border-neohi-accent`}>
+                          <Reply className="h-3 w-3 text-neohi-accent flex-shrink-0 mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-neohi-accent font-medium mb-0.5">
+                              {repliedMessages[message.reply_to].sender?.display_name || "کاربر"}
+                            </p>
+                            <p className="text-xs text-neohi-text-secondary truncate">
+                              {repliedMessages[message.reply_to].message_type === "image" ? "🖼️ تصویر" :
+                               repliedMessages[message.reply_to].message_type === "video" ? "🎥 ویدیو" :
+                               repliedMessages[message.reply_to].message_type === "voice" ? "🎤 پیام صوتی" :
+                               repliedMessages[message.reply_to].message_type === "file" ? "📎 فایل" :
+                               repliedMessages[message.reply_to].content || "پیام"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {message.media_url && (
                       <div className="mb-2">
                         {/* Images */}
