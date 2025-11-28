@@ -37,6 +37,7 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
   const [mediaCount, setMediaCount] = useState(0);
   const [filesCount, setFilesCount] = useState(0);
   const [linksCount, setLinksCount] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,11 +58,56 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
     setLoading(false);
   };
 
-  const handleChangeChannelPhoto = () => {
-    toast({
-      title: "تغییر تصویر کانال",
-      description: "این قابلیت به زودی اضافه خواهد شد",
-    });
+  const handleChangeChannelPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "خطا",
+        description: "لطفا یک فایل تصویری انتخاب کنید",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${chatId}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("neohi-avatars")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("neohi-avatars")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("neohi_chats")
+        .update({ avatar_url: publicUrl })
+        .eq("id", chatId);
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "موفق",
+        description: "تصویر کانال با موفقیت تغییر یافت",
+      });
+
+      loadChannelInfo();
+    } catch (error: any) {
+      toast({
+        title: "خطا",
+        description: error.message || "تغییر تصویر کانال با خطا مواجه شد",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const loadSubscriberCount = async () => {
@@ -140,12 +186,6 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
             >
               {/* Header Section */}
               <div className="relative pt-8 pb-6 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
-                <button
-                  onClick={onClose}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground transition-all hover:scale-110"
-                >
-                  <X className="h-4 w-4" />
-                </button>
 
                 {/* Channel Photo */}
                 <div className="relative inline-block mb-4">
@@ -160,15 +200,16 @@ export function ChannelInfo({ chatId, onClose }: ChannelInfoProps) {
                         {chat.name?.charAt(0)?.toUpperCase() || "C"}
                       </AvatarFallback>
                     </Avatar>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleChangeChannelPhoto();
-                      }}
-                      className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center text-primary-foreground shadow-lg transition-all hover:scale-110"
-                    >
+                    <label className="absolute bottom-0 right-0 w-9 h-9 rounded-full bg-primary hover:bg-primary/90 flex items-center justify-center text-primary-foreground shadow-lg transition-all hover:scale-110 cursor-pointer">
                       <Camera className="h-4 w-4" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleChangeChannelPhoto}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
                   </motion.div>
                   <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
                     <Badge className="bg-primary text-primary-foreground px-3 py-1 flex items-center gap-1 shadow-lg">

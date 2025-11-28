@@ -40,18 +40,34 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
       setChannelName("");
       setChannelDescription("");
     }
-  }, [open]);
+  }, [open, searchQuery]);
 
   const loadUsers = async () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (!currentUser) return;
 
-    const { data } = await supabase
-      .from("neohi_users")
-      .select("*")
-      .neq("id", currentUser.id);
+    // Load contacts first
+    const { data: contacts } = await supabase
+      .from("neohi_contacts")
+      .select(`
+        contact_user_id,
+        contact:neohi_users!neohi_contacts_contact_user_id_fkey(*)
+      `)
+      .eq("user_id", currentUser.id);
 
-    if (data) setUsers(data);
+    // If searching by username (starts with @), load all users
+    if (searchQuery.startsWith("@")) {
+      const { data: allUsers } = await supabase
+        .from("neohi_users")
+        .select("*")
+        .neq("id", currentUser.id);
+      
+      if (allUsers) setUsers(allUsers);
+    } else {
+      // Only show contacts
+      const contactUsers = contacts?.map((c: any) => c.contact).filter(Boolean) || [];
+      setUsers(contactUsers);
+    }
   };
 
   const filteredUsers = users.filter((listUser) =>
@@ -295,7 +311,7 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder="جستجو در مخاطبین... (@username برای جستجوی کلی)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-[#2c2c2e] border-none text-white pl-10"
@@ -304,7 +320,12 @@ export function NewChatDialog({ open, onOpenChange, onChatCreated }: NewChatDial
 
               <ScrollArea className="h-[300px]">
                 {filteredUsers.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">No users found</p>
+                  <div className="text-center text-gray-500 py-8">
+                    <p>کاربری یافت نشد</p>
+                    {!searchQuery.startsWith("@") && (
+                      <p className="text-xs mt-2">برای جستجو در تمام کاربران، @ وارد کنید</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="space-y-2">
                     {filteredUsers.map((listUser) => (
