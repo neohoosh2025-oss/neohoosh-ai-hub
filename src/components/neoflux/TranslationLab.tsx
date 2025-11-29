@@ -46,6 +46,12 @@ const TranslationLab = ({ onNext }: TranslationLabProps) => {
         description: error.message,
         variant: "destructive" 
       });
+      addToHistory({
+        type: "translation",
+        videoTitle: video?.title,
+        targetLanguage,
+        status: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -73,7 +79,7 @@ const TranslationLab = ({ onNext }: TranslationLabProps) => {
             <div>
               <h3 className="font-semibold text-lg">ترجمه هوشمند</h3>
               <p className="text-sm text-muted-foreground">
-                با استفاده از Grok-4-Fast
+                با استفاده از Grok AI
               </p>
             </div>
           </div>
