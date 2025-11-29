@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNeoFlux } from "@/contexts/NeoFluxContext";
 import { formatDistanceToNow } from "date-fns";
-import { faIR } from "date-fns/locale";
 
 const Dashboard = () => {
   const { history } = useNeoFlux();
@@ -108,7 +107,6 @@ const Dashboard = () => {
                     <span>
                       {formatDistanceToNow(new Date(item.timestamp), {
                         addSuffix: true,
-                        locale: faIR,
                       })}
                     </span>
                   </div>
