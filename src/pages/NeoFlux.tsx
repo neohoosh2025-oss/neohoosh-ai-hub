@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Video, Upload, FileText, Languages, Download, TrendingUp } from "lucide-react";
+import { Video, Upload, FileText, Languages, TrendingUp, ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import VideoInput from "@/components/neoflux/VideoInput";
 import SubtitleProcessor from "@/components/neoflux/SubtitleProcessor";
 import TranslationLab from "@/components/neoflux/TranslationLab";
@@ -24,6 +25,12 @@ const NeoFlux = () => {
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
+                <Link to="/">
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <ArrowLeft className="w-4 h-4" />
+                    بازگشت
+                  </Button>
+                </Link>
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
                   <Video className="w-5 h-5 text-primary-foreground" />
                 </div>
@@ -35,10 +42,9 @@ const NeoFlux = () => {
                 </div>
               </div>
               
-              {/* API Status Indicator */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs text-green-600 dark:text-green-400 font-medium">متصل</span>
+                <span className="text-xs text-green-600 dark:text-green-400 font-medium">آماده</span>
               </div>
             </div>
           </div>

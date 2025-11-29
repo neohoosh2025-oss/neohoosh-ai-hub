@@ -40,6 +40,11 @@ const SubtitleProcessor = ({ onNext }: SubtitleProcessorProps) => {
         description: error.message,
         variant: "destructive" 
       });
+      addToHistory({
+        type: "subtitle_generation",
+        videoTitle: video.title,
+        status: "error",
+      });
     } finally {
       setLoading(false);
     }
