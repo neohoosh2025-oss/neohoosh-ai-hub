@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+console.log("LanguageContext loading, React available:", typeof useState);
+
 type Language = "fa" | "en" | "ar";
 
 interface LanguageContextType {
