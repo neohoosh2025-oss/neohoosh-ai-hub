@@ -29,13 +29,5 @@ export default defineConfig(({ mode }) => ({
       'framer-motion',
       'date-fns'
     ],
-    esbuildOptions: {
-      plugins: [],
-    },
-  },
-  build: {
-    commonjsOptions: {
-      include: [/node_modules/],
-    },
   },
 }));
