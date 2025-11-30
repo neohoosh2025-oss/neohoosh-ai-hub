@@ -171,82 +171,93 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
   }, []);
 
   return (
-    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="flex flex-col items-center gap-4"
-      >
-        <AnimatePresence>
-          {isConnected && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="bg-card/90 backdrop-blur-lg rounded-2xl p-6 shadow-2xl border border-border/50 min-w-[300px]"
-            >
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <motion.div
-                    animate={{
-                      scale: isAISpeaking ? [1, 1.2, 1] : 1,
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: isAISpeaking ? Infinity : 0,
-                    }}
-                    className={`w-3 h-3 rounded-full ${
-                      isAISpeaking ? 'bg-primary' : 'bg-muted'
-                    }`}
-                  />
-                  <span className="text-sm text-muted-foreground">
-                    {isAISpeaking ? 'AI در حال صحبت است...' : 'در حال گوش دادن...'}
-                  </span>
-                </div>
-
-                {currentTranscript && (
-                  <div className="text-sm text-foreground/80 text-center max-w-[250px] line-clamp-3">
-                    {currentTranscript}
-                  </div>
-                )}
-
-                <Button
-                  onClick={toggleMute}
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                >
-                  {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                  {isMuted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
-                </Button>
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      <AnimatePresence>
+        {isConnected && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="bg-gradient-to-br from-card to-card/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-primary/20 w-[280px] mb-2"
+          >
+            <div className="flex flex-col gap-3">
+              {/* Status Indicator */}
+              <div className="flex items-center gap-2 px-2">
+                <motion.div
+                  animate={{
+                    scale: isAISpeaking ? [1, 1.3, 1] : 1,
+                    opacity: isAISpeaking ? [1, 0.7, 1] : 1,
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: isAISpeaking ? Infinity : 0,
+                    ease: "easeInOut"
+                  }}
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    isAISpeaking ? 'bg-primary shadow-lg shadow-primary/50' : 'bg-muted-foreground/50'
+                  }`}
+                />
+                <span className="text-xs font-medium text-foreground/90">
+                  {isAISpeaking ? 'AI در حال صحبت است...' : 'در حال گوش دادن...'}
+                </span>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          {!isConnected ? (
-            <Button
-              onClick={startConversation}
-              size="lg"
-              className="rounded-full w-16 h-16 bg-primary hover:bg-primary/90 shadow-xl"
-            >
-              <Phone className="w-6 h-6" />
-            </Button>
-          ) : (
-            <Button
-              onClick={endConversation}
-              size="lg"
-              variant="destructive"
-              className="rounded-full w-16 h-16 shadow-xl"
-            >
-              <PhoneOff className="w-6 h-6" />
-            </Button>
-          )}
-        </motion.div>
+              {/* Transcript Display */}
+              {currentTranscript && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="bg-muted/40 rounded-lg p-3 border border-border/50"
+                >
+                  <p className="text-xs text-foreground/80 leading-relaxed line-clamp-3 text-right">
+                    {currentTranscript}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Mute Button */}
+              <Button
+                onClick={toggleMute}
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9 hover:bg-primary/10 hover:border-primary/50 transition-all"
+              >
+                {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                <span className="text-xs">
+                  {isMuted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
+                </span>
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Main FAB Button */}
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {!isConnected ? (
+          <Button
+            onClick={startConversation}
+            size="lg"
+            className="rounded-full w-14 h-14 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl shadow-primary/30 hover:shadow-primary/40 border border-primary/20 transition-all duration-300 group"
+          >
+            <Phone className="w-5 h-5 transition-transform group-hover:rotate-12" />
+          </Button>
+        ) : (
+          <Button
+            onClick={endConversation}
+            size="lg"
+            variant="destructive"
+            className="rounded-full w-14 h-14 shadow-xl hover:shadow-2xl shadow-destructive/30 hover:shadow-destructive/40 border border-destructive/20 transition-all duration-300 group"
+          >
+            <PhoneOff className="w-5 h-5 transition-transform group-hover:rotate-12" />
+          </Button>
+        )}
       </motion.div>
     </div>
   );
