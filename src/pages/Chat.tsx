@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, Settings, Bot
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -69,6 +69,13 @@ const Chat = () => {
       description: "ساخت تصویر از متن",
       icon: ImageIcon,
       gradient: "from-indigo-500 to-purple-500"
+    },
+    {
+      id: "academic",
+      name: "مدل درسی و تحصیلی",
+      description: "کمک در درس و تحصیل",
+      icon: GraduationCap,
+      gradient: "from-green-500 to-teal-500"
     },
   ];
 
@@ -203,9 +210,14 @@ const Chat = () => {
                 <p className="text-xs text-muted-foreground">✨ آماده‌ام کمکت کنم</p>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <Settings className="w-5 h-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate('/')}>
+                <Home className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <History className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -267,9 +279,14 @@ const Chat = () => {
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
-            <Settings className="w-4 h-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={() => navigate('/')}>
+              <Home className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+              <History className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Action Strip */}
