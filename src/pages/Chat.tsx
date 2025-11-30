@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic, Brain } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic, Brain, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -11,7 +11,7 @@ import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type ModelType = "business" | "personal" | "general" | "ads" | "image";
+type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
 interface Model {
   id: ModelType;
@@ -80,6 +80,13 @@ const Chat = () => {
       description: t("chat.textToImageDesc"),
       icon: ImageIcon,
       gradient: "from-indigo-500 to-purple-500"
+    },
+    {
+      id: "academic",
+      name: "مشاور درسی و دانشگاهی",
+      description: "راهنمای تحصیلی، حل مسائل و آموزش",
+      icon: GraduationCap,
+      gradient: "from-teal-500 to-cyan-500"
     },
   ];
 
