@@ -24,7 +24,6 @@ import AdminTranslate from "./pages/AdminTranslate";
 import NeoHi from "./pages/NeoHi";
 import AISettings from "./pages/AISettings";
 import DesignSystem from "./pages/DesignSystem";
-import NeoFlux from "./pages/NeoFlux";
 import Pricing from "./pages/Pricing";
 import Tools from "./pages/Tools";
 import ImageGenerator from "./pages/ImageGenerator";
@@ -47,7 +46,6 @@ const App = () => (
               <Route path="/neohi" element={<NeoHi />} />
               <Route path="/ai-settings" element={<AISettings />} />
               <Route path="/design-system" element={<DesignSystem />} />
-              <Route path="/neoflux" element={<NeoFlux />} />
               <Route path="/chat" element={<Chat />} />
               
               {/* Regular routes with Navigation/Footer */}

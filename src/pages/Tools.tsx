@@ -13,8 +13,7 @@ import {
   ArrowLeft,
   Zap,
   Brain,
-  Wand2,
-  Video
+  Wand2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -41,22 +40,13 @@ const tools: Tool[] = [
     category: "گفتگو و تحلیل"
   },
   {
-    id: "neoflux",
-    title: "NeoFlux - پردازش ویدیو",
-    description: "پردازش ویدیو، تولید و ترجمه زیرنویس با هوش مصنوعی",
-    icon: Video,
-    color: "accent",
-    path: "/neoflux",
-    badge: "جدید",
-    category: "تولید محتوا"
-  },
-  {
     id: "image-generator",
     title: "تولید تصویر",
     description: "ساخت تصاویر حرفه‌ای با هوش مصنوعی از روی متن",
     icon: Image,
     color: "secondary",
     path: "/tools/image-generator",
+    badge: "جدید",
     category: "تولید محتوا"
   },
   {
