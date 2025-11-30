@@ -94,10 +94,8 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkUser();
@@ -143,11 +141,9 @@ const Chat = () => {
   const handleSend = async () => {
     if (!message.trim() || !selectedModel || !currentConversationId) return;
 
-    const userMessageContent = message;
-    const userMessage: Message = { role: "user", content: userMessageContent };
+    const userMessage: Message = { role: "user", content: message };
     setMessages(prev => [...prev, userMessage]);
     setMessage("");
-    setSelectedFile(null);
     setIsLoading(true);
 
     try {
@@ -155,13 +151,13 @@ const Chat = () => {
       await supabase.from('messages').insert({
         conversation_id: currentConversationId,
         role: 'user',
-        content: userMessageContent
+        content: message
       });
 
       // Call AI
       const { data: functionData, error: functionError } = await supabase.functions.invoke('chat', {
         body: { 
-          message: userMessageContent,
+          message: message,
           modelType: selectedModel,
           conversationId: currentConversationId
         }
@@ -247,14 +243,6 @@ const Chat = () => {
 
     setShowHistory(false);
     toast.success("گفتگو بارگذاری شد", { duration: 2000 });
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      toast.success(`فایل ${file.name} انتخاب شد`, { duration: 2000 });
-    }
   };
 
   const handleClearChat = () => {
@@ -495,18 +483,10 @@ const Chat = () => {
       <div className="border-t border-border/30 bg-background/80 backdrop-blur-md sticky bottom-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="relative flex items-end gap-2 p-2 rounded-3xl bg-muted/50 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              onChange={handleFileSelect}
-              accept="image/*,.pdf,.doc,.docx"
-            />
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full h-9 w-9 flex-shrink-0"
-              onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="w-4 h-4" />
             </Button>
@@ -523,7 +503,7 @@ const Chat = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder={selectedFile ? `فایل: ${selectedFile.name} - پیام خود را بنویسید...` : "پیام خود را بنویسید..."}
+              placeholder="پیام خود را بنویسید..."
               className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2"
               rows={1}
             />
