@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageCircle, X, Send, Briefcase, User, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Film, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Briefcase, User, MessageSquare, Megaphone, ImageIcon, ArrowLeft, Loader2, Film, Sparkles, GraduationCap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-type ModelType = "business" | "personal" | "general" | "ads" | "image" | "animation" | "video";
+type ModelType = "business" | "personal" | "general" | "ads" | "image" | "animation" | "video" | "academic";
 
 interface Model {
   id: ModelType;
@@ -65,6 +65,13 @@ const models: Model[] = [
     description: "تولید ویدیو از توضیحات شما",
     icon: Film,
     gradient: "from-rose-500 to-pink-500"
+  },
+  {
+    id: "academic",
+    name: "مشاور درسی و دانشگاهی",
+    description: "راهنمای تحصیلی، حل مسائل و آموزش",
+    icon: GraduationCap,
+    gradient: "from-teal-500 to-cyan-500"
   }
 ];
 
@@ -112,7 +119,8 @@ const ChatBot = () => {
           business: "",
           personal: "",
           general: "",
-          ads: ""
+          ads: "",
+          academic: ""
         };
 
         setMessages(prev => [
