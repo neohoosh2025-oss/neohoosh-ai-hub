@@ -11,6 +11,7 @@ import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
+import VoiceInterface from "@/components/VoiceInterface";
 import { motion, AnimatePresence } from "framer-motion";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
@@ -941,6 +942,13 @@ const Chat = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Voice Interface */}
+      <VoiceInterface 
+        onTranscriptUpdate={(text) => {
+          setMessage(text);
+        }}
+      />
     </motion.div>
   );
 };
