@@ -32,6 +32,7 @@ import VoiceToText from "./pages/VoiceToText";
 import TextToVoice from "./pages/TextToVoice";
 import CodeGenerator from "./pages/CodeGenerator";
 import NotFound from "./pages/NotFound";
+import VoiceCall from "./pages/VoiceCall";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="/ai-settings" element={<AISettings />} />
               <Route path="/design-system" element={<DesignSystem />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/voice-call" element={<VoiceCall />} />
               
               {/* Regular routes with Navigation/Footer */}
               <Route path="*" element={

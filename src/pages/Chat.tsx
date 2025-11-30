@@ -14,7 +14,6 @@ import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
-import VoiceInterface from "@/components/VoiceInterface";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -102,7 +101,6 @@ const Chat = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [showVoiceInterface, setShowVoiceInterface] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -519,7 +517,7 @@ const Chat = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowVoiceInterface(true)}
+              onClick={() => navigate("/voice-call")}
               className="rounded-full px-4 h-9 text-xs font-medium whitespace-nowrap bg-background hover:bg-accent/10 border-border/60"
             >
               <Phone className="h-3.5 w-3.5 ml-1.5" />
@@ -857,13 +855,6 @@ const Chat = () => {
               </Button>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* VOICE INTERFACE */}
-      <Dialog open={showVoiceInterface} onOpenChange={setShowVoiceInterface}>
-        <DialogContent className="sm:max-w-2xl p-6">
-          <VoiceInterface />
         </DialogContent>
       </Dialog>
     </div>
