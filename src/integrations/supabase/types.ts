@@ -940,6 +940,39 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_calls: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          duration: number
+          id: string
+          transcript: string | null
+          updated_at: string
+          user_id: string
+          voice_type: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          duration?: number
+          id?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id: string
+          voice_type?: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          duration?: number
+          id?: string
+          transcript?: string | null
+          updated_at?: string
+          user_id?: string
+          voice_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
