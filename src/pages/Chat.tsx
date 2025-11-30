@@ -141,7 +141,8 @@ const Chat = () => {
   const handleSend = async () => {
     if (!message.trim() || !selectedModel || !currentConversationId) return;
 
-    const userMessage: Message = { role: "user", content: message };
+    const userMessageContent = message;
+    const userMessage: Message = { role: "user", content: userMessageContent };
     setMessages(prev => [...prev, userMessage]);
     setMessage("");
     setIsLoading(true);
@@ -151,15 +152,20 @@ const Chat = () => {
       await supabase.from('messages').insert({
         conversation_id: currentConversationId,
         role: 'user',
-        content: message
+        content: userMessageContent
       });
+
+      // Prepare messages array with full history
+      const conversationMessages = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
       // Call AI
       const { data: functionData, error: functionError } = await supabase.functions.invoke('chat', {
         body: { 
-          message: message,
-          modelType: selectedModel,
-          conversationId: currentConversationId
+          messages: conversationMessages,
+          modelType: selectedModel
         }
       });
 
@@ -167,8 +173,7 @@ const Chat = () => {
 
       const aiResponse: Message = {
         role: "assistant",
-        content: functionData.response,
-        imageUrl: functionData.imageUrl
+        content: functionData.response
       };
 
       setMessages(prev => [...prev, aiResponse]);
@@ -177,8 +182,7 @@ const Chat = () => {
       await supabase.from('messages').insert({
         conversation_id: currentConversationId,
         role: 'assistant',
-        content: functionData.response,
-        image_url: functionData.imageUrl
+        content: functionData.response
       });
 
     } catch (error: any) {
