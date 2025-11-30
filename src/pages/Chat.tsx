@@ -14,6 +14,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
@@ -85,8 +92,12 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkUser();
@@ -132,9 +143,11 @@ const Chat = () => {
   const handleSend = async () => {
     if (!message.trim() || !selectedModel || !currentConversationId) return;
 
-    const userMessage: Message = { role: "user", content: message };
+    const userMessageContent = message;
+    const userMessage: Message = { role: "user", content: userMessageContent };
     setMessages(prev => [...prev, userMessage]);
     setMessage("");
+    setSelectedFile(null);
     setIsLoading(true);
 
     try {
@@ -142,13 +155,13 @@ const Chat = () => {
       await supabase.from('messages').insert({
         conversation_id: currentConversationId,
         role: 'user',
-        content: message
+        content: userMessageContent
       });
 
       // Call AI
       const { data: functionData, error: functionError } = await supabase.functions.invoke('chat', {
         body: { 
-          message: message,
+          message: userMessageContent,
           modelType: selectedModel,
           conversationId: currentConversationId
         }
@@ -177,6 +190,70 @@ const Chat = () => {
       toast.error("خطا در ارسال پیام", { duration: 2000 });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadConversations = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error("Error loading conversations:", error);
+      toast.error("خطا در بارگذاری تاریخچه", { duration: 2000 });
+      return;
+    }
+
+    setConversations(data || []);
+  };
+
+  const loadConversation = async (convId: string) => {
+    const { data: conv, error: convError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', convId)
+      .single();
+
+    if (convError) {
+      console.error("Error loading conversation:", convError);
+      toast.error("خطا در بارگذاری گفتگو", { duration: 2000 });
+      return;
+    }
+
+    setSelectedModel(conv.model_type as ModelType);
+    setCurrentConversationId(convId);
+
+    const { data: msgs, error: msgsError } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', convId)
+      .order('created_at', { ascending: true });
+
+    if (msgsError) {
+      console.error("Error loading messages:", msgsError);
+      toast.error("خطا در بارگذاری پیام‌ها", { duration: 2000 });
+      return;
+    }
+
+    setMessages(msgs.map(m => ({
+      role: m.role as "user" | "assistant",
+      content: m.content,
+      imageUrl: m.image_url
+    })));
+
+    setShowHistory(false);
+    toast.success("گفتگو بارگذاری شد", { duration: 2000 });
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      toast.success(`فایل ${file.name} انتخاب شد`, { duration: 2000 });
     }
   };
 
@@ -214,7 +291,15 @@ const Chat = () => {
               <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate('/')}>
                 <Home className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full"
+                onClick={() => {
+                  setShowHistory(true);
+                  loadConversations();
+                }}
+              >
                 <History className="w-5 h-5" />
               </Button>
             </div>
@@ -283,7 +368,15 @@ const Chat = () => {
             <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={() => navigate('/')}>
               <Home className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full h-9 w-9"
+              onClick={() => {
+                setShowHistory(true);
+                loadConversations();
+              }}
+            >
               <History className="w-4 h-4" />
             </Button>
           </div>
@@ -402,10 +495,18 @@ const Chat = () => {
       <div className="border-t border-border/30 bg-background/80 backdrop-blur-md sticky bottom-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
           <div className="relative flex items-end gap-2 p-2 rounded-3xl bg-muted/50 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileSelect}
+              accept="image/*,.pdf,.doc,.docx"
+            />
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full h-9 w-9 flex-shrink-0"
+              onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="w-4 h-4" />
             </Button>
@@ -422,7 +523,7 @@ const Chat = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="پیام خود را بنویسید..."
+              placeholder={selectedFile ? `فایل: ${selectedFile.name} - پیام خود را بنویسید...` : "پیام خود را بنویسید..."}
               className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2"
               rows={1}
             />
@@ -438,6 +539,43 @@ const Chat = () => {
           </div>
         </div>
       </div>
+
+      {/* History Dialog */}
+      <Dialog open={showHistory} onOpenChange={setShowHistory}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-right">تاریخچه گفتگوها</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 mt-4">
+            {conversations.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <History className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                <p>هنوز گفتگویی ثبت نشده است</p>
+              </div>
+            ) : (
+              conversations.map((conv) => (
+                <motion.button
+                  key={conv.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => loadConversation(conv.id)}
+                  className="w-full p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all text-right"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold">{conv.title}</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(conv.updated_at).toLocaleDateString('fa-IR')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    مدل: {models.find(m => m.id === conv.model_type)?.name}
+                  </p>
+                </motion.button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
