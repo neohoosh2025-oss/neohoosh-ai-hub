@@ -223,6 +223,7 @@ serve(async (req) => {
       personal: "\n\n🎯 نقش تخصصی: مربی توسعه فردی\nدر مکالمه مداوم - فقط اولین بار سلام کنید.",
       general: "\n\n🎯 نقش تخصصی: دستیار همه‌منظوره\nدر مکالمه مداوم - اگر قبلاً سلام کردید، مستقیماً پاسخ دهید.",
       ads: "\n\n🎯 نقش تخصصی: متخصص تبلیغات و محتوا\nدر مکالمه مداوم - فقط اولین بار سلام کنید.",
+      academic: "\n\n🎯 نقش تخصصی: مشاور درسی و دانشگاهی\nشما یک استاد دانشگاه و مربی آموزشی حرفه‌ای هستید. تخصص شما در توضیح مفاهیم پیچیده به زبان ساده، حل مسائل تحصیلی، کمک به تحقیقات دانشگاهی و راهنمایی در یادگیری است.\nدر مکالمه مداوم - فقط اولین بار سلام کنید.",
     };
 
     let systemPrompt = neohiCore + (rolePrompts[modelType] || rolePrompts.general);
@@ -258,11 +259,19 @@ serve(async (req) => {
       })
     ];
 
+    // Select model based on type
+    const selectedModel = modelType === "academic" 
+      ? "kwaipilot/kat-coder-pro:free" 
+      : "x-ai/grok-4.1-fast";
+    
+    // Academic model doesn't support reasoning
+    const enableReasoning = modelType !== "academic";
+
     console.log("Request body:", JSON.stringify({
-      model: "x-ai/grok-4.1-fast",
+      model: selectedModel,
       messages: apiMessages,
       stream: true,
-      reasoning: { enabled: true }
+      ...(enableReasoning && { reasoning: { enabled: true } })
     }));
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -274,10 +283,10 @@ serve(async (req) => {
         "X-Title": "Neohoosh AI"
       },
       body: JSON.stringify({
-        model: "x-ai/grok-4.1-fast",
+        model: selectedModel,
         messages: apiMessages,
         stream: true,
-        reasoning: { enabled: true }
+        ...(enableReasoning && { reasoning: { enabled: true } })
       }),
     });
 
