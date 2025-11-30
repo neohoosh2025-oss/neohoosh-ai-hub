@@ -1,20 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { Phone, PhoneOff, Mic, MicOff } from 'lucide-react';
+import { PhoneCall, PhoneOff, Mic, MicOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AudioRecorder, encodeAudioForAPI, playAudioData, clearAudioQueue } from '@/utils/RealtimeAudio';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VoiceInterfaceProps {
   onTranscriptUpdate?: (text: string) => void;
 }
 
+const VOICES = [
+  { value: 'alloy', label: 'Alloy', description: 'متعادل و حرفه‌ای' },
+  { value: 'echo', label: 'Echo', description: 'مردانه و صمیمی' },
+  { value: 'fable', label: 'Fable', description: 'زنانه و گرم' },
+  { value: 'onyx', label: 'Onyx', description: 'مردانه و قدرتمند' },
+  { value: 'nova', label: 'Nova', description: 'زنانه و پرانرژی' },
+  { value: 'shimmer', label: 'Shimmer', description: 'زنانه و ملایم' },
+];
+
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [currentTranscript, setCurrentTranscript] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState('alloy');
   
   const wsRef = useRef<WebSocket | null>(null);
   const recorderRef = useRef<AudioRecorder | null>(null);
@@ -35,6 +48,12 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
         console.log('Connected to voice service');
         setIsConnected(true);
         
+        // Send voice preference
+        wsRef.current?.send(JSON.stringify({
+          type: 'config',
+          voice: selectedVoice
+        }));
+        
         // Start recording
         recorderRef.current = new AudioRecorder((audioData) => {
           if (!isMuted && wsRef.current?.readyState === WebSocket.OPEN) {
@@ -49,7 +68,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
         await recorderRef.current.start();
         
         toast({
-          title: "تماس برقرار شد",
+          title: "✅ تماس برقرار شد",
           description: "می‌توانید با AI صحبت کنید",
         });
       };
@@ -171,34 +190,44 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
   }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div 
+      className={`fixed z-50 flex flex-col gap-3 ${
+        isMobile 
+          ? 'bottom-20 left-4 right-4 items-stretch' 
+          : 'bottom-6 right-6 items-end'
+      }`}
+    >
       <AnimatePresence>
         {isConnected && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="bg-gradient-to-br from-card to-card/95 backdrop-blur-xl rounded-2xl p-4 shadow-2xl border border-primary/20 w-[280px] mb-2"
+            className={`bg-gradient-to-br from-card via-card/98 to-card/95 backdrop-blur-xl rounded-3xl p-5 shadow-2xl border border-primary/20 ${
+              isMobile ? 'w-full' : 'w-[320px]'
+            }`}
           >
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {/* Status Indicator */}
-              <div className="flex items-center gap-2 px-2">
+              <div className="flex items-center gap-3 px-1">
                 <motion.div
                   animate={{
-                    scale: isAISpeaking ? [1, 1.3, 1] : 1,
-                    opacity: isAISpeaking ? [1, 0.7, 1] : 1,
+                    scale: isAISpeaking ? [1, 1.4, 1] : 1,
+                    opacity: isAISpeaking ? [1, 0.6, 1] : 1,
                   }}
                   transition={{
-                    duration: 1.5,
+                    duration: 1.2,
                     repeat: isAISpeaking ? Infinity : 0,
                     ease: "easeInOut"
                   }}
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    isAISpeaking ? 'bg-primary shadow-lg shadow-primary/50' : 'bg-muted-foreground/50'
+                  className={`w-3 h-3 rounded-full ${
+                    isAISpeaking 
+                      ? 'bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/60' 
+                      : 'bg-muted-foreground/40'
                   }`}
                 />
-                <span className="text-xs font-medium text-foreground/90">
-                  {isAISpeaking ? 'AI در حال صحبت است...' : 'در حال گوش دادن...'}
+                <span className="text-sm font-semibold text-foreground">
+                  {isAISpeaking ? '🎙️ AI در حال صحبت است...' : '👂 در حال گوش دادن...'}
                 </span>
               </div>
 
@@ -207,9 +236,9 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-muted/40 rounded-lg p-3 border border-border/50"
+                  className="bg-gradient-to-br from-muted/60 to-muted/40 rounded-2xl p-4 border border-border/50 shadow-inner"
                 >
-                  <p className="text-xs text-foreground/80 leading-relaxed line-clamp-3 text-right">
+                  <p className="text-sm text-foreground/90 leading-relaxed line-clamp-4 text-right">
                     {currentTranscript}
                   </p>
                 </motion.div>
@@ -219,11 +248,11 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
               <Button
                 onClick={toggleMute}
                 variant="outline"
-                size="sm"
-                className="gap-2 h-9 hover:bg-primary/10 hover:border-primary/50 transition-all"
+                size={isMobile ? "default" : "sm"}
+                className="gap-2 hover:bg-primary/10 hover:border-primary/60 transition-all duration-300 rounded-xl"
               >
-                {isMuted ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
-                <span className="text-xs">
+                {isMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                <span className="text-sm font-medium">
                   {isMuted ? 'روشن کردن میکروفون' : 'خاموش کردن میکروفون'}
                 </span>
               </Button>
@@ -232,30 +261,69 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
         )}
       </AnimatePresence>
 
-      {/* Main FAB Button */}
+      {/* Voice Selector - Only show when not connected */}
+      {!isConnected && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`bg-card/90 backdrop-blur-md rounded-2xl p-4 shadow-lg border border-border/50 ${
+            isMobile ? 'w-full' : 'w-[320px]'
+          }`}
+        >
+          <label className="text-sm font-semibold text-foreground mb-2 block text-right">
+            انتخاب صدای AI:
+          </label>
+          <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+            <SelectTrigger className="w-full rounded-xl bg-background/50 border-border/60 hover:border-primary/40 transition-all">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl">
+              {VOICES.map((voice) => (
+                <SelectItem 
+                  key={voice.value} 
+                  value={voice.value}
+                  className="rounded-lg"
+                >
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="font-medium">{voice.label}</span>
+                    <span className="text-xs text-muted-foreground">{voice.description}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
+      )}
+
+      {/* Main Call Button */}
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 260, damping: 20 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+        className={isMobile ? 'w-full' : 'self-end'}
       >
         {!isConnected ? (
           <Button
             onClick={startConversation}
-            size="lg"
-            className="rounded-full w-14 h-14 bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-xl hover:shadow-2xl shadow-primary/30 hover:shadow-primary/40 border border-primary/20 transition-all duration-300 group"
+            size={isMobile ? "lg" : "default"}
+            className={`gap-3 bg-gradient-to-br from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 shadow-xl hover:shadow-2xl shadow-primary/40 hover:shadow-primary/50 border border-primary/30 transition-all duration-300 group rounded-2xl font-semibold ${
+              isMobile ? 'w-full h-14 text-base' : 'h-12 px-6'
+            }`}
           >
-            <Phone className="w-5 h-5 transition-transform group-hover:rotate-12" />
+            <PhoneCall className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-6" />
+            <span>شروع تماس صوتی</span>
           </Button>
         ) : (
           <Button
             onClick={endConversation}
-            size="lg"
+            size={isMobile ? "lg" : "default"}
             variant="destructive"
-            className="rounded-full w-14 h-14 shadow-xl hover:shadow-2xl shadow-destructive/30 hover:shadow-destructive/40 border border-destructive/20 transition-all duration-300 group"
+            className={`gap-3 shadow-xl hover:shadow-2xl shadow-destructive/40 hover:shadow-destructive/50 border border-destructive/30 transition-all duration-300 group rounded-2xl font-semibold ${
+              isMobile ? 'w-full h-14 text-base' : 'h-12 px-6'
+            }`}
           >
-            <PhoneOff className="w-5 h-5 transition-transform group-hover:rotate-12" />
+            <PhoneOff className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:-rotate-6" />
+            <span>قطع تماس</span>
           </Button>
         )}
       </motion.div>

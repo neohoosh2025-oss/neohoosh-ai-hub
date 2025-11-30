@@ -29,14 +29,17 @@ serve(async (req) => {
   socket.onopen = () => {
     console.log("Client connected");
     
-    // Connect to OpenAI Realtime API
+    // Connect to OpenAI Realtime API with proper headers
     const url = "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-10-01";
-    openAISocket = new WebSocket(url, {
-      headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
-        "OpenAI-Beta": "realtime=v1",
-      },
+    const headers = new Headers({
+      "Authorization": `Bearer ${OPENAI_API_KEY}`,
+      "OpenAI-Beta": "realtime=v1",
     });
+    
+    openAISocket = new WebSocket(url);
+    
+    // Store headers for later use if needed
+    (openAISocket as any)._headers = headers;
 
     openAISocket.onopen = () => {
       console.log("Connected to OpenAI Realtime API");
@@ -50,12 +53,16 @@ serve(async (req) => {
         // Send session.update after receiving session.created
         if (data.type === "session.created" && !sessionReady) {
           sessionReady = true;
+          
+          // Get voice from client message or use default
+          const voice = (event.data as any).voice || "alloy";
+          
           const sessionConfig = {
             type: "session.update",
             session: {
               modalities: ["text", "audio"],
               instructions: "شما یک دستیار هوشمند فارسی‌زبان هستید. با کاربر به صورت دوستانه و مفید صحبت کنید. پاسخ‌های خود را واضح و مختصر بیان کنید.",
-              voice: "alloy",
+              voice: voice,
               input_audio_format: "pcm16",
               output_audio_format: "pcm16",
               input_audio_transcription: {
@@ -72,7 +79,7 @@ serve(async (req) => {
             }
           };
           openAISocket?.send(JSON.stringify(sessionConfig));
-          console.log("Session configuration sent");
+          console.log("Session configuration sent with voice:", voice);
         }
 
         // Forward all messages to client
