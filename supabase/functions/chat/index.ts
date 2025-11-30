@@ -267,12 +267,7 @@ serve(async (req) => {
     // Academic model doesn't support reasoning
     const enableReasoning = modelType !== "academic";
 
-    console.log("Request body:", JSON.stringify({
-      model: selectedModel,
-      messages: apiMessages,
-      stream: true,
-      ...(enableReasoning && { reasoning: { enabled: true } })
-    }));
+    console.log("Calling OpenRouter with model:", selectedModel);
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -285,7 +280,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: selectedModel,
         messages: apiMessages,
-        stream: true,
+        stream: false,
         ...(enableReasoning && { reasoning: { enabled: true } })
       }),
     });
@@ -313,15 +308,15 @@ serve(async (req) => {
       );
     }
 
-    // Return streaming response
-    return new Response(response.body, {
-      headers: { 
-        ...corsHeaders, 
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive"
-      },
-    });
+    const data = await response.json();
+    const aiResponse = data.choices?.[0]?.message?.content || "خطا در دریافت پاسخ";
+
+    return new Response(
+      JSON.stringify({ response: aiResponse }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      }
+    );
 
   } catch (e) {
     console.error("chat error:", e);
