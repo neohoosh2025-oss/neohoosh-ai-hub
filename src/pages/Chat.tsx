@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Mic, Brain, GraduationCap } from "lucide-react";
+import { Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, Send, Trash2, Plus, Menu, X, Upload, Download, Square, Copy, Check, Home, Sparkles, Paperclip, Volume2, GraduationCap, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -10,6 +10,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { VoiceRecorder } from "@/components/VoiceRecorder";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
@@ -106,7 +108,9 @@ const Chat = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -496,8 +500,47 @@ const Chat = () => {
     textareaRef.current?.focus();
   };
 
+  const handleVoiceTranscript = (text: string) => {
+    setMessage(text);
+  };
+
+  const playTextAsAudio = async (text: string) => {
+    if (isPlayingAudio) {
+      audioRef.current?.pause();
+      setIsPlayingAudio(false);
+      return;
+    }
+
+    try {
+      setIsPlayingAudio(true);
+      const { data, error } = await supabase.functions.invoke('text-to-voice', {
+        body: { text, voice: 'alloy' }
+      });
+
+      if (error) throw error;
+
+      if (data.audioUrl) {
+        const audio = new Audio(data.audioUrl);
+        audioRef.current = audio;
+        audio.onended = () => setIsPlayingAudio(false);
+        audio.play();
+        toast.success('پخش صدا شروع شد');
+      }
+    } catch (error) {
+      console.error('Error playing audio:', error);
+      toast.error('خطا در پخش صدا');
+      setIsPlayingAudio(false);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-[hsl(var(--chat-bg))] flex flex-col overflow-hidden" dir={language === "en" ? "ltr" : "rtl"}>
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 bg-gradient-to-br from-background via-background to-muted/30 flex flex-col overflow-hidden" 
+      dir={language === "en" ? "ltr" : "rtl"}
+    >
       {/* Glassmorphism Header */}
       <div className="h-14 border-b border-border/40 flex items-center justify-between px-4 shrink-0 backdrop-blur-xl bg-[hsl(var(--chat-header-bg))] sticky top-0 z-50">
         <button
@@ -629,8 +672,12 @@ const Chat = () => {
                   {models.map((model) => {
                     const Icon = model.icon;
                     return (
-                      <button
+                      <motion.button
                         key={model.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => {
                           createNewConversation(model.id);
                           if (isMobile) setSidebarOpen(false);
@@ -644,7 +691,7 @@ const Chat = () => {
                           <h3 className="font-semibold text-sm mb-0.5">{model.name}</h3>
                           <p className="text-xs text-muted-foreground">{model.description}</p>
                         </div>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
@@ -680,25 +727,43 @@ const Chat = () => {
               </div>
             ) : (
               <div className="max-w-3xl mx-auto p-4 space-y-4 pb-4">
-                {messages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} group message-animation`}>
-                    <div className={`relative max-w-[85%] ${
-                      msg.role === "user" 
-                        ? "bg-[hsl(var(--chat-user-bubble))] border border-primary-200/50" 
-                        : "bg-[hsl(var(--chat-bot-bubble))] border border-border/40"
-                    } rounded-2xl px-4 py-3 shadow-sm`}>
+                <AnimatePresence mode="popLayout">
+                  {messages.map((msg, idx) => (
+                    <motion.div 
+                      key={idx} 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} group`}
+                    >
+                      <div className={`relative max-w-[85%] ${
+                        msg.role === "user" 
+                          ? "bg-gradient-to-br from-primary-500 to-primary-600 text-white border-0" 
+                          : "bg-card border border-border/40"
+                      } rounded-2xl px-4 py-3 shadow-md hover:shadow-lg transition-all duration-200`}>
                       {msg.role === "assistant" && (
-                        <button
-                          onClick={() => handleCopyMessage(msg.content, idx)}
-                          className="absolute -top-2 -left-2 p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-muted shadow-sm"
-                          title="کپی کردن"
-                        >
-                          {copiedMessageId === idx ? (
-                            <Check className="w-3.5 h-3.5 text-success" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5" />
-                          )}
-                        </button>
+                        <div className="flex items-center gap-2 mt-2">
+                          <button
+                            onClick={() => handleCopyMessage(msg.content, idx)}
+                            className="p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-muted shadow-sm"
+                            title="کپی کردن"
+                          >
+                            {copiedMessageId === idx ? (
+                              <Check className="w-3.5 h-3.5 text-success" />
+                            ) : (
+                              <Copy className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          <button
+                            onClick={() => playTextAsAudio(msg.content)}
+                            className="p-1.5 rounded-full bg-background border border-border opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-muted shadow-sm"
+                            title="پخش صوتی"
+                            disabled={isPlayingAudio}
+                          >
+                            <Volume2 className={`w-3.5 h-3.5 ${isPlayingAudio ? 'text-primary animate-pulse' : ''}`} />
+                          </button>
+                        </div>
                       )}
                       {msg.role === "assistant" ? (
                         <>
@@ -758,20 +823,25 @@ const Chat = () => {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                </AnimatePresence>
                 
                 {/* Typing indicator */}
                 {isLoading && (
-                  <div className="flex justify-start message-animation">
-                    <div className="bg-[hsl(var(--chat-bot-bubble))] border border-border/40 rounded-2xl px-4 py-3 shadow-sm">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-start"
+                  >
+                    <div className="bg-card border border-border/40 rounded-2xl px-4 py-3 shadow-md">
                       <div className="flex gap-1">
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.3s]"></div>
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:-0.15s]"></div>
-                        <div className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce"></div>
+                        <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
                 
                 <div ref={messagesEndRef} />
@@ -837,14 +907,12 @@ const Chat = () => {
                       className="resize-none min-h-[44px] max-h-[120px] pr-12 rounded-2xl border-border/60 bg-[hsl(var(--chat-input-bg))] focus:border-primary-300 transition-all duration-200 text-[15px] leading-relaxed"
                       rows={1}
                     />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute left-2 bottom-2 h-7 w-7 hover:bg-muted/50"
-                      title="پیام صوتی"
-                    >
-                      <Mic className="h-4 w-4" />
-                    </Button>
+                    <div className="absolute left-2 bottom-2">
+                      <VoiceRecorder 
+                        onTranscript={handleVoiceTranscript}
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
                   
                   <Button 
@@ -873,7 +941,7 @@ const Chat = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 };
 
