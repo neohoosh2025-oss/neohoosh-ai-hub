@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -15,12 +15,11 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
@@ -94,6 +93,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -161,28 +161,73 @@ const Chat = () => {
         content: m.content
       }));
 
-      // Call AI
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('chat', {
-        body: { 
-          messages: conversationMessages,
-          modelType: selectedModel
+      // Create assistant message placeholder
+      const assistantMessageIndex = messages.length + 1;
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+
+      // Stream AI response
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            messages: conversationMessages,
+            modelType: selectedModel
+          }),
         }
-      });
+      );
 
-      if (functionError) throw functionError;
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to start stream');
+      }
 
-      const aiResponse: Message = {
-        role: "assistant",
-        content: functionData.response
-      };
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
 
-      setMessages(prev => [...prev, aiResponse]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      // Save AI message
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices?.[0]?.delta?.content;
+              
+              if (content) {
+                accumulatedContent += content;
+                setMessages(prev => {
+                  const newMessages = [...prev];
+                  newMessages[assistantMessageIndex] = {
+                    role: "assistant",
+                    content: accumulatedContent
+                  };
+                  return newMessages;
+                });
+              }
+            } catch (e) {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+
+      // Save final AI message
       await supabase.from('messages').insert({
         conversation_id: currentConversationId,
         role: 'assistant',
-        content: functionData.response
+        content: accumulatedContent
       });
 
     } catch (error: any) {
@@ -261,6 +306,13 @@ const Chat = () => {
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleCopyMessage = (content: string, index: number) => {
+    navigator.clipboard.writeText(content);
+    setCopiedIndex(index);
+    toast.success("متن کپی شد", { duration: 1500 });
+    setTimeout(() => setCopiedIndex(null), 2000);
   };
 
   // Model Selection Screen
@@ -439,11 +491,31 @@ const Chat = () => {
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} alt="Generated" className="rounded-xl w-full mb-2" />
                   ) : null}
-                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert' : ''}`}>
+                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:p-2 [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic`}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
                   </div>
+                  {msg.role === 'assistant' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopyMessage(msg.content, index)}
+                      className="mt-2 h-7 px-2 text-xs hover:bg-background/10"
+                    >
+                      {copiedIndex === index ? (
+                        <>
+                          <Check className="w-3 h-3 ml-1" />
+                          کپی شد
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3 ml-1" />
+                          کپی متن
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -524,13 +596,13 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* History Dialog */}
-      <Dialog open={showHistory} onOpenChange={setShowHistory}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-right">تاریخچه گفتگوها</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 mt-4">
+      {/* History Sheet */}
+      <Sheet open={showHistory} onOpenChange={setShowHistory}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle className="text-xl font-bold text-right">تاریخچه گفتگوها</SheetTitle>
+          </SheetHeader>
+          <div className="space-y-3 mt-6">
             {conversations.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <History className="w-16 h-16 mx-auto mb-4 opacity-20" />
@@ -540,13 +612,13 @@ const Chat = () => {
               conversations.map((conv) => (
                 <motion.button
                   key={conv.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   onClick={() => loadConversation(conv.id)}
-                  className="w-full p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all text-right"
+                  className="w-full p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all text-right group"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{conv.title}</h3>
+                    <h3 className="font-semibold group-hover:text-primary transition-colors">{conv.title}</h3>
                     <span className="text-xs text-muted-foreground">
                       {new Date(conv.updated_at).toLocaleDateString('fa-IR')}
                     </span>
@@ -558,8 +630,8 @@ const Chat = () => {
               ))
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
