@@ -30,13 +30,22 @@ export default defineConfig(({ mode }) => ({
       'framer-motion'
     ],
     exclude: [],
-    force: true  // Force re-optimization
+    force: true,
+    esbuildOptions: {
+      target: 'esnext',
+      jsx: 'automatic'
+    }
   },
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined  // Let Vite handle chunking
+        manualChunks: undefined
       }
+    },
+    target: 'esnext',
+    commonjsOptions: {
+      transformMixedEsModules: true
     }
-  }
+  },
+  clearScreen: false
 }));
