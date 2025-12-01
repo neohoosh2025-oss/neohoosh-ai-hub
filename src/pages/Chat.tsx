@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -173,13 +173,20 @@ const Chat = () => {
       if (isFirstMessage) {
         // Extract actual text content, removing any file links
         const cleanContent = userMessageContent.replace(/\[فایل:.*?\]\(.*?\)/g, '').trim();
-        const title = cleanContent.length > 50 
-          ? cleanContent.substring(0, 50) + '...'
+        const title = cleanContent.length > 60 
+          ? cleanContent.substring(0, 60) + '...'
           : cleanContent || 'گفتگوی جدید';
+        
         await supabase
           .from('conversations')
-          .update({ title })
+          .update({ 
+            title,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', currentConversationId);
+        
+        // Reload conversations to update the list
+        await loadConversations();
       }
 
       // Prepare messages array with full history
@@ -724,14 +731,26 @@ const Chat = () => {
 
       {/* History Sheet */}
       <Sheet open={showHistory} onOpenChange={setShowHistory}>
-        <SheetContent side="right" className="w-[90vw] sm:w-[420px] p-0">
+        <SheetContent side="right" className="w-[90vw] sm:w-[420px] p-0 [&>button]:hidden">
           <div className="h-full flex flex-col">
             <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/40">
-              <SheetTitle className="text-xl font-bold text-right flex items-center gap-2.5">
-                <History className="w-5 h-5 text-muted-foreground" />
-                تاریخچه گفتگوها
-              </SheetTitle>
-              <p className="text-sm text-muted-foreground text-right mt-1">بازگشت به گفتگوهای قبلی</p>
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowHistory(false)}
+                  className="h-9 w-9 rounded-lg hover:bg-muted -mr-2"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+                <div className="flex-1 text-right">
+                  <SheetTitle className="text-xl font-bold flex items-center gap-2.5 justify-end">
+                    تاریخچه گفتگوها
+                    <History className="w-5 h-5 text-muted-foreground" />
+                  </SheetTitle>
+                  <p className="text-sm text-muted-foreground mt-1">بازگشت به گفتگوهای قبلی</p>
+                </div>
+              </div>
             </SheetHeader>
             
             <div className="flex-1 overflow-y-auto px-6 py-4">
