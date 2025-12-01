@@ -342,50 +342,52 @@ const Chat = () => {
   // Model Selection Screen
   if (!selectedModel) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/98 to-primary/5">
+      <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="border-b border-border/30 bg-background/80 backdrop-blur-md">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center shadow-lg">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold">نئوهوش</h1>
-                <p className="text-xs text-muted-foreground">✨ آماده‌ام کمکت کنم</p>
+                <h1 className="text-base font-semibold">نئوهوش</h1>
+                <p className="text-[11px] text-muted-foreground">دستیار هوشمند شما</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => navigate('/')}>
-                <Home className="w-5 h-5" />
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted" onClick={() => navigate('/')}>
+                <Home className="w-4 h-4" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="rounded-full"
+                className="h-9 w-9 rounded-lg hover:bg-muted"
                 onClick={() => {
                   setShowHistory(true);
                   loadConversations();
                 }}
               >
-                <History className="w-5 h-5" />
+                <History className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
 
         {/* Model Grid */}
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <div className="max-w-6xl mx-auto px-6 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="text-center mb-16 max-w-2xl mx-auto"
           >
-            <h2 className="text-3xl font-bold mb-3">با کدوم مدل میخوای شروع کنی؟</h2>
-            <p className="text-muted-foreground text-lg">یه مدل انتخاب کن تا چت رو شروع کنیم</p>
+            <h2 className="text-4xl font-bold mb-4 tracking-tight">یک مدل انتخاب کنید</h2>
+            <p className="text-muted-foreground text-base leading-relaxed">
+              هر مدل برای نیاز خاصی طراحی شده است. مدل مناسب را انتخاب کنید تا بهترین نتیجه را بگیرید
+            </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
             {models.map((model, index) => {
               const Icon = model.icon;
               return (
@@ -393,17 +395,17 @@ const Chat = () => {
                   key={model.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.08 }}
                   onClick={() => handleModelSelect(model.id)}
-                  className="group relative p-6 rounded-2xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all duration-300 text-right hover:shadow-xl"
+                  className="group relative p-8 rounded-2xl border border-border/60 bg-card hover:bg-accent/30 hover:border-primary/40 transition-all duration-300 text-right hover:shadow-lg hover:-translate-y-1"
                 >
-                  <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${model.gradient} mb-4 shadow-lg`}>
-                    <Icon className="w-6 h-6 text-white" />
+                  <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${model.gradient} mb-5`}>
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{model.name}</h3>
-                  <p className="text-sm text-muted-foreground">{model.description}</p>
-                  <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{model.name}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{model.description}</p>
+                  <div className="absolute top-6 left-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                   </div>
                 </motion.button>
               );
@@ -416,41 +418,44 @@ const Chat = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="border-t border-border/30 pt-8"
+              className="border-t border-border/40 pt-16"
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold flex items-center gap-2">
-                  <History className="w-5 h-5" />
-                  گفتگوهای اخیر
-                </h3>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-2xl font-bold mb-1 flex items-center gap-2.5">
+                    <History className="w-5 h-5 text-muted-foreground" />
+                    گفتگوهای اخیر
+                  </h3>
+                  <p className="text-sm text-muted-foreground">به گفتگوهای قبلی خود برگردید</p>
+                </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowHistory(true)}
-                  className="text-xs"
+                  className="text-xs h-9 px-4 hover:bg-muted rounded-lg"
                 >
                   مشاهده همه
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {conversations.slice(0, 6).map((conv) => (
                   <motion.button
                     key={conv.id}
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     onClick={() => loadConversation(conv.id)}
-                    className="p-4 rounded-xl border border-border/40 bg-card/30 hover:bg-card hover:border-primary/40 transition-all text-right group"
+                    className="p-5 rounded-xl border border-border/50 bg-card hover:bg-accent/20 hover:border-primary/40 transition-all text-right group"
                   >
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1 leading-relaxed">
                         {conv.title}
                       </h4>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-0.5">
                         {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Bot className="w-3 h-3" />
+                      <Bot className="w-3.5 h-3.5" />
                       <span>{models.find(m => m.id === conv.model_type)?.name}</span>
                     </div>
                   </motion.button>
@@ -467,28 +472,28 @@ const Chat = () => {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border/30 bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center shadow-md">
-              <Bot className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center">
+              <Bot className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h1 className="text-base font-bold">نئوهوش</h1>
+              <h1 className="text-sm font-semibold">نئوهوش</h1>
               <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <p className="text-xs text-muted-foreground">آنلاین</p>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <p className="text-[11px] text-muted-foreground">آنلاین</p>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="rounded-full h-9 w-9" onClick={() => navigate('/')}>
+            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted" onClick={() => navigate('/')}>
               <Home className="w-4 h-4" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="rounded-full h-9 w-9"
+              className="h-9 w-9 rounded-lg hover:bg-muted"
               onClick={() => {
                 setShowHistory(true);
                 loadConversations();
@@ -500,13 +505,13 @@ const Chat = () => {
         </div>
 
         {/* Action Strip */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pb-3">
+        <div className="max-w-4xl mx-auto px-6 pb-3">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClearChat}
-              className="rounded-full h-8 px-3 text-xs hover:bg-primary/10"
+              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
             >
               <Trash2 className="w-3.5 h-3.5 ml-1.5" />
               پاک کردن
@@ -515,7 +520,7 @@ const Chat = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/voice-call')}
-              className="rounded-full h-8 px-3 text-xs hover:bg-primary/10"
+              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
             >
               <Phone className="w-3.5 h-3.5 ml-1.5" />
               تماس صوتی
@@ -524,7 +529,7 @@ const Chat = () => {
               variant="ghost"
               size="sm"
               onClick={handleNewChat}
-              className="rounded-full h-8 px-3 text-xs hover:bg-primary/10"
+              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
             >
               <Sparkles className="w-3.5 h-3.5 ml-1.5" />
               گفتگوی جدید
@@ -535,7 +540,7 @@ const Chat = () => {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
           <AnimatePresence mode="popLayout">
             {messages.map((msg, index) => (
               <motion.div
@@ -543,12 +548,12 @@ const Chat = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
                   <Avatar className="w-8 h-8 ml-3 mt-1 flex-shrink-0">
-                    <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE]">
+                    <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] rounded-lg">
                       <Bot className="w-4 h-4 text-white" />
                     </AvatarFallback>
                   </Avatar>
@@ -557,14 +562,14 @@ const Chat = () => {
                 <div
                   className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] text-white shadow-lg'
-                      : 'bg-muted/50 border border-border/50'
+                      ? 'bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] text-white shadow-md'
+                      : 'bg-muted/40 border border-border/40'
                   }`}
                 >
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} alt="Generated" className="rounded-xl w-full mb-2" />
                   ) : null}
-                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted [&_th]:font-semibold [&_td]:border [&_td]:border-border [&_td]:p-2 [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm [&_pre]:bg-muted [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:border-l-4 [&_blockquote]:border-primary [&_blockquote]:pl-4 [&_blockquote]:italic`}>
+                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_code]:bg-muted/50 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted/50 [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground`}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {msg.content}
                     </ReactMarkdown>
@@ -574,7 +579,7 @@ const Chat = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleCopyMessage(msg.content, index)}
-                      className="mt-2 h-7 px-2 text-xs hover:bg-background/10"
+                      className="mt-2 h-7 px-2 text-xs hover:bg-muted rounded-md"
                     >
                       {copiedIndex === index ? (
                         <>
@@ -601,17 +606,17 @@ const Chat = () => {
               className="flex items-start gap-3"
             >
               <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE]">
+                <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] rounded-lg">
                   <Bot className="w-4 h-4 text-white" />
                 </AvatarFallback>
               </Avatar>
-              <div className="bg-muted/50 rounded-2xl px-4 py-3 border border-border/50">
+              <div className="bg-muted/40 rounded-2xl px-4 py-3 border border-border/40">
                 <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <motion.div
                       key={i}
-                      className="w-2 h-2 bg-primary rounded-full"
-                      animate={{ y: [0, -8, 0] }}
+                      className="w-2 h-2 bg-primary/60 rounded-full"
+                      animate={{ y: [0, -6, 0] }}
                       transition={{
                         duration: 0.6,
                         repeat: Infinity,
@@ -629,13 +634,13 @@ const Chat = () => {
       </div>
 
       {/* Input Bar */}
-      <div className="border-t border-border/30 bg-background/80 backdrop-blur-md sticky bottom-0">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4">
-          <div className="relative flex items-end gap-2 p-2 rounded-3xl bg-muted/50 border border-border/50 shadow-sm hover:shadow-md transition-shadow">
+      <div className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky bottom-0">
+        <div className="max-w-3xl mx-auto px-6 py-4">
+          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-muted/30 border border-border/40 shadow-sm hover:border-border/60 transition-colors">
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full h-9 w-9 flex-shrink-0"
+              className="h-9 w-9 flex-shrink-0 rounded-lg hover:bg-muted"
             >
               <Paperclip className="w-4 h-4" />
             </Button>
@@ -653,7 +658,7 @@ const Chat = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="پیام خود را بنویسید..."
-              className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2"
+              className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2 placeholder:text-muted-foreground/60"
               rows={1}
             />
 
@@ -661,7 +666,7 @@ const Chat = () => {
               onClick={handleSend}
               disabled={!message.trim() || isLoading}
               size="icon"
-              className="rounded-full h-9 w-9 bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] hover:opacity-90 flex-shrink-0 disabled:opacity-50"
+              className="h-9 w-9 bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] hover:opacity-90 flex-shrink-0 disabled:opacity-50 rounded-lg shadow-sm"
             >
               <Send className="w-4 h-4" />
             </Button>
@@ -671,43 +676,66 @@ const Chat = () => {
 
       {/* History Sheet */}
       <Sheet open={showHistory} onOpenChange={setShowHistory}>
-        <SheetContent side="right" className="w-[90vw] sm:w-[400px]">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl font-bold text-right flex items-center gap-2">
-              <History className="w-5 h-5" />
-              تاریخچه گفتگوها
-            </SheetTitle>
-          </SheetHeader>
-          <div className="space-y-2">
-            {conversations.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <History className="w-20 h-20 mx-auto mb-4 opacity-10" />
-                <p className="text-sm">هنوز گفتگویی ثبت نشده است</p>
+        <SheetContent side="right" className="w-[90vw] sm:w-[420px] p-0">
+          <div className="h-full flex flex-col">
+            <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/40">
+              <SheetTitle className="text-xl font-bold text-right flex items-center gap-2.5">
+                <History className="w-5 h-5 text-muted-foreground" />
+                تاریخچه گفتگوها
+              </SheetTitle>
+              <p className="text-sm text-muted-foreground text-right mt-1">بازگشت به گفتگوهای قبلی</p>
+            </SheetHeader>
+            
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              <div className="space-y-3">
+                {conversations.length === 0 ? (
+                  <div className="text-center py-20 text-muted-foreground">
+                    <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                      <History className="w-8 h-8 opacity-30" />
+                    </div>
+                    <p className="text-sm font-medium">هنوز گفتگویی ثبت نشده</p>
+                    <p className="text-xs mt-1">گفتگوهای شما در اینجا ذخیره می‌شوند</p>
+                  </div>
+                ) : (
+                  conversations.map((conv, index) => {
+                    const isActive = conv.id === currentConversationId;
+                    return (
+                      <motion.button
+                        key={conv.id}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.03 }}
+                        onClick={() => loadConversation(conv.id)}
+                        className={`w-full p-4 rounded-xl border transition-all text-right group ${
+                          isActive 
+                            ? 'border-primary/60 bg-primary/5 shadow-sm' 
+                            : 'border-border/40 bg-card hover:bg-accent/20 hover:border-primary/30 hover:shadow-sm'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                          <h3 className={`font-semibold text-sm line-clamp-2 flex-1 leading-relaxed transition-colors ${
+                            isActive ? 'text-primary' : 'group-hover:text-foreground'
+                          }`}>
+                            {conv.title}
+                          </h3>
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap mt-0.5 font-medium">
+                            {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <div className={`w-5 h-5 rounded-md flex items-center justify-center ${
+                            isActive ? 'bg-primary/10' : 'bg-muted/50'
+                          }`}>
+                            <Bot className="w-3 h-3" />
+                          </div>
+                          <span className="font-medium">{models.find(m => m.id === conv.model_type)?.name}</span>
+                        </div>
+                      </motion.button>
+                    );
+                  })
+                )}
               </div>
-            ) : (
-              conversations.map((conv) => (
-                <motion.button
-                  key={conv.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  onClick={() => loadConversation(conv.id)}
-                  className="w-full p-3 rounded-lg border border-border/40 bg-background hover:bg-muted/50 hover:border-primary/40 transition-all text-right group"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1">
-                      {conv.title}
-                    </h3>
-                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                      {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Bot className="w-3 h-3" />
-                    <span>{models.find(m => m.id === conv.model_type)?.name}</span>
-                  </div>
-                </motion.button>
-              ))
-            )}
+            </div>
           </div>
         </SheetContent>
       </Sheet>
