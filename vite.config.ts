@@ -29,6 +29,14 @@ export default defineConfig(({ mode }) => ({
       '@radix-ui/react-dropdown-menu',
       'framer-motion'
     ],
-    exclude: []
+    exclude: [],
+    force: true  // Force re-optimization
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined  // Let Vite handle chunking
+      }
+    }
+  }
 }));
