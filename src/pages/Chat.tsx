@@ -102,6 +102,12 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
+    if (user && !selectedModel) {
+      loadConversations();
+    }
+  }, [user, selectedModel]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
@@ -118,13 +124,13 @@ const Chat = () => {
     setSelectedModel(modelId);
     setMessages([]);
     
-    // Create new conversation
+    // Create new conversation with temporary title
     const { data: convData, error: convError } = await supabase
       .from('conversations')
       .insert({
         user_id: user.id,
         model_type: modelId,
-        title: `گفتگو با ${models.find(m => m.id === modelId)?.name}`
+        title: 'گفتگوی جدید'
       })
       .select()
       .single();
@@ -136,6 +142,12 @@ const Chat = () => {
     }
 
     setCurrentConversationId(convData.id);
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
+    setSelectedModel(null);
+    setCurrentConversationId(null);
   };
 
   const handleSend = async () => {
@@ -154,6 +166,18 @@ const Chat = () => {
         role: 'user',
         content: userMessageContent
       });
+
+      // Update conversation title based on first message
+      const isFirstMessage = messages.length === 0;
+      if (isFirstMessage) {
+        const title = userMessageContent.length > 50 
+          ? userMessageContent.substring(0, 50) + '...'
+          : userMessageContent;
+        await supabase
+          .from('conversations')
+          .update({ title })
+          .eq('id', currentConversationId);
+      }
 
       // Prepare messages array with full history
       const conversationMessages = [...messages, userMessage].map(m => ({
@@ -361,7 +385,7 @@ const Chat = () => {
             <p className="text-muted-foreground text-lg">یه مدل انتخاب کن تا چت رو شروع کنیم</p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
             {models.map((model, index) => {
               const Icon = model.icon;
               return (
@@ -385,6 +409,55 @@ const Chat = () => {
               );
             })}
           </div>
+
+          {/* Recent Conversations */}
+          {conversations.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="border-t border-border/30 pt-8"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  گفتگوهای اخیر
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowHistory(true)}
+                  className="text-xs"
+                >
+                  مشاهده همه
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {conversations.slice(0, 6).map((conv) => (
+                  <motion.button
+                    key={conv.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    onClick={() => loadConversation(conv.id)}
+                    className="p-4 rounded-xl border border-border/40 bg-card/30 hover:bg-card hover:border-primary/40 transition-all text-right group"
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                        {conv.title}
+                      </h4>
+                      <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                        {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Bot className="w-3 h-3" />
+                      <span>{models.find(m => m.id === conv.model_type)?.name}</span>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     );
@@ -450,11 +523,11 @@ const Chat = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSelectedModel(null)}
+              onClick={handleNewChat}
               className="rounded-full h-8 px-3 text-xs hover:bg-primary/10"
             >
               <Sparkles className="w-3.5 h-3.5 ml-1.5" />
-              تغییر مدل
+              گفتگوی جدید
             </Button>
           </div>
         </div>
@@ -598,15 +671,18 @@ const Chat = () => {
 
       {/* History Sheet */}
       <Sheet open={showHistory} onOpenChange={setShowHistory}>
-        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle className="text-xl font-bold text-right">تاریخچه گفتگوها</SheetTitle>
+        <SheetContent side="right" className="w-[90vw] sm:w-[400px]">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl font-bold text-right flex items-center gap-2">
+              <History className="w-5 h-5" />
+              تاریخچه گفتگوها
+            </SheetTitle>
           </SheetHeader>
-          <div className="space-y-3 mt-6">
+          <div className="space-y-2">
             {conversations.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <History className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                <p>هنوز گفتگویی ثبت نشده است</p>
+              <div className="text-center py-16 text-muted-foreground">
+                <History className="w-20 h-20 mx-auto mb-4 opacity-10" />
+                <p className="text-sm">هنوز گفتگویی ثبت نشده است</p>
               </div>
             ) : (
               conversations.map((conv) => (
@@ -615,17 +691,20 @@ const Chat = () => {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   onClick={() => loadConversation(conv.id)}
-                  className="w-full p-4 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-primary/30 transition-all text-right group"
+                  className="w-full p-3 rounded-lg border border-border/40 bg-background hover:bg-muted/50 hover:border-primary/40 transition-all text-right group"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">{conv.title}</h3>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(conv.updated_at).toLocaleDateString('fa-IR')}
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1">
+                      {conv.title}
+                    </h3>
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
                     </span>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    مدل: {models.find(m => m.id === conv.model_type)?.name}
-                  </p>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Bot className="w-3 h-3" />
+                    <span>{models.find(m => m.id === conv.model_type)?.name}</span>
+                  </div>
                 </motion.button>
               ))
             )}
