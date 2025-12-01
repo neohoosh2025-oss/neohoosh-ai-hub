@@ -96,6 +96,7 @@ const Chat = () => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     checkUser();
@@ -170,9 +171,11 @@ const Chat = () => {
       // Update conversation title based on first message
       const isFirstMessage = messages.length === 0;
       if (isFirstMessage) {
-        const title = userMessageContent.length > 50 
-          ? userMessageContent.substring(0, 50) + '...'
-          : userMessageContent;
+        // Extract actual text content, removing any file links
+        const cleanContent = userMessageContent.replace(/\[فایل:.*?\]\(.*?\)/g, '').trim();
+        const title = cleanContent.length > 50 
+          ? cleanContent.substring(0, 50) + '...'
+          : cleanContent || 'گفتگوی جدید';
         await supabase
           .from('conversations')
           .update({ title })
@@ -337,6 +340,43 @@ const Chat = () => {
     setCopiedIndex(index);
     toast.success("متن کپی شد", { duration: 1500 });
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file type and size
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error("حجم فایل نباید بیشتر از ۱۰ مگابایت باشد", { duration: 3000 });
+      return;
+    }
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('chat-files')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-files')
+        .getPublicUrl(filePath);
+
+      setMessage(prev => prev + `\n[فایل: ${file.name}](${publicUrl})`);
+      toast.success("فایل آپلود شد", { duration: 2000 });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error("خطا در آپلود فایل", { duration: 2000 });
+    }
+
+    // Reset input
+    if (e.target) e.target.value = '';
   };
 
   // Model Selection Screen
@@ -637,10 +677,18 @@ const Chat = () => {
       <div className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky bottom-0">
         <div className="max-w-3xl mx-auto px-6 py-4">
           <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-muted/30 border border-border/40 shadow-sm hover:border-border/60 transition-colors">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept="image/*,.pdf,.doc,.docx,.txt"
+              onChange={handleFileUpload}
+            />
             <Button
               variant="ghost"
               size="icon"
               className="h-9 w-9 flex-shrink-0 rounded-lg hover:bg-muted"
+              onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="w-4 h-4" />
             </Button>
