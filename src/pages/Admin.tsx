@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AdminArticles } from "./AdminArticles";
 import { AdminProducts } from "./AdminProducts";
 import { AdminComments } from "./AdminComments";
+import { AdminRatings } from "./AdminRatings";
 import { LogOut, Languages } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -86,10 +87,11 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="articles" dir={language === "en" ? "ltr" : "rtl"}>
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="articles">مقالات</TabsTrigger>
             <TabsTrigger value="products">محصولات</TabsTrigger>
             <TabsTrigger value="comments">نظرات</TabsTrigger>
+            <TabsTrigger value="ratings">رتبه‌بندی‌ها</TabsTrigger>
           </TabsList>
 
           <TabsContent value="articles">
@@ -102,6 +104,10 @@ const Admin = () => {
 
           <TabsContent value="comments">
             <AdminComments />
+          </TabsContent>
+
+          <TabsContent value="ratings">
+            <AdminRatings />
           </TabsContent>
         </Tabs>
       </div>

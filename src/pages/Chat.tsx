@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -94,6 +94,7 @@ const Chat = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [ratedMessages, setRatedMessages] = useState<Map<number, 'like' | 'dislike'>>(new Map());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -347,6 +348,50 @@ const Chat = () => {
     setCopiedIndex(index);
     toast.success("متن کپی شد", { duration: 1500 });
     setTimeout(() => setCopiedIndex(null), 2000);
+  };
+
+  const handleRateMessage = async (messageIndex: number, ratingType: 'like' | 'dislike') => {
+    if (!currentConversationId || !user) return;
+
+    try {
+      // Check if already rated
+      const existingRating = ratedMessages.get(messageIndex);
+      
+      if (existingRating === ratingType) {
+        // Delete rating if clicking same button again
+        await supabase
+          .from('message_ratings')
+          .delete()
+          .eq('conversation_id', currentConversationId)
+          .eq('message_index', messageIndex)
+          .eq('user_id', user.id);
+        
+        const newRatedMessages = new Map(ratedMessages);
+        newRatedMessages.delete(messageIndex);
+        setRatedMessages(newRatedMessages);
+        toast.success("رتبه‌بندی حذف شد", { duration: 1500 });
+      } else {
+        // Insert or update rating
+        await supabase
+          .from('message_ratings')
+          .upsert({
+            conversation_id: currentConversationId,
+            message_index: messageIndex,
+            user_id: user.id,
+            rating_type: ratingType
+          }, {
+            onConflict: 'conversation_id,message_index,user_id'
+          });
+        
+        const newRatedMessages = new Map(ratedMessages);
+        newRatedMessages.set(messageIndex, ratingType);
+        setRatedMessages(newRatedMessages);
+        toast.success(ratingType === 'like' ? "پاسخ مفید بود" : "بازخورد شما ثبت شد", { duration: 1500 });
+      }
+    } catch (error) {
+      console.error("Error rating message:", error);
+      toast.error("خطا در ثبت رتبه‌بندی", { duration: 2000 });
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -621,25 +666,49 @@ const Chat = () => {
                       {msg.content}
                     </ReactMarkdown>
                   </div>
-                  {msg.role === 'assistant' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleCopyMessage(msg.content, index)}
-                      className="mt-2 h-7 px-2 text-xs hover:bg-muted rounded-md"
-                    >
-                      {copiedIndex === index ? (
-                        <>
-                          <Check className="w-3 h-3 ml-1" />
-                          کپی شد
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3 h-3 ml-1" />
-                          کپی متن
-                        </>
-                      )}
-                    </Button>
+                  {msg.role === 'assistant' && msg.content && !isLoading && (
+                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/20">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRateMessage(index, 'like')}
+                        className={`h-7 px-2 text-xs hover:bg-muted rounded-md ${
+                          ratedMessages.get(index) === 'like' ? 'text-green-600 bg-green-50 dark:bg-green-950' : ''
+                        }`}
+                      >
+                        <ThumbsUp className={`w-3 h-3 ml-1 ${ratedMessages.get(index) === 'like' ? 'fill-current' : ''}`} />
+                        مفید
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRateMessage(index, 'dislike')}
+                        className={`h-7 px-2 text-xs hover:bg-muted rounded-md ${
+                          ratedMessages.get(index) === 'dislike' ? 'text-red-600 bg-red-50 dark:bg-red-950' : ''
+                        }`}
+                      >
+                        <ThumbsDown className={`w-3 h-3 ml-1 ${ratedMessages.get(index) === 'dislike' ? 'fill-current' : ''}`} />
+                        غیرمفید
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyMessage(msg.content, index)}
+                        className="h-7 px-2 text-xs hover:bg-muted rounded-md"
+                      >
+                        {copiedIndex === index ? (
+                          <>
+                            <Check className="w-3 h-3 ml-1" />
+                            کپی شد
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3 ml-1" />
+                            کپی متن
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   )}
                 </div>
               </motion.div>
