@@ -197,8 +197,7 @@ const Chat = () => {
       }));
 
       // Create assistant message placeholder
-      const assistantMessageIndex = messages.length + 1;
-      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
+      setMessages(prev => [...prev, userMessage, { role: "assistant", content: "" }]);
 
       // Stream AI response
       const response = await fetch(
@@ -221,39 +220,50 @@ const Chat = () => {
       }
 
       const reader = response.body.getReader();
-      const decoder = new TextDecoder();
+      const decoder = new TextDecoder('utf-8');
       let accumulatedContent = "";
+      let textBuffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
+        textBuffer += decoder.decode(value, { stream: true });
+        
+        let newlineIndex;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
 
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              
-              if (content) {
-                accumulatedContent += content;
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  newMessages[assistantMessageIndex] = {
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            
+            if (content) {
+              accumulatedContent += content;
+              setMessages(prev => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex]?.role === "assistant") {
+                  newMessages[lastIndex] = {
                     role: "assistant",
                     content: accumulatedContent
                   };
-                  return newMessages;
-                });
-              }
-            } catch (e) {
-              // Skip invalid JSON
+                }
+                return newMessages;
+              });
             }
+          } catch (e) {
+            // Re-buffer partial JSON
+            textBuffer = line + '\n' + textBuffer;
+            break;
           }
         }
       }
