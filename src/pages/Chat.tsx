@@ -275,6 +275,17 @@ const Chat = () => {
         content: accumulatedContent
       });
 
+      // Extract and save memories asynchronously (don't wait for it)
+      supabase.functions.invoke('extract-memory', {
+        body: { conversationId: currentConversationId }
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Memory extraction error:', error);
+        } else if (data?.memoriesSaved > 0) {
+          console.log(`✓ ${data.memoriesSaved} حافظه جدید ذخیره شد`);
+        }
+      }).catch(e => console.error('Memory extraction failed:', e));
+
     } catch (error: any) {
       console.error("Error sending message:", error);
       toast.error("خطا در ارسال پیام", { duration: 2000 });
