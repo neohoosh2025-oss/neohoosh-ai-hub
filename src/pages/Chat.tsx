@@ -197,7 +197,7 @@ const Chat = () => {
       }));
 
       // Create assistant message placeholder
-      setMessages(prev => [...prev, userMessage, { role: "assistant", content: "" }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
       // Stream AI response
       const response = await fetch(
