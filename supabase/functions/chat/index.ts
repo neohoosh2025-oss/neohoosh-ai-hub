@@ -284,23 +284,20 @@ serve(async (req) => {
       })
     ];
 
-    // Select model based on type
-    const selectedModel = modelType === "academic" 
-      ? "kwaipilot/kat-coder-pro:free" 
-      : "mistralai/mistral-7b-instruct:free";
+    // Use Lovable AI Gateway
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    console.log("Calling OpenRouter with streaming enabled");
+    console.log("Calling Lovable AI with streaming enabled");
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://neohoosh.com",
-        "X-Title": "Neohoosh AI"
       },
       body: JSON.stringify({
-        model: selectedModel,
+        model: "google/gemini-2.5-flash",
         messages: apiMessages,
         stream: true
       }),
@@ -308,7 +305,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenRouter error:", response.status, errorText);
+      console.error("Lovable AI error:", response.status, errorText);
       
       let errorMessage = "خطا در پردازش درخواست.";
       
