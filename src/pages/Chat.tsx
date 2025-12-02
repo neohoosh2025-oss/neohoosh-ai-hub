@@ -406,7 +406,7 @@ const Chat = () => {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !user) return;
 
     // Check file type and size
     const maxSize = 10 * 1024 * 1024; // 10MB
@@ -417,24 +417,31 @@ const Chat = () => {
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data, error: uploadError } = await supabase.storage
         .from('chat-files')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('chat-files')
         .getPublicUrl(filePath);
 
       setMessage(prev => prev + `\n[فایل: ${file.name}](${publicUrl})`);
-      toast.success("فایل آپلود شد", { duration: 2000 });
-    } catch (error) {
+      toast.success("فایل با موفقیت آپلود شد", { duration: 2000 });
+    } catch (error: any) {
       console.error('Error uploading file:', error);
-      toast.error("خطا در آپلود فایل", { duration: 2000 });
+      const errorMsg = error?.message || 'خطا در آپلود فایل';
+      toast.error(errorMsg, { duration: 3000 });
     }
 
     // Reset input
