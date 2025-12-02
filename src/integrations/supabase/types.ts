@@ -262,6 +262,47 @@ export type Database = {
         }
         Relationships: []
       }
+      message_ratings: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          feedback_text: string | null
+          id: string
+          message_index: number
+          rating_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          message_index: number
+          rating_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          feedback_text?: string | null
+          id?: string
+          message_index?: number
+          rating_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_ratings_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string

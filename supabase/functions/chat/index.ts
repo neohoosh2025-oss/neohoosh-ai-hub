@@ -287,10 +287,7 @@ serve(async (req) => {
     // Select model based on type
     const selectedModel = modelType === "academic" 
       ? "kwaipilot/kat-coder-pro:free" 
-      : "x-ai/grok-4.1-fast";
-    
-    // Academic model doesn't support reasoning
-    const enableReasoning = modelType !== "academic";
+      : "openrouter/bert-nebulon-alpha";
 
     console.log("Calling OpenRouter with streaming enabled");
 
@@ -305,8 +302,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: selectedModel,
         messages: apiMessages,
-        stream: true,
-        ...(enableReasoning && { reasoning: { enabled: true } })
+        stream: true
       }),
     });
 
