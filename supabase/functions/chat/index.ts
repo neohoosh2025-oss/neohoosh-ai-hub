@@ -287,7 +287,7 @@ serve(async (req) => {
     // Select model based on type
     const selectedModel = modelType === "academic" 
       ? "kwaipilot/kat-coder-pro:free" 
-      : "openrouter/bert-nebulon-alpha";
+      : "mistralai/mistral-large-2411";
 
     console.log("Calling OpenRouter with streaming enabled");
 
