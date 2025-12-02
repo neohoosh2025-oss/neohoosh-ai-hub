@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Mic, MicOff, Phone, PhoneOff, Sparkles } from "lucide-react";
+import { ArrowRight, Mic, MicOff, Phone, PhoneOff, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Select,
   SelectContent,
@@ -11,46 +12,70 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AudioQueue, encodeAudioForAPI } from "@/utils/audioUtils";
 
 const VOICES = [
-  { value: "alloy", label: "Alloy", description: "صدای خنثی و متعادل" },
+  { value: "alloy", label: "Alloy", description: "صدای متعادل و حرفه‌ای" },
   { value: "echo", label: "Echo", description: "صدای مردانه و گرم" },
-  { value: "fable", label: "Fable", description: "صدای انگلیسی" },
-  { value: "onyx", label: "Onyx", description: "صدای عمیق و قدرتمند" },
-  { value: "nova", label: "Nova", description: "صدای زنانه و دوستانه" },
   { value: "shimmer", label: "Shimmer", description: "صدای نرم و روان" },
+  { value: "ash", label: "Ash", description: "صدای مردانه و آرام" },
+  { value: "coral", label: "Coral", description: "صدای زنانه و گرم" },
+  { value: "sage", label: "Sage", description: "صدای طبیعی و دوستانه" },
 ];
 
 const VoiceCall = () => {
   const navigate = useNavigate();
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState("alloy");
   const [transcript, setTranscript] = useState("");
-  const [ws, setWs] = useState<WebSocket | null>(null);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [audioQueue, setAudioQueue] = useState<AudioQueue | null>(null);
   const [callDuration, setCallDuration] = useState(0);
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [audioProcessor, setAudioProcessor] = useState<ScriptProcessorNode | null>(null);
+  
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const durationIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isConnected) {
-      interval = setInterval(() => {
-        setCallDuration(prev => prev + 1);
-      }, 1000);
-    }
     return () => {
-      if (interval) clearInterval(interval);
+      endCall();
     };
-  }, [isConnected]);
+  }, []);
 
   const startCall = async () => {
+    setIsConnecting(true);
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      // Get ephemeral token
+      const { data: tokenData, error: tokenError } = await supabase.functions.invoke('realtime-voice', {
+        body: { voice: selectedVoice }
+      });
+
+      if (tokenError || !tokenData?.client_secret?.value) {
+        console.error('Token error:', tokenError, tokenData);
+        throw new Error('Failed to get session token');
+      }
+
+      const EPHEMERAL_KEY = tokenData.client_secret.value;
+      console.log('✅ Got ephemeral token');
+
+      // Create peer connection
+      pcRef.current = new RTCPeerConnection();
+
+      // Set up remote audio
+      audioElRef.current = document.createElement('audio');
+      audioElRef.current.autoplay = true;
+      pcRef.current.ontrack = (e) => {
+        console.log('🔊 Received audio track');
+        if (audioElRef.current) {
+          audioElRef.current.srcObject = e.streams[0];
+        }
+      };
+
+      // Add local audio track
+      const ms = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           sampleRate: 24000,
           channelCount: 1,
@@ -59,117 +84,123 @@ const VoiceCall = () => {
           autoGainControl: true
         } 
       });
-      
-      const context = new AudioContext({ sampleRate: 24000 });
-      setAudioContext(context);
-      setMediaStream(stream);
-      
-      const queue = new AudioQueue(context);
-      setAudioQueue(queue);
+      mediaStreamRef.current = ms;
+      pcRef.current.addTrack(ms.getTracks()[0]);
 
-      const projectId = "mktsqcxbcaexyxmenafp";
-      const wsUrl = `wss://${projectId}.supabase.co/functions/v1/realtime-voice`;
+      // Set up data channel
+      dcRef.current = pcRef.current.createDataChannel('oai-events');
       
-      const websocket = new WebSocket(wsUrl);
-      
-      websocket.onopen = () => {
-        console.log("✅ WebSocket connected");
-        websocket.send(JSON.stringify({ type: "config", voice: selectedVoice }));
-        setIsConnected(true);
+      dcRef.current.addEventListener('message', (e) => {
+        try {
+          const event = JSON.parse(e.data);
+          console.log('📨 Event:', event.type);
 
-        // Start sending audio
-        const source = context.createMediaStreamSource(stream);
-        const processor = context.createScriptProcessor(4096, 1, 1);
-        setAudioProcessor(processor);
-
-        processor.onaudioprocess = (e) => {
-          if (websocket.readyState === WebSocket.OPEN && !isMuted) {
-            const inputData = e.inputBuffer.getChannelData(0);
-            const base64Audio = encodeAudioForAPI(inputData);
-            
-            websocket.send(JSON.stringify({
-              type: "input_audio_buffer.append",
-              audio: base64Audio
-            }));
+          switch (event.type) {
+            case 'response.audio.delta':
+              setIsAISpeaking(true);
+              break;
+            case 'response.audio.done':
+              setIsAISpeaking(false);
+              break;
+            case 'conversation.item.input_audio_transcription.completed':
+              if (event.transcript) {
+                setTranscript(prev => prev + "\n👤 شما: " + event.transcript);
+              }
+              break;
+            case 'response.audio_transcript.delta':
+              setTranscript(prev => prev + (event.delta || ''));
+              break;
+            case 'response.audio_transcript.done':
+              setTranscript(prev => prev + "\n");
+              break;
+            case 'error':
+              console.error('❌ OpenAI error:', event);
+              toast.error("خطا: " + (event.error?.message || "مشکل نامشخص"));
+              break;
           }
-        };
-
-        source.connect(processor);
-        processor.connect(context.destination);
-      };
-
-      websocket.onmessage = async (event) => {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === "error") {
-          console.error("❌ Server error:", data);
-          toast.error("خطا در اتصال: " + (data.error || "مشکل نامشخص"), { duration: 2000 });
-          return;
+        } catch (error) {
+          console.error('Error parsing event:', error);
         }
+      });
 
-        if (data.type === "response.audio.delta" && data.delta) {
-          setIsAISpeaking(true);
-          const audioData = Uint8Array.from(atob(data.delta), c => c.charCodeAt(0));
-          await queue.addToQueue(audioData);
-        } else if (data.type === "response.audio.done") {
-          setIsAISpeaking(false);
-        } else if (data.type === "conversation.item.input_audio_transcription.completed") {
-          setTranscript(prev => prev + "\n👤 شما: " + data.transcript);
-        } else if (data.type === "response.audio_transcript.delta") {
-          setTranscript(prev => prev + data.delta);
-        } else if (data.type === "response.audio_transcript.done") {
-          setTranscript(prev => prev + "\n");
-        }
+      // Create offer
+      const offer = await pcRef.current.createOffer();
+      await pcRef.current.setLocalDescription(offer);
+
+      // Connect to OpenAI
+      const sdpResponse = await fetch("https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17", {
+        method: "POST",
+        body: offer.sdp,
+        headers: {
+          Authorization: `Bearer ${EPHEMERAL_KEY}`,
+          "Content-Type": "application/sdp"
+        },
+      });
+
+      if (!sdpResponse.ok) {
+        throw new Error('Failed to establish connection');
+      }
+
+      const answer = {
+        type: "answer" as RTCSdpType,
+        sdp: await sdpResponse.text(),
       };
+      
+      await pcRef.current.setRemoteDescription(answer);
+      console.log('✅ WebRTC connected');
 
-      websocket.onerror = (error) => {
-        console.error("❌ WebSocket error:", error);
-        toast.error("خطا در اتصال - دوباره تلاش کنید", { duration: 2000 });
-        endCall();
-      };
-
-      websocket.onclose = (event) => {
-        console.log("🔌 WebSocket closed:", event.code, event.reason);
-        endCall();
-      };
-
-      setWs(websocket);
-      toast.success("تماس برقرار شد ✓", { duration: 2000 });
+      setIsConnected(true);
+      setCallDuration(0);
+      
+      durationIntervalRef.current = window.setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+      
+      toast.success("تماس برقرار شد ✓");
     } catch (error) {
-      console.error("❌ Error starting call:", error);
-      toast.error("دسترسی به میکروفون رد شد", { duration: 2000 });
+      console.error('Error:', error);
+      toast.error(error instanceof Error ? error.message : "خطا در اتصال");
+    } finally {
+      setIsConnecting(false);
     }
   };
 
   const endCall = () => {
-    if (ws) {
-      ws.close();
-      setWs(null);
+    if (durationIntervalRef.current) {
+      clearInterval(durationIntervalRef.current);
+      durationIntervalRef.current = null;
     }
-    if (audioContext) {
-      audioContext.close();
-      setAudioContext(null);
+    
+    dcRef.current?.close();
+    pcRef.current?.close();
+    
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
     }
-    if (audioProcessor) {
-      audioProcessor.disconnect();
-      setAudioProcessor(null);
+    
+    if (audioElRef.current) {
+      audioElRef.current.srcObject = null;
+      audioElRef.current = null;
     }
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      setMediaStream(null);
-    }
-    if (audioQueue) {
-      audioQueue.clear();
-      setAudioQueue(null);
-    }
+    
+    pcRef.current = null;
+    dcRef.current = null;
+    
     setIsConnected(false);
     setIsAISpeaking(false);
     setCallDuration(0);
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
-    toast(isMuted ? "میکروفون فعال شد" : "میکروفون خاموش شد", { duration: 2000 });
+    if (mediaStreamRef.current) {
+      const audioTrack = mediaStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = isMuted;
+        setIsMuted(!isMuted);
+        toast(isMuted ? "میکروفون فعال شد" : "میکروفون خاموش شد");
+      }
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -204,7 +235,7 @@ const VoiceCall = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-10">
-        {/* AI Avatar with Pulsing Animation */}
+        {/* AI Avatar */}
         <div className="relative">
           <AnimatePresence>
             {isAISpeaking && (
@@ -249,7 +280,7 @@ const VoiceCall = () => {
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: isConnected ? Infinity : 0 }}
           >
-            {isConnected ? "در حال تماس..." : "آماده برای شروع"}
+            {isConnecting ? "در حال اتصال..." : isConnected ? "در حال تماس..." : "آماده برای شروع"}
           </motion.h2>
           <p className="text-muted-foreground text-lg">
             {isConnected
@@ -261,7 +292,7 @@ const VoiceCall = () => {
         </div>
 
         {/* Voice Selection */}
-        {!isConnected && (
+        {!isConnected && !isConnecting && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -331,13 +362,16 @@ const VoiceCall = () => {
           <Button
             size="icon"
             onClick={isConnected ? endCall : startCall}
+            disabled={isConnecting}
             className={`w-24 h-24 rounded-full shadow-2xl transition-all ${
               isConnected
                 ? "bg-destructive hover:bg-destructive/90"
                 : "bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
             }`}
           >
-            {isConnected ? (
+            {isConnecting ? (
+              <Loader2 className="w-10 h-10 animate-spin" />
+            ) : isConnected ? (
               <PhoneOff className="w-10 h-10" />
             ) : (
               <Phone className="w-10 h-10" />
