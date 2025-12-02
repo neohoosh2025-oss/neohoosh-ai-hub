@@ -943,22 +943,25 @@ const Chat = () => {
         <SheetContent side="right" className="w-[90vw] sm:w-[420px] p-0 [&>button]:hidden">
           <div className="h-full flex flex-col">
             <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/40">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowHistory(false)}
-                  className="h-9 w-9 rounded-lg hover:bg-muted -mr-2"
+                  className="h-9 w-9 rounded-lg hover:bg-muted"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </Button>
-                <div className="flex-1 text-right">
-                  <SheetTitle className="text-xl font-bold flex items-center gap-2.5 justify-end">
-                    تاریخچه گفتگوها
-                    <History className="w-5 h-5 text-muted-foreground" />
-                  </SheetTitle>
-                  <p className="text-sm text-muted-foreground mt-1">بازگشت به گفتگوهای قبلی</p>
+                <div className="flex-1">
+                  <SheetTitle className="text-lg font-bold">گفتگو</SheetTitle>
                 </div>
+              </div>
+              <div className="mt-4 text-right">
+                <div className="flex items-center gap-2 justify-end">
+                  <History className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-base font-semibold">تاریخچه گفتگوها</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">بازگشت به گفتگوهای قبلی</p>
               </div>
             </SheetHeader>
             
