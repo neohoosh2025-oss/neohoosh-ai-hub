@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, Terminal
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -94,10 +94,15 @@ const Chat = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [conversations, setConversations] = useState<any[]>([]);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [copiedCodeBlock, setCopiedCodeBlock] = useState<string | null>(null);
   const [ratedMessages, setRatedMessages] = useState<Map<number, 'like' | 'dislike'>>(new Map());
+  const [userScrolled, setUserScrolled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const accumulatedContentRef = useRef<string>("");
 
   useEffect(() => {
     checkUser();
@@ -109,9 +114,43 @@ const Chat = () => {
     }
   }, [user, selectedModel]);
 
+  // Smart auto-scroll - only if user hasn't scrolled up
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (!userScrolled) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, userScrolled]);
+
+  // Handle scroll to detect if user scrolled up
+  const handleScroll = useCallback(() => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setUserScrolled(!isNearBottom);
+  }, []);
+
+  // Reset userScrolled when loading starts
+  useEffect(() => {
+    if (!isLoading) {
+      setUserScrolled(false);
+    }
+  }, [isLoading]);
+
+  // Copy code block handler
+  const handleCopyCode = (code: string, blockId: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCodeBlock(blockId);
+    setTimeout(() => setCopiedCodeBlock(null), 2000);
+  };
+
+  // Stop generation handler
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsLoading(false);
+    }
+  };
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -160,6 +199,10 @@ const Chat = () => {
     setMessages(prev => [...prev, userMessage]);
     setMessage("");
     setIsLoading(true);
+    setUserScrolled(false);
+
+    // Create AbortController for stopping generation
+    abortControllerRef.current = new AbortController();
 
     try {
       // Save user message
@@ -203,7 +246,7 @@ const Chat = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      // Stream AI response
+      // Stream AI response with abort signal
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
         {
@@ -216,6 +259,7 @@ const Chat = () => {
             messages: conversationMessages,
             modelType: selectedModel
           }),
+          signal: abortControllerRef.current.signal,
         }
       );
 
@@ -226,6 +270,7 @@ const Chat = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let accumulatedContent = "";
+      accumulatedContentRef.current = "";
       let textBuffer = "";
 
       while (true) {
@@ -252,6 +297,7 @@ const Chat = () => {
             
             if (content) {
               accumulatedContent += content;
+              accumulatedContentRef.current = accumulatedContent;
               setMessages(prev => {
                 const newMessages = [...prev];
                 const lastIndex = newMessages.length - 1;
@@ -273,28 +319,45 @@ const Chat = () => {
       }
 
       // Save final AI message
-      await supabase.from('messages').insert({
-        conversation_id: currentConversationId,
-        role: 'assistant',
-        content: accumulatedContent
-      });
+      if (accumulatedContent) {
+        await supabase.from('messages').insert({
+          conversation_id: currentConversationId,
+          role: 'assistant',
+          content: accumulatedContent
+        });
 
-      // Extract and save memories asynchronously (don't wait for it)
-      supabase.functions.invoke('extract-memory', {
-        body: { conversationId: currentConversationId }
-      }).then(({ data, error }) => {
-        if (error) {
-          console.error('Memory extraction error:', error);
-        } else if (data?.memoriesSaved > 0) {
-          console.log(`✓ ${data.memoriesSaved} حافظه جدید ذخیره شد`);
-        }
-      }).catch(e => console.error('Memory extraction failed:', e));
+        // Extract and save memories asynchronously (don't wait for it)
+        supabase.functions.invoke('extract-memory', {
+          body: { conversationId: currentConversationId }
+        }).then(({ data, error }) => {
+          if (error) {
+            console.error('Memory extraction error:', error);
+          } else if (data?.memoriesSaved > 0) {
+            console.log(`✓ ${data.memoriesSaved} حافظه جدید ذخیره شد`);
+          }
+        }).catch(e => console.error('Memory extraction failed:', e));
+      }
 
     } catch (error: any) {
+      // Handle abort - save partial content if any
+      if (error.name === 'AbortError') {
+        const partialContent = accumulatedContentRef.current;
+        if (partialContent) {
+          await supabase.from('messages').insert({
+            conversation_id: currentConversationId,
+            role: 'assistant',
+            content: partialContent
+          });
+        }
+        return; // Don't show error for manual stop
+      }
+      
       console.error("Error sending message:", error);
       toast.error("خطا در ارسال پیام", { duration: 2000 });
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
+      accumulatedContentRef.current = "";
     }
   };
 
@@ -663,7 +726,11 @@ const Chat = () => {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto"
+        onScroll={handleScroll}
+      >
         <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
           <AnimatePresence mode="popLayout">
             {messages.map((msg, index) => (
@@ -693,36 +760,72 @@ const Chat = () => {
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} alt="Generated" className="rounded-xl w-full mb-2" />
                   ) : null}
-                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground`}>
+                  <div className={`prose prose-sm max-w-none leading-relaxed ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2.5 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-7 [&_p]:mb-3 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ol]:my-3 [&_ol]:space-y-1.5 [&_li]:leading-7 [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-4`}>
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
                         code: ({ node, className, children, ...props }) => {
                           const isInline = !className;
+                          const language = className?.replace('language-', '') || '';
+                          
                           if (isInline) {
                             return (
-                              <code className="bg-muted/50 px-1.5 py-0.5 rounded text-xs font-mono" dir="ltr" {...props}>
+                              <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[13px] font-mono" dir="ltr" {...props}>
                                 {children}
                               </code>
                             );
                           }
                           return (
-                            <code className="font-mono text-sm" dir="ltr" {...props}>
+                            <code className="font-mono text-[13px] leading-6" dir="ltr" {...props}>
                               {children}
                             </code>
                           );
                         },
-                        pre: ({ children }) => (
-                          <div className="relative group my-4">
-                            <pre 
-                              className="bg-[#1e1e1e] dark:bg-[#0d0d0d] text-[#d4d4d4] p-4 rounded-xl overflow-x-auto border border-border/30 shadow-sm"
-                              dir="ltr"
-                              style={{ textAlign: 'left' }}
-                            >
-                              {children}
-                            </pre>
-                          </div>
-                        ),
+                        pre: ({ children, node }) => {
+                          // Extract language from code element
+                          const codeElement = (children as any)?.props;
+                          const className = codeElement?.className || '';
+                          const language = className.replace('language-', '') || 'code';
+                          const codeContent = String(codeElement?.children || '');
+                          const blockId = `code-${index}-${codeContent.slice(0, 20)}`;
+                          
+                          return (
+                            <div className="relative group my-5 rounded-xl overflow-hidden border border-border/50 shadow-sm" dir="ltr">
+                              {/* Header */}
+                              <div className="flex items-center justify-between px-4 py-2.5 bg-[#2d2d2d] dark:bg-[#1a1a1a] border-b border-white/5">
+                                <div className="flex items-center gap-2">
+                                  <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span className="text-xs font-medium text-gray-300 uppercase tracking-wide">{language}</span>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopyCode(codeContent, blockId)}
+                                  className="h-7 px-2.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                                >
+                                  {copiedCodeBlock === blockId ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 ml-1.5 text-emerald-400" />
+                                      <span className="text-emerald-400">کپی شد</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5 ml-1.5" />
+                                      کپی کد
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                              {/* Code Content */}
+                              <pre 
+                                className="bg-[#1e1e1e] dark:bg-[#0d0d0d] text-[#d4d4d4] p-4 overflow-x-auto m-0"
+                                style={{ textAlign: 'left' }}
+                              >
+                                {children}
+                              </pre>
+                            </div>
+                          );
+                        },
                       }}
                     >
                       {msg.content}
@@ -848,14 +951,24 @@ const Chat = () => {
               rows={1}
             />
 
-            <Button
-              onClick={handleSend}
-              disabled={!message.trim() || isLoading}
-              size="icon"
-              className="h-9 w-9 bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] hover:opacity-90 flex-shrink-0 disabled:opacity-50 rounded-lg shadow-sm"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+            {isLoading ? (
+              <Button
+                onClick={handleStopGeneration}
+                size="icon"
+                className="h-9 w-9 bg-red-500 hover:bg-red-600 flex-shrink-0 rounded-lg shadow-sm"
+              >
+                <Square className="w-3.5 h-3.5 fill-current" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSend}
+                disabled={!message.trim()}
+                size="icon"
+                className="h-9 w-9 bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] hover:opacity-90 flex-shrink-0 disabled:opacity-50 rounded-lg shadow-sm"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
