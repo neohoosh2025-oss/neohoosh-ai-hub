@@ -163,6 +163,11 @@ const Chat = () => {
   };
 
   const handleModelSelect = async (modelId: ModelType) => {
+    if (!user) {
+      toast.error("لطفاً ابتدا وارد شوید", { duration: 2000 });
+      return;
+    }
+    
     setSelectedModel(modelId);
     setMessages([]);
     
