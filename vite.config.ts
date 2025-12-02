@@ -14,38 +14,19 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    dedupe: ['react', 'react-dom'],
   },
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
-      'react/jsx-runtime',
-      '@tanstack/react-query',
-      'next-themes',
-      '@radix-ui/react-tooltip',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-dropdown-menu',
-      'framer-motion'
+      '@tanstack/react-query'
     ],
-    exclude: [],
-    force: true,
     esbuildOptions: {
-      target: 'esnext',
       jsx: 'automatic'
     }
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: undefined
-      }
-    },
-    target: 'esnext',
-    commonjsOptions: {
-      transformMixedEsModules: true
-    }
-  },
-  clearScreen: false
+    target: 'esnext'
+  }
 }));
