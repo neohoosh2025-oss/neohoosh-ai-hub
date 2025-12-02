@@ -14,17 +14,23 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
   },
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
-      '@tanstack/react-query'
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      '@tanstack/react-query',
+      'react-syntax-highlighter',
+      'react-syntax-highlighter/dist/esm/styles/prism',
+      'next-themes'
     ],
     esbuildOptions: {
       jsx: 'automatic'
-    }
+    },
+    force: true
   },
   build: {
     target: 'esnext'
