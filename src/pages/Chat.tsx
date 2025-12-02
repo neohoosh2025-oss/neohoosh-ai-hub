@@ -199,6 +199,10 @@ const Chat = () => {
       // Create assistant message placeholder
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
+      // Get user's auth token for memory access
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       // Stream AI response
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
@@ -206,7 +210,7 @@ const Chat = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            'Authorization': `Bearer ${authToken}`,
           },
           body: JSON.stringify({
             messages: conversationMessages,
@@ -689,8 +693,38 @@ const Chat = () => {
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} alt="Generated" className="rounded-xl w-full mb-2" />
                   ) : null}
-                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_code]:bg-muted/50 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_pre]:bg-muted/50 [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:overflow-x-auto [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground`}>
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <div className={`prose prose-sm max-w-none ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground`}>
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        code: ({ node, className, children, ...props }) => {
+                          const isInline = !className;
+                          if (isInline) {
+                            return (
+                              <code className="bg-muted/50 px-1.5 py-0.5 rounded text-xs font-mono" dir="ltr" {...props}>
+                                {children}
+                              </code>
+                            );
+                          }
+                          return (
+                            <code className="font-mono text-sm" dir="ltr" {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                        pre: ({ children }) => (
+                          <div className="relative group my-4">
+                            <pre 
+                              className="bg-[#1e1e1e] dark:bg-[#0d0d0d] text-[#d4d4d4] p-4 rounded-xl overflow-x-auto border border-border/30 shadow-sm"
+                              dir="ltr"
+                              style={{ textAlign: 'left' }}
+                            >
+                              {children}
+                            </pre>
+                          </div>
+                        ),
+                      }}
+                    >
                       {msg.content}
                     </ReactMarkdown>
                   </div>

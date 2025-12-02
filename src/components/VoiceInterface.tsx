@@ -3,10 +3,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Phone, PhoneOff, Mic, MicOff, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AudioRecorder, encodeAudioForAPI, playAudioData, clearAudioQueue } from '@/utils/RealtimeAudio';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useVoiceRecording } from '@/hooks/useVoiceRecording';
+import { supabase } from '@/integrations/supabase/client';
 
 interface VoiceInterfaceProps {
   onTranscriptUpdate?: (text: string) => void;
@@ -15,190 +14,221 @@ interface VoiceInterfaceProps {
 const VOICES = [
   { value: 'alloy', label: 'Alloy', description: 'متعادل و حرفه‌ای' },
   { value: 'echo', label: 'Echo', description: 'مردانه و صمیمی' },
-  { value: 'fable', label: 'Fable', description: 'زنانه و گرم' },
-  { value: 'onyx', label: 'Onyx', description: 'مردانه و قدرتمند' },
-  { value: 'nova', label: 'Nova', description: 'زنانه و پرانرژی' },
   { value: 'shimmer', label: 'Shimmer', description: 'زنانه و ملایم' },
+  { value: 'ash', label: 'Ash', description: 'مردانه و آرام' },
+  { value: 'coral', label: 'Coral', description: 'زنانه و گرم' },
+  { value: 'sage', label: 'Sage', description: 'طبیعی و دوستانه' },
 ];
 
 const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [currentTranscript, setCurrentTranscript] = useState('');
   const [selectedVoice, setSelectedVoice] = useState('alloy');
   const [callDuration, setCallDuration] = useState(0);
   
-  const wsRef = useRef<WebSocket | null>(null);
-  const recorderRef = useRef<AudioRecorder | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const dcRef = useRef<RTCDataChannel | null>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const durationIntervalRef = useRef<number | null>(null);
-  
-  const { isRecording, startRecording, stopRecording } = useVoiceRecording();
 
   const startConversation = async () => {
+    setIsConnecting(true);
+    
     try {
-      // Initialize audio context
-      audioContextRef.current = new AudioContext({ sampleRate: 24000 });
+      // Get ephemeral token from our edge function
+      const { data: tokenData, error: tokenError } = await supabase.functions.invoke('realtime-voice', {
+        body: { voice: selectedVoice }
+      });
 
-      // Start recording for saving
-      await startRecording(selectedVoice);
+      if (tokenError || !tokenData?.client_secret?.value) {
+        console.error('Token error:', tokenError, tokenData);
+        throw new Error('Failed to get session token');
+      }
 
-      // Connect to WebSocket
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//mktsqcxbcaexyxmenafp.supabase.co/functions/v1/realtime-voice`;
-      
-      wsRef.current = new WebSocket(wsUrl);
+      const EPHEMERAL_KEY = tokenData.client_secret.value;
+      console.log('✅ Got ephemeral token');
 
-      wsRef.current.onopen = async () => {
-        console.log('Connected to voice service');
-        setIsConnected(true);
-        setCallDuration(0);
-        
-        // Send voice preference
-        wsRef.current?.send(JSON.stringify({
-          type: 'config',
-          voice: selectedVoice
-        }));
-        
-        // Start recording for streaming
-        recorderRef.current = new AudioRecorder((audioData) => {
-          if (!isMuted && wsRef.current?.readyState === WebSocket.OPEN) {
-            const base64Audio = encodeAudioForAPI(audioData);
-            wsRef.current.send(JSON.stringify({
-              type: 'input_audio_buffer.append',
-              audio: base64Audio
-            }));
-          }
-        });
-        
-        await recorderRef.current.start();
-        
-        // Start duration counter
-        durationIntervalRef.current = window.setInterval(() => {
-          setCallDuration(prev => prev + 1);
-        }, 1000);
-        
-        toast({
-          title: "✅ تماس برقرار شد",
-          description: "می‌توانید با AI صحبت کنید",
-        });
+      // Create peer connection
+      pcRef.current = new RTCPeerConnection();
+
+      // Set up remote audio
+      audioElRef.current = document.createElement('audio');
+      audioElRef.current.autoplay = true;
+      pcRef.current.ontrack = (e) => {
+        console.log('🔊 Received audio track');
+        if (audioElRef.current) {
+          audioElRef.current.srcObject = e.streams[0];
+        }
       };
 
-      wsRef.current.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data);
+      // Add local audio track
+      const ms = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          sampleRate: 24000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      mediaStreamRef.current = ms;
+      pcRef.current.addTrack(ms.getTracks()[0]);
+      console.log('🎤 Added local audio track');
 
-          switch (data.type) {
+      // Set up data channel for events
+      dcRef.current = pcRef.current.createDataChannel('oai-events');
+      
+      dcRef.current.addEventListener('open', () => {
+        console.log('📡 Data channel open');
+      });
+
+      dcRef.current.addEventListener('message', (e) => {
+        try {
+          const event = JSON.parse(e.data);
+          console.log('📨 Event:', event.type);
+
+          switch (event.type) {
             case 'response.audio.delta':
               setIsAISpeaking(true);
-              const binaryString = atob(data.delta);
-              const bytes = new Uint8Array(binaryString.length);
-              for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-              }
-              if (audioContextRef.current) {
-                await playAudioData(audioContextRef.current, bytes);
-              }
               break;
-
             case 'response.audio.done':
               setIsAISpeaking(false);
               break;
-
             case 'conversation.item.input_audio_transcription.completed':
-              if (data.transcript) {
-                setCurrentTranscript(data.transcript);
-                onTranscriptUpdate?.(data.transcript);
+              if (event.transcript) {
+                setCurrentTranscript(event.transcript);
+                onTranscriptUpdate?.(event.transcript);
               }
               break;
-
             case 'response.audio_transcript.delta':
-              setCurrentTranscript(prev => prev + data.delta);
+              setCurrentTranscript(prev => prev + (event.delta || ''));
               break;
-
             case 'response.audio_transcript.done':
-              if (data.transcript) {
-                onTranscriptUpdate?.(data.transcript);
+              if (event.transcript) {
+                onTranscriptUpdate?.(event.transcript);
               }
               break;
-
             case 'error':
-              console.error('Voice service error:', data);
+              console.error('❌ OpenAI error:', event);
               toast({
                 title: "خطا",
-                description: data.error || "خطا در ارتباط با سرویس صوتی",
+                description: event.error?.message || "خطا در ارتباط",
                 variant: "destructive",
               });
               break;
           }
         } catch (error) {
-          console.error('Error processing message:', error);
+          console.error('Error parsing event:', error);
         }
-      };
+      });
 
-      wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        toast({
-          title: "خطا در اتصال",
-          description: "لطفاً دوباره تلاش کنید",
-          variant: "destructive",
-        });
-      };
+      // Create and set local description
+      const offer = await pcRef.current.createOffer();
+      await pcRef.current.setLocalDescription(offer);
+      console.log('📝 Created offer');
 
-      wsRef.current.onclose = () => {
-        console.log('WebSocket closed');
-        setIsConnected(false);
-        setIsAISpeaking(false);
+      // Connect to OpenAI's Realtime API
+      const baseUrl = "https://api.openai.com/v1/realtime";
+      const model = "gpt-4o-realtime-preview-2024-12-17";
+      
+      const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+        method: "POST",
+        body: offer.sdp,
+        headers: {
+          Authorization: `Bearer ${EPHEMERAL_KEY}`,
+          "Content-Type": "application/sdp"
+        },
+      });
+
+      if (!sdpResponse.ok) {
+        const errorText = await sdpResponse.text();
+        console.error('SDP response error:', sdpResponse.status, errorText);
+        throw new Error('Failed to establish connection');
+      }
+
+      const answerSdp = await sdpResponse.text();
+      const answer = {
+        type: "answer" as RTCSdpType,
+        sdp: answerSdp,
       };
+      
+      await pcRef.current.setRemoteDescription(answer);
+      console.log('✅ WebRTC connection established');
+
+      setIsConnected(true);
+      setCallDuration(0);
+      
+      // Start duration counter
+      durationIntervalRef.current = window.setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+      
+      toast({
+        title: "✅ تماس برقرار شد",
+        description: "می‌توانید با AI صحبت کنید",
+      });
 
     } catch (error) {
       console.error('Error starting conversation:', error);
       toast({
-        title: "خطا",
-        description: error instanceof Error ? error.message : 'خطا در شروع تماس',
+        title: "خطا در اتصال",
+        description: error instanceof Error ? error.message : 'لطفاً دوباره تلاش کنید',
         variant: "destructive",
       });
+    } finally {
+      setIsConnecting(false);
     }
   };
 
-  const endConversation = async () => {
+  const endConversation = () => {
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
       durationIntervalRef.current = null;
     }
     
-    recorderRef.current?.stop();
-    wsRef.current?.close();
-    clearAudioQueue();
+    dcRef.current?.close();
+    pcRef.current?.close();
     
-    // Stop and save recording
-    await stopRecording(currentTranscript);
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    
+    if (audioElRef.current) {
+      audioElRef.current.srcObject = null;
+      audioElRef.current = null;
+    }
+    
+    pcRef.current = null;
+    dcRef.current = null;
     
     setIsConnected(false);
     setIsAISpeaking(false);
     setCurrentTranscript('');
     setCallDuration(0);
-    
-    if (audioContextRef.current) {
-      audioContextRef.current.close();
-      audioContextRef.current = null;
-    }
 
     toast({
       title: "✅ تماس پایان یافت",
-      description: "تماس با موفقیت ذخیره شد",
     });
   };
 
   const toggleMute = () => {
-    setIsMuted(!isMuted);
-    toast({
-      title: isMuted ? "🎤 میکروفون روشن شد" : "🔇 میکروفون خاموش شد",
-      description: isMuted ? "AI صدای شما را می‌شنود" : "AI صدای شما را نمی‌شنود",
-    });
+    if (mediaStreamRef.current) {
+      const audioTrack = mediaStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = isMuted;
+        setIsMuted(!isMuted);
+        toast({
+          title: isMuted ? "🎤 میکروفون روشن شد" : "🔇 میکروفون خاموش شد",
+        });
+      }
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -210,10 +240,11 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
   useEffect(() => {
     return () => {
       if (durationIntervalRef.current) clearInterval(durationIntervalRef.current);
-      recorderRef.current?.stop();
-      wsRef.current?.close();
-      clearAudioQueue();
-      if (audioContextRef.current) audioContextRef.current.close();
+      dcRef.current?.close();
+      pcRef.current?.close();
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
@@ -253,16 +284,6 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
                       <p className="text-xs text-muted-foreground">{formatDuration(callDuration)}</p>
                     </div>
                   </div>
-                  {isRecording && (
-                    <motion.div
-                      animate={{ opacity: [1, 0.5, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                      className="flex items-center gap-2 text-xs text-destructive"
-                    >
-                      <div className="w-2 h-2 rounded-full bg-destructive" />
-                      <span>در حال ضبط</span>
-                    </motion.div>
-                  )}
                 </div>
 
                 {/* Transcript Display */}
@@ -335,11 +356,26 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
           {!isConnected ? (
             <Button
               onClick={startConversation}
+              disabled={isConnecting}
               size="lg"
-              className="w-full h-14 gap-3 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 shadow-xl hover:shadow-2xl shadow-primary/40 hover:shadow-primary/50 border border-primary/30 transition-all duration-300 group rounded-2xl font-semibold text-base"
+              className="w-full h-14 gap-3 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/85 hover:to-primary/70 shadow-xl hover:shadow-2xl shadow-primary/40 hover:shadow-primary/50 border border-primary/30 transition-all duration-300 group rounded-2xl font-semibold text-base disabled:opacity-50"
             >
-              <Phone className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-12" />
-              <span>شروع تماس صوتی</span>
+              {isConnecting ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Radio className="w-5 h-5" />
+                  </motion.div>
+                  <span>در حال اتصال...</span>
+                </>
+              ) : (
+                <>
+                  <Phone className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+                  <span>شروع تماس صوتی</span>
+                </>
+              )}
             </Button>
           ) : (
             <Button
@@ -349,7 +385,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({ onTranscriptUpdate }) =
               className="w-full h-14 gap-3 shadow-xl hover:shadow-2xl shadow-destructive/40 hover:shadow-destructive/50 border border-destructive/30 transition-all duration-300 group rounded-2xl font-semibold text-base"
             >
               <PhoneOff className="w-5 h-5 transition-transform group-hover:scale-110 group-hover:-rotate-12" />
-              <span>قطع تماس و ذخیره</span>
+              <span>قطع تماس</span>
             </Button>
           )}
         </motion.div>
