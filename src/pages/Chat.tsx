@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, Terminal
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, Home, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { CodeBlock, InlineCode } from "@/components/CodeBlock";
 import {
   Sheet,
   SheetContent,
@@ -766,14 +767,9 @@ const Chat = () => {
                       components={{
                         code: ({ node, className, children, ...props }) => {
                           const isInline = !className;
-                          const language = className?.replace('language-', '') || '';
                           
                           if (isInline) {
-                            return (
-                              <code className="bg-primary/10 text-primary px-1.5 py-0.5 rounded text-[13px] font-mono" dir="ltr" {...props}>
-                                {children}
-                              </code>
-                            );
+                            return <InlineCode>{children}</InlineCode>;
                           }
                           return (
                             <code className="font-mono text-[13px] leading-6" dir="ltr" {...props}>
@@ -781,49 +777,18 @@ const Chat = () => {
                             </code>
                           );
                         },
-                        pre: ({ children, node }) => {
-                          // Extract language from code element
+                        pre: ({ children }) => {
+                          // Extract language and code from code element
                           const codeElement = (children as any)?.props;
                           const className = codeElement?.className || '';
-                          const language = className.replace('language-', '') || 'code';
-                          const codeContent = String(codeElement?.children || '');
-                          const blockId = `code-${index}-${codeContent.slice(0, 20)}`;
+                          const language = className.replace('language-', '') || 'text';
+                          const codeContent = String(codeElement?.children || '').trim();
                           
                           return (
-                            <div className="relative group my-5 rounded-xl overflow-hidden border border-border/50 shadow-sm" dir="ltr">
-                              {/* Header */}
-                              <div className="flex items-center justify-between px-4 py-2.5 bg-[#2d2d2d] dark:bg-[#1a1a1a] border-b border-white/5">
-                                <div className="flex items-center gap-2">
-                                  <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span className="text-xs font-medium text-gray-300 uppercase tracking-wide">{language}</span>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleCopyCode(codeContent, blockId)}
-                                  className="h-7 px-2.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-md transition-colors"
-                                >
-                                  {copiedCodeBlock === blockId ? (
-                                    <>
-                                      <Check className="w-3.5 h-3.5 ml-1.5 text-emerald-400" />
-                                      <span className="text-emerald-400">کپی شد</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="w-3.5 h-3.5 ml-1.5" />
-                                      کپی کد
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                              {/* Code Content */}
-                              <pre 
-                                className="bg-[#1e1e1e] dark:bg-[#0d0d0d] text-[#d4d4d4] p-4 overflow-x-auto m-0"
-                                style={{ textAlign: 'left' }}
-                              >
-                                {children}
-                              </pre>
-                            </div>
+                            <CodeBlock 
+                              code={codeContent} 
+                              language={language}
+                            />
                           );
                         },
                       }}
