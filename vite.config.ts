@@ -13,8 +13,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force all packages to use the same React instance
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', '@tanstack/react-query'],
   },
   optimizeDeps: {
     include: [
@@ -23,16 +26,22 @@ export default defineConfig(({ mode }) => ({
       'react/jsx-runtime',
       'react/jsx-dev-runtime',
       '@tanstack/react-query',
-      'react-syntax-highlighter',
-      'react-syntax-highlighter/dist/esm/styles/prism',
       'next-themes'
     ],
+    exclude: [],
     esbuildOptions: {
       jsx: 'automatic'
     },
     force: true
   },
   build: {
-    target: 'esnext'
+    target: 'esnext',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom']
+        }
+      }
+    }
   }
 }));

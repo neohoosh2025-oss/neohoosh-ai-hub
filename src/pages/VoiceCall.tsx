@@ -46,16 +46,25 @@ const VoiceCall = () => {
 
   const startCall = async () => {
     setIsConnecting(true);
+    console.log('🔄 Starting voice call...');
     
     try {
       // Get ephemeral token
+      console.log('📡 Requesting ephemeral token for voice:', selectedVoice);
       const { data: tokenData, error: tokenError } = await supabase.functions.invoke('realtime-voice', {
         body: { voice: selectedVoice }
       });
 
-      if (tokenError || !tokenData?.client_secret?.value) {
-        console.error('Token error:', tokenError, tokenData);
-        throw new Error('Failed to get session token');
+      console.log('📦 Token response:', { tokenData, tokenError });
+
+      if (tokenError) {
+        console.error('❌ Token error:', tokenError);
+        throw new Error('خطا در دریافت توکن: ' + (tokenError.message || 'خطای سرور'));
+      }
+
+      if (!tokenData?.client_secret?.value) {
+        console.error('❌ Invalid token data:', tokenData);
+        throw new Error('توکن دریافت شده معتبر نیست');
       }
 
       const EPHEMERAL_KEY = tokenData.client_secret.value;
@@ -124,10 +133,13 @@ const VoiceCall = () => {
       });
 
       // Create offer
+      console.log('📞 Creating WebRTC offer...');
       const offer = await pcRef.current.createOffer();
       await pcRef.current.setLocalDescription(offer);
+      console.log('✅ Local description set');
 
       // Connect to OpenAI
+      console.log('🌐 Connecting to OpenAI Realtime API...');
       const sdpResponse = await fetch("https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17", {
         method: "POST",
         body: offer.sdp,
@@ -137,17 +149,24 @@ const VoiceCall = () => {
         },
       });
 
+      console.log('📡 SDP Response status:', sdpResponse.status);
+      
       if (!sdpResponse.ok) {
-        throw new Error('Failed to establish connection');
+        const errorText = await sdpResponse.text();
+        console.error('❌ SDP Response error:', errorText);
+        throw new Error('خطا در برقراری اتصال WebRTC');
       }
 
+      const answerSdp = await sdpResponse.text();
+      console.log('✅ Received SDP answer');
+      
       const answer = {
         type: "answer" as RTCSdpType,
-        sdp: await sdpResponse.text(),
+        sdp: answerSdp,
       };
       
       await pcRef.current.setRemoteDescription(answer);
-      console.log('✅ WebRTC connected');
+      console.log('✅ WebRTC connected successfully!');
 
       setIsConnected(true);
       setCallDuration(0);
@@ -224,7 +243,7 @@ const VoiceCall = () => {
         <div className="text-center">
           <h1 className="text-xl font-bold flex items-center gap-2 justify-center">
             <Sparkles className="h-5 w-5 text-primary" />
-            تماس صوتی
+            گفتگوی صوتی
           </h1>
           {isConnected && (
             <p className="text-sm text-muted-foreground mt-1">{formatDuration(callDuration)}</p>
