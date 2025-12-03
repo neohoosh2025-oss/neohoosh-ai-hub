@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Mic, MicOff, Phone, PhoneOff, Sparkles, Loader2 } from "lucide-react";
+import { 
+  ArrowRight, 
+  Mic, 
+  MicOff, 
+  Phone, 
+  PhoneOff, 
+  Sparkles, 
+  Loader2,
+  Volume2,
+  VolumeX,
+  Settings,
+  Waves
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -12,15 +24,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const VOICES = [
-  { value: "alloy", label: "Alloy", description: "صدای متعادل و حرفه‌ای" },
-  { value: "echo", label: "Echo", description: "صدای مردانه و گرم" },
-  { value: "shimmer", label: "Shimmer", description: "صدای نرم و روان" },
-  { value: "ash", label: "Ash", description: "صدای مردانه و آرام" },
-  { value: "coral", label: "Coral", description: "صدای زنانه و گرم" },
-  { value: "sage", label: "Sage", description: "صدای طبیعی و دوستانه" },
+  { value: "alloy", label: "آلوی", description: "صدای متعادل و حرفه‌ای" },
+  { value: "echo", label: "اکو", description: "صدای مردانه و گرم" },
+  { value: "shimmer", label: "شیمر", description: "صدای نرم و روان" },
+  { value: "ash", label: "اَش", description: "صدای مردانه و آرام" },
+  { value: "coral", label: "کورال", description: "صدای زنانه و گرم" },
+  { value: "sage", label: "سِیج", description: "صدای طبیعی و دوستانه" },
 ];
+
+interface TranscriptItem {
+  role: 'user' | 'assistant';
+  text: string;
+  timestamp: Date;
+}
 
 const VoiceCall = () => {
   const navigate = useNavigate();
@@ -28,15 +47,19 @@ const VoiceCall = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
+  const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState("alloy");
-  const [transcript, setTranscript] = useState("");
+  const [transcripts, setTranscripts] = useState<TranscriptItem[]>([]);
+  const [currentAIText, setCurrentAIText] = useState("");
   const [callDuration, setCallDuration] = useState(0);
+  const [connectionStatus, setConnectionStatus] = useState<string>("آماده برای شروع");
   
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const dcRef = useRef<RTCDataChannel | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const durationIntervalRef = useRef<number | null>(null);
+  const transcriptEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -44,8 +67,13 @@ const VoiceCall = () => {
     };
   }, []);
 
+  useEffect(() => {
+    transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [transcripts, currentAIText]);
+
   const startCall = async () => {
     setIsConnecting(true);
+    setConnectionStatus("در حال دریافت توکن...");
     console.log('🔄 Starting voice call...');
     
     try {
@@ -69,6 +97,7 @@ const VoiceCall = () => {
 
       const EPHEMERAL_KEY = tokenData.client_secret.value;
       console.log('✅ Got ephemeral token');
+      setConnectionStatus("در حال دسترسی به میکروفون...");
 
       // Create peer connection
       pcRef.current = new RTCPeerConnection();
@@ -95,13 +124,14 @@ const VoiceCall = () => {
       });
       mediaStreamRef.current = ms;
       pcRef.current.addTrack(ms.getTracks()[0]);
+      setConnectionStatus("در حال برقراری اتصال...");
 
       // Set up data channel
       dcRef.current = pcRef.current.createDataChannel('oai-events');
       
       dcRef.current.addEventListener('open', () => {
         console.log('✅ Data channel opened!');
-        toast.success("کانال داده متصل شد");
+        setConnectionStatus("کانال داده متصل شد");
       });
       
       dcRef.current.addEventListener('close', () => {
@@ -115,49 +145,92 @@ const VoiceCall = () => {
       dcRef.current.addEventListener('message', (e) => {
         try {
           const event = JSON.parse(e.data);
-          console.log('📨 Event:', event.type, event);
+          console.log('📨 Event:', event.type);
 
           switch (event.type) {
             case 'session.created':
               console.log('✅ Session created on client');
-              setTranscript("🟢 اتصال برقرار شد. صحبت کنید...\n");
+              setConnectionStatus("متصل - آماده گفتگو");
               break;
+              
             case 'session.updated':
               console.log('✅ Session updated');
               break;
+              
             case 'input_audio_buffer.speech_started':
-              console.log('🎙️ Speech started');
+              console.log('🎙️ User speech started');
+              setIsUserSpeaking(true);
+              setConnectionStatus("در حال گوش دادن...");
               break;
+              
             case 'input_audio_buffer.speech_stopped':
-              console.log('🎙️ Speech stopped');
+              console.log('🎙️ User speech stopped');
+              setIsUserSpeaking(false);
+              setConnectionStatus("در حال پردازش...");
               break;
+              
+            case 'input_audio_buffer.committed':
+              console.log('📝 Audio buffer committed');
+              break;
+              
+            case 'conversation.item.created':
+              console.log('💬 Conversation item created:', event.item?.role);
+              break;
+              
             case 'response.created':
               console.log('🤖 Response started');
+              setCurrentAIText("");
               break;
+              
             case 'response.audio.delta':
               setIsAISpeaking(true);
+              setConnectionStatus("AI در حال صحبت...");
               break;
+              
             case 'response.audio.done':
               setIsAISpeaking(false);
               break;
+              
             case 'response.done':
               console.log('✅ Response complete');
               setIsAISpeaking(false);
-              break;
-            case 'conversation.item.input_audio_transcription.completed':
-              if (event.transcript) {
-                setTranscript(prev => prev + "\n👤 شما: " + event.transcript);
+              setConnectionStatus("متصل - آماده گفتگو");
+              // Save current AI text to transcripts
+              if (currentAIText.trim()) {
+                setTranscripts(prev => [...prev, {
+                  role: 'assistant',
+                  text: currentAIText,
+                  timestamp: new Date()
+                }]);
+                setCurrentAIText("");
               }
               break;
+              
+            case 'conversation.item.input_audio_transcription.completed':
+              if (event.transcript) {
+                console.log('👤 User said:', event.transcript);
+                setTranscripts(prev => [...prev, {
+                  role: 'user',
+                  text: event.transcript,
+                  timestamp: new Date()
+                }]);
+              }
+              break;
+              
             case 'response.audio_transcript.delta':
-              setTranscript(prev => prev + (event.delta || ''));
+              if (event.delta) {
+                setCurrentAIText(prev => prev + event.delta);
+              }
               break;
+              
             case 'response.audio_transcript.done':
-              setTranscript(prev => prev + "\n");
+              console.log('📝 AI transcript done');
               break;
+              
             case 'error':
               console.error('❌ OpenAI error:', event);
               toast.error("خطا: " + (event.error?.message || "مشکل نامشخص"));
+              setConnectionStatus("خطا در اتصال");
               break;
           }
         } catch (error) {
@@ -212,6 +285,7 @@ const VoiceCall = () => {
     } catch (error) {
       console.error('Error:', error);
       toast.error(error instanceof Error ? error.message : "خطا در اتصال");
+      setConnectionStatus("خطا در اتصال");
     } finally {
       setIsConnecting(false);
     }
@@ -241,7 +315,10 @@ const VoiceCall = () => {
     
     setIsConnected(false);
     setIsAISpeaking(false);
+    setIsUserSpeaking(false);
     setCallDuration(0);
+    setConnectionStatus("آماده برای شروع");
+    setCurrentAIText("");
   };
 
   const toggleMute = () => {
@@ -262,104 +339,69 @@ const VoiceCall = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col overflow-hidden">
+      {/* Ambient Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {isAISpeaking && (
+          <motion.div 
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/20 rounded-full blur-3xl"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
+      </div>
+
       {/* Header */}
-      <div className="p-4 flex items-center justify-between border-b border-border/30 backdrop-blur-sm">
+      <header className="relative z-10 px-4 py-3 flex items-center justify-between border-b border-white/5 bg-black/20 backdrop-blur-xl">
         <Button
           variant="ghost"
           size="icon"
           onClick={() => navigate(-1)}
-          className="rounded-full hover:bg-primary/10"
+          className="text-white/70 hover:text-white hover:bg-white/10 rounded-xl"
         >
           <ArrowRight className="h-5 w-5" />
         </Button>
-        <div className="text-center">
-          <h1 className="text-xl font-bold flex items-center gap-2 justify-center">
-            <Sparkles className="h-5 w-5 text-primary" />
+        
+        <div className="flex flex-col items-center">
+          <h1 className="text-lg font-semibold text-white flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
             گفتگوی صوتی
           </h1>
           {isConnected && (
-            <p className="text-sm text-muted-foreground mt-1">{formatDuration(callDuration)}</p>
+            <span className="text-xs text-white/50 font-mono">{formatDuration(callDuration)}</span>
           )}
         </div>
+        
         <div className="w-10" />
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-10">
-        {/* AI Avatar */}
-        <div className="relative">
-          <AnimatePresence>
-            {isAISpeaking && (
-              <>
-                {[0, 0.2, 0.4].map((delay, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute inset-0 rounded-full bg-primary/20"
-                    initial={{ scale: 1, opacity: 0.6 }}
-                    animate={{ scale: 2 + i * 0.3, opacity: 0 }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeOut",
-                      delay,
-                    }}
-                  />
-                ))}
-              </>
-            )}
-          </AnimatePresence>
-
-          <motion.div
-            className="w-48 h-48 rounded-full bg-gradient-to-br from-primary via-primary/90 to-primary/70 flex items-center justify-center shadow-2xl relative z-10 border-4 border-background"
-            animate={{
-              scale: isAISpeaking ? [1, 1.15, 1] : 1,
-            }}
-            transition={{
-              duration: 0.8,
-              repeat: isAISpeaking ? Infinity : 0,
-              ease: "easeInOut",
-            }}
-          >
-            <Sparkles className="w-20 h-20 text-white" />
-          </motion.div>
-        </div>
-
-        {/* Status */}
-        <div className="text-center space-y-3">
-          <motion.h2 
-            className="text-3xl font-bold"
-            animate={{ opacity: [0.7, 1, 0.7] }}
-            transition={{ duration: 2, repeat: isConnected ? Infinity : 0 }}
-          >
-            {isConnecting ? "در حال اتصال..." : isConnected ? "در حال تماس..." : "آماده برای شروع"}
-          </motion.h2>
-          <p className="text-muted-foreground text-lg">
-            {isConnected
-              ? isAISpeaking
-                ? "🎙️ AI در حال صحبت است..."
-                : "👂 در حال گوش دادن..."
-              : "دکمه تماس را فشار دهید"}
-          </p>
-        </div>
-
-        {/* Voice Selection */}
+      <div className="flex-1 flex flex-col items-center justify-between py-6 px-4 relative z-10">
+        
+        {/* Voice Selection - Only when not connected */}
         {!isConnected && !isConnecting && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-xs"
+            className="w-full max-w-sm"
           >
+            <label className="block text-sm text-white/60 mb-2 text-center">انتخاب صدای AI</label>
             <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-              <SelectTrigger className="w-full h-12 text-base bg-card/50 backdrop-blur-sm border-border/50">
+              <SelectTrigger className="w-full h-12 bg-white/5 border-white/10 text-white rounded-2xl backdrop-blur-sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-slate-900 border-white/10">
                 {VOICES.map((voice) => (
-                  <SelectItem key={voice.value} value={voice.value}>
+                  <SelectItem 
+                    key={voice.value} 
+                    value={voice.value}
+                    className="text-white focus:bg-white/10 focus:text-white"
+                  >
                     <div className="flex flex-col items-start py-1">
                       <span className="font-medium">{voice.label}</span>
-                      <span className="text-xs text-muted-foreground">{voice.description}</span>
+                      <span className="text-xs text-white/50">{voice.description}</span>
                     </div>
                   </SelectItem>
                 ))}
@@ -368,68 +410,208 @@ const VoiceCall = () => {
           </motion.div>
         )}
 
-        {/* Transcript */}
-        {transcript && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full max-w-2xl p-5 bg-card/60 backdrop-blur-md rounded-3xl border border-border/30 shadow-lg"
+        {/* Avatar & Visualization */}
+        <div className="flex-1 flex items-center justify-center py-8">
+          <div className="relative">
+            {/* Sound Waves */}
+            <AnimatePresence>
+              {(isAISpeaking || isUserSpeaking) && (
+                <>
+                  {[0, 1, 2, 3].map((i) => (
+                    <motion.div
+                      key={i}
+                      className={`absolute inset-0 rounded-full border-2 ${
+                        isAISpeaking ? 'border-primary/40' : 'border-emerald-500/40'
+                      }`}
+                      initial={{ scale: 1, opacity: 0.8 }}
+                      animate={{ 
+                        scale: 1.5 + (i * 0.3), 
+                        opacity: 0 
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.3,
+                        ease: "easeOut",
+                      }}
+                    />
+                  ))}
+                </>
+              )}
+            </AnimatePresence>
+
+            {/* Main Avatar */}
+            <motion.div
+              className={`relative w-40 h-40 md:w-48 md:h-48 rounded-full flex items-center justify-center shadow-2xl ${
+                isConnected 
+                  ? isAISpeaking 
+                    ? 'bg-gradient-to-br from-primary via-primary/90 to-violet-600' 
+                    : isUserSpeaking
+                      ? 'bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600'
+                      : 'bg-gradient-to-br from-slate-700 via-slate-600 to-slate-700'
+                  : 'bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800'
+              }`}
+              animate={{
+                scale: isAISpeaking ? [1, 1.08, 1] : isUserSpeaking ? [1, 1.05, 1] : 1,
+                boxShadow: isAISpeaking 
+                  ? ['0 0 40px rgba(139, 92, 246, 0.3)', '0 0 80px rgba(139, 92, 246, 0.5)', '0 0 40px rgba(139, 92, 246, 0.3)']
+                  : isUserSpeaking
+                    ? ['0 0 40px rgba(16, 185, 129, 0.3)', '0 0 80px rgba(16, 185, 129, 0.5)', '0 0 40px rgba(16, 185, 129, 0.3)']
+                    : '0 0 40px rgba(0, 0, 0, 0.3)'
+              }}
+              transition={{
+                duration: 0.8,
+                repeat: (isAISpeaking || isUserSpeaking) ? Infinity : 0,
+                ease: "easeInOut",
+              }}
+            >
+              {isConnecting ? (
+                <Loader2 className="w-16 h-16 text-white animate-spin" />
+              ) : isAISpeaking ? (
+                <Waves className="w-16 h-16 text-white" />
+              ) : isUserSpeaking ? (
+                <Mic className="w-16 h-16 text-white" />
+              ) : (
+                <Sparkles className="w-16 h-16 text-white/80" />
+              )}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Status & Transcript */}
+        <div className="w-full max-w-lg space-y-4">
+          {/* Status */}
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           >
-            <p className="text-sm text-muted-foreground whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">
-              {transcript}
+            <p className={`text-sm font-medium ${
+              isAISpeaking ? 'text-primary' : 
+              isUserSpeaking ? 'text-emerald-400' : 
+              'text-white/50'
+            }`}>
+              {connectionStatus}
             </p>
           </motion.div>
-        )}
-      </div>
 
-      {/* Bottom Controls */}
-      <div className="p-8 flex items-center justify-center gap-8">
-        {isConnected && (
+          {/* Transcript Area */}
+          {isConnected && (transcripts.length > 0 || currentAIText) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 overflow-hidden"
+            >
+              <ScrollArea className="h-40 p-4">
+                <div className="space-y-3">
+                  {transcripts.map((item, index) => (
+                    <div 
+                      key={index}
+                      className={`flex ${item.role === 'user' ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${
+                        item.role === 'user' 
+                          ? 'bg-emerald-500/20 text-emerald-100 rounded-tr-sm' 
+                          : 'bg-primary/20 text-primary-foreground rounded-tl-sm'
+                      }`}>
+                        <span className="text-xs opacity-60 block mb-1">
+                          {item.role === 'user' ? '👤 شما' : '🤖 AI'}
+                        </span>
+                        {item.text}
+                      </div>
+                    </div>
+                  ))}
+                  {currentAIText && (
+                    <div className="flex justify-end">
+                      <div className="max-w-[85%] px-4 py-2 rounded-2xl rounded-tl-sm bg-primary/20 text-primary-foreground text-sm">
+                        <span className="text-xs opacity-60 block mb-1">🤖 AI</span>
+                        {currentAIText}
+                        <span className="inline-block w-2 h-4 bg-white/50 animate-pulse mr-1" />
+                      </div>
+                    </div>
+                  )}
+                  <div ref={transcriptEndRef} />
+                </div>
+              </ScrollArea>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div className="pt-6 flex items-center justify-center gap-6">
+          {isConnected && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleMute}
+                className={`w-14 h-14 rounded-full transition-all border ${
+                  isMuted 
+                    ? 'bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30' 
+                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+              </Button>
+            </motion.div>
+          )}
+
           <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
+            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.05 }}
           >
             <Button
-              variant="outline"
               size="icon"
-              onClick={toggleMute}
-              className={`w-16 h-16 rounded-full transition-all ${
-                isMuted ? 'bg-destructive/10 border-destructive/30' : 'hover:bg-primary/10'
+              onClick={isConnected ? endCall : startCall}
+              disabled={isConnecting}
+              className={`w-20 h-20 rounded-full shadow-2xl transition-all ${
+                isConnected
+                  ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
+                  : "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-500/30"
               }`}
             >
-              {isMuted ? (
-                <MicOff className="w-6 h-6 text-destructive" />
+              {isConnecting ? (
+                <Loader2 className="w-8 h-8 animate-spin" />
+              ) : isConnected ? (
+                <PhoneOff className="w-8 h-8" />
               ) : (
-                <Mic className="w-6 h-6" />
+                <Phone className="w-8 h-8" />
               )}
             </Button>
           </motion.div>
-        )}
 
-        <motion.div
-          whileTap={{ scale: 0.95 }}
-          whileHover={{ scale: 1.05 }}
-        >
-          <Button
-            size="icon"
-            onClick={isConnected ? endCall : startCall}
-            disabled={isConnecting}
-            className={`w-24 h-24 rounded-full shadow-2xl transition-all ${
-              isConnected
-                ? "bg-destructive hover:bg-destructive/90"
-                : "bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-            }`}
+          {isConnected && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
+              >
+                <Volume2 className="w-5 h-5" />
+              </Button>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Hint */}
+        {!isConnected && !isConnecting && (
+          <motion.p 
+            className="text-white/30 text-xs text-center mt-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
           >
-            {isConnecting ? (
-              <Loader2 className="w-10 h-10 animate-spin" />
-            ) : isConnected ? (
-              <PhoneOff className="w-10 h-10" />
-            ) : (
-              <Phone className="w-10 h-10" />
-            )}
-          </Button>
-        </motion.div>
+            با فشردن دکمه سبز، گفتگوی صوتی آغاز می‌شود
+          </motion.p>
+        )}
       </div>
     </div>
   );

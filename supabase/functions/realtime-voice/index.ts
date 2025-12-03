@@ -27,7 +27,7 @@ serve(async (req) => {
 
     console.log("Requesting ephemeral token for voice:", voice);
 
-    // Request ephemeral token from OpenAI with FULL configuration
+    // Request ephemeral token from OpenAI with optimized configuration
     const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
       method: "POST",
       headers: {
@@ -38,7 +38,16 @@ serve(async (req) => {
         model: "gpt-4o-realtime-preview-2024-12-17",
         voice: voice,
         modalities: ["text", "audio"],
-        instructions: "شما یک دستیار هوشمند فارسی‌زبان هستید که به صورت دوستانه و مفید با کاربران صحبت می‌کنید. پاسخ‌های خود را واضح، مختصر و کاربردی ارائه دهید. به فارسی صحبت کنید مگر کاربر زبان دیگری بخواهد. همیشه صمیمانه و با احترام پاسخ دهید.",
+        instructions: `شما یک دستیار هوشمند فارسی‌زبان هستید که به صورت دوستانه و مفید با کاربران صحبت می‌کنید. 
+        
+نکات مهم:
+- همیشه به فارسی صحبت کنید مگر کاربر زبان دیگری بخواهد
+- پاسخ‌های خود را کوتاه، واضح و مفید ارائه دهید
+- صمیمانه و با احترام پاسخ دهید
+- وقتی کاربر سلام می‌کند، با خوش‌رویی پاسخ دهید و از حالش بپرسید
+- اگر سوالی نامشخص بود، برای روشن‌تر شدن سوال بپرسید
+
+شما نئو هستید، دستیار هوشمند نئوهوش.`,
         input_audio_format: "pcm16",
         output_audio_format: "pcm16",
         input_audio_transcription: {
@@ -46,9 +55,9 @@ serve(async (req) => {
         },
         turn_detection: {
           type: "server_vad",
-          threshold: 0.5,
-          prefix_padding_ms: 300,
-          silence_duration_ms: 800,
+          threshold: 0.3,
+          prefix_padding_ms: 200,
+          silence_duration_ms: 500,
           create_response: true
         }
       }),
@@ -64,7 +73,12 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("✅ Session created successfully with full config");
+    console.log("✅ Session created successfully with optimized config");
+    console.log("Session config:", JSON.stringify({
+      voice: data.voice,
+      modalities: data.modalities,
+      turn_detection: data.turn_detection
+    }));
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
