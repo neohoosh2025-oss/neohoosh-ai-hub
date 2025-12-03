@@ -99,16 +99,49 @@ const VoiceCall = () => {
       // Set up data channel
       dcRef.current = pcRef.current.createDataChannel('oai-events');
       
+      dcRef.current.addEventListener('open', () => {
+        console.log('✅ Data channel opened!');
+        toast.success("کانال داده متصل شد");
+      });
+      
+      dcRef.current.addEventListener('close', () => {
+        console.log('❌ Data channel closed');
+      });
+      
+      dcRef.current.addEventListener('error', (e) => {
+        console.error('❌ Data channel error:', e);
+      });
+      
       dcRef.current.addEventListener('message', (e) => {
         try {
           const event = JSON.parse(e.data);
-          console.log('📨 Event:', event.type);
+          console.log('📨 Event:', event.type, event);
 
           switch (event.type) {
+            case 'session.created':
+              console.log('✅ Session created on client');
+              setTranscript("🟢 اتصال برقرار شد. صحبت کنید...\n");
+              break;
+            case 'session.updated':
+              console.log('✅ Session updated');
+              break;
+            case 'input_audio_buffer.speech_started':
+              console.log('🎙️ Speech started');
+              break;
+            case 'input_audio_buffer.speech_stopped':
+              console.log('🎙️ Speech stopped');
+              break;
+            case 'response.created':
+              console.log('🤖 Response started');
+              break;
             case 'response.audio.delta':
               setIsAISpeaking(true);
               break;
             case 'response.audio.done':
+              setIsAISpeaking(false);
+              break;
+            case 'response.done':
+              console.log('✅ Response complete');
               setIsAISpeaking(false);
               break;
             case 'conversation.item.input_audio_transcription.completed':
