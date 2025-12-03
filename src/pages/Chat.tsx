@@ -430,6 +430,39 @@ const Chat = () => {
     toast.success("گفتگو پاک شد", { duration: 2000 });
   };
 
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      // First delete all messages in the conversation
+      await supabase
+        .from('messages')
+        .delete()
+        .eq('conversation_id', conversationId);
+      
+      // Then delete the conversation
+      const { error } = await supabase
+        .from('conversations')
+        .delete()
+        .eq('id', conversationId);
+
+      if (error) throw error;
+
+      // Update local state
+      setConversations(prev => prev.filter(c => c.id !== conversationId));
+      
+      // If deleted conversation was active, reset chat
+      if (conversationId === currentConversationId) {
+        setMessages([]);
+        setSelectedModel(null);
+        setCurrentConversationId(null);
+      }
+      
+      toast.success("گفتگو حذف شد", { duration: 2000 });
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      toast.error("خطا در حذف گفتگو", { duration: 2000 });
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -946,9 +979,10 @@ const Chat = () => {
       {/* History Sheet */}
       <Sheet open={showHistory} onOpenChange={setShowHistory}>
         <SheetContent side="right" className="w-[90vw] sm:w-[420px] p-0 [&>button]:hidden">
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col" dir="rtl">
             <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/40">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between">
+                <SheetTitle className="text-lg font-bold">تاریخچه گفتگوها</SheetTitle>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -957,17 +991,8 @@ const Chat = () => {
                 >
                   <ChevronRight className="w-5 h-5" />
                 </Button>
-                <div className="flex-1">
-                  <SheetTitle className="text-lg font-bold">گفتگو</SheetTitle>
-                </div>
               </div>
-              <div className="mt-4 text-right">
-                <div className="flex items-center gap-2 justify-end">
-                  <History className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-base font-semibold">تاریخچه گفتگوها</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">بازگشت به گفتگوهای قبلی</p>
-              </div>
+              <p className="text-sm text-muted-foreground mt-2">بازگشت به گفتگوهای قبلی</p>
             </SheetHeader>
             
             <div className="flex-1 overflow-y-auto px-6 py-4">
@@ -984,37 +1009,52 @@ const Chat = () => {
                   conversations.map((conv, index) => {
                     const isActive = conv.id === currentConversationId;
                     return (
-                      <motion.button
+                      <motion.div
                         key={conv.id}
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.03 }}
-                        onClick={() => loadConversation(conv.id)}
-                        className={`w-full p-4 rounded-xl border transition-all text-right group ${
+                        className={`relative p-4 rounded-xl border transition-all group ${
                           isActive 
                             ? 'border-primary/60 bg-primary/5 shadow-sm' 
                             : 'border-border/40 bg-card hover:bg-accent/20 hover:border-primary/30 hover:shadow-sm'
                         }`}
                       >
-                        <div className="flex items-start justify-between gap-3 mb-2.5">
-                          <h3 className={`font-semibold text-sm line-clamp-2 flex-1 leading-relaxed transition-colors ${
-                            isActive ? 'text-primary' : 'group-hover:text-foreground'
-                          }`}>
-                            {conv.title}
-                          </h3>
-                          <span className="text-[11px] text-muted-foreground whitespace-nowrap mt-0.5 font-medium">
-                            {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <div className={`w-5 h-5 rounded-md flex items-center justify-center ${
-                            isActive ? 'bg-primary/10' : 'bg-muted/50'
-                          }`}>
-                            <Bot className="w-3 h-3" />
+                        <button
+                          onClick={() => loadConversation(conv.id)}
+                          className="w-full text-right"
+                        >
+                          <div className="flex items-start justify-between gap-3 mb-2.5">
+                            <h3 className={`font-semibold text-sm line-clamp-2 flex-1 leading-relaxed transition-colors ${
+                              isActive ? 'text-primary' : 'group-hover:text-foreground'
+                            }`}>
+                              {conv.title}
+                            </h3>
+                            <span className="text-[11px] text-muted-foreground whitespace-nowrap mt-0.5 font-medium">
+                              {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
+                            </span>
                           </div>
-                          <span className="font-medium">{models.find(m => m.id === conv.model_type)?.name}</span>
-                        </div>
-                      </motion.button>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center ${
+                              isActive ? 'bg-primary/10' : 'bg-muted/50'
+                            }`}>
+                              <Bot className="w-3 h-3" />
+                            </div>
+                            <span className="font-medium">{models.find(m => m.id === conv.model_type)?.name}</span>
+                          </div>
+                        </button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteConversation(conv.id);
+                          }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </motion.div>
                     );
                   })
                 )}
