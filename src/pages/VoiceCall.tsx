@@ -9,8 +9,6 @@ import {
   Sparkles, 
   Loader2,
   Volume2,
-  VolumeX,
-  Settings,
   Waves
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -83,11 +81,11 @@ const VoiceCall = () => {
         body: { voice: selectedVoice }
       });
 
-      console.log('📦 Token response:', { tokenData, tokenError });
+      console.log('📦 Token response:', tokenData);
 
       if (tokenError) {
         console.error('❌ Token error:', tokenError);
-        throw new Error('خطا در دریافت توکن: ' + (tokenError.message || 'خطای سرور'));
+        throw new Error('خطا در دریافت توکن');
       }
 
       if (!tokenData?.client_secret?.value) {
@@ -99,20 +97,47 @@ const VoiceCall = () => {
       console.log('✅ Got ephemeral token');
       setConnectionStatus("در حال دسترسی به میکروفون...");
 
-      // Create peer connection
-      pcRef.current = new RTCPeerConnection();
+      // Create peer connection with STUN servers
+      pcRef.current = new RTCPeerConnection({
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ]
+      });
+
+      // Monitor connection state
+      pcRef.current.onconnectionstatechange = () => {
+        console.log('📶 Connection state:', pcRef.current?.connectionState);
+        if (pcRef.current?.connectionState === 'connected') {
+          console.log('✅ Peer connection fully connected!');
+        } else if (pcRef.current?.connectionState === 'failed') {
+          console.error('❌ Connection failed');
+          toast.error("اتصال قطع شد");
+          endCall();
+        }
+      };
+
+      pcRef.current.oniceconnectionstatechange = () => {
+        console.log('🧊 ICE state:', pcRef.current?.iceConnectionState);
+      };
 
       // Set up remote audio
       audioElRef.current = document.createElement('audio');
       audioElRef.current.autoplay = true;
+      audioElRef.current.volume = 1.0;
+      
       pcRef.current.ontrack = (e) => {
-        console.log('🔊 Received audio track');
-        if (audioElRef.current) {
+        console.log('🔊 Received audio track from AI');
+        if (audioElRef.current && e.streams[0]) {
           audioElRef.current.srcObject = e.streams[0];
+          audioElRef.current.play().catch(err => {
+            console.error('Audio play error:', err);
+          });
         }
       };
 
       // Add local audio track
+      setConnectionStatus("در حال فعال‌سازی میکروفون...");
       const ms = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           sampleRate: 24000,
@@ -123,68 +148,63 @@ const VoiceCall = () => {
         } 
       });
       mediaStreamRef.current = ms;
-      pcRef.current.addTrack(ms.getTracks()[0]);
-      setConnectionStatus("در حال برقراری اتصال...");
+      const audioTrack = ms.getTracks()[0];
+      pcRef.current.addTrack(audioTrack, ms);
+      console.log('🎤 Microphone active');
 
-      // Set up data channel
+      // Set up data channel BEFORE creating offer
+      setConnectionStatus("در حال ایجاد کانال داده...");
       dcRef.current = pcRef.current.createDataChannel('oai-events');
       
-      dcRef.current.addEventListener('open', () => {
-        console.log('✅ Data channel opened!');
-        setConnectionStatus("کانال داده متصل شد");
-      });
+      dcRef.current.onopen = () => {
+        console.log('✅ Data channel OPEN');
+        setConnectionStatus("کانال داده باز شد");
+        toast.success("اتصال برقرار شد - صحبت کنید!");
+      };
       
-      dcRef.current.addEventListener('close', () => {
+      dcRef.current.onclose = () => {
         console.log('❌ Data channel closed');
-      });
+      };
       
-      dcRef.current.addEventListener('error', (e) => {
+      dcRef.current.onerror = (e) => {
         console.error('❌ Data channel error:', e);
-      });
+      };
       
-      dcRef.current.addEventListener('message', (e) => {
+      dcRef.current.onmessage = (e) => {
         try {
           const event = JSON.parse(e.data);
           console.log('📨 Event:', event.type);
 
           switch (event.type) {
             case 'session.created':
-              console.log('✅ Session created on client');
-              setConnectionStatus("متصل - آماده گفتگو");
-              break;
-              
-            case 'session.updated':
-              console.log('✅ Session updated');
+              console.log('✅ Session ready on OpenAI');
+              setConnectionStatus("آماده - صحبت کنید");
               break;
               
             case 'input_audio_buffer.speech_started':
-              console.log('🎙️ User speech started');
+              console.log('🎙️ Speech detected!');
               setIsUserSpeaking(true);
               setConnectionStatus("در حال گوش دادن...");
               break;
               
             case 'input_audio_buffer.speech_stopped':
-              console.log('🎙️ User speech stopped');
+              console.log('🎙️ Speech ended');
               setIsUserSpeaking(false);
               setConnectionStatus("در حال پردازش...");
               break;
               
             case 'input_audio_buffer.committed':
-              console.log('📝 Audio buffer committed');
-              break;
-              
-            case 'conversation.item.created':
-              console.log('💬 Conversation item created:', event.item?.role);
+              console.log('📝 Audio committed');
               break;
               
             case 'response.created':
-              console.log('🤖 Response started');
+              console.log('🤖 AI response started');
               setCurrentAIText("");
+              setConnectionStatus("AI در حال پاسخ‌دهی...");
               break;
               
             case 'response.audio.delta':
               setIsAISpeaking(true);
-              setConnectionStatus("AI در حال صحبت...");
               break;
               
             case 'response.audio.done':
@@ -192,10 +212,9 @@ const VoiceCall = () => {
               break;
               
             case 'response.done':
-              console.log('✅ Response complete');
+              console.log('✅ AI response complete');
               setIsAISpeaking(false);
-              setConnectionStatus("متصل - آماده گفتگو");
-              // Save current AI text to transcripts
+              setConnectionStatus("آماده - صحبت کنید");
               if (currentAIText.trim()) {
                 setTranscripts(prev => [...prev, {
                   role: 'assistant',
@@ -223,56 +242,70 @@ const VoiceCall = () => {
               }
               break;
               
-            case 'response.audio_transcript.done':
-              console.log('📝 AI transcript done');
-              break;
-              
             case 'error':
-              console.error('❌ OpenAI error:', event);
-              toast.error("خطا: " + (event.error?.message || "مشکل نامشخص"));
-              setConnectionStatus("خطا در اتصال");
+              console.error('❌ OpenAI error:', event.error);
+              toast.error(event.error?.message || "خطای OpenAI");
               break;
           }
         } catch (error) {
-          console.error('Error parsing event:', error);
+          console.error('Parse error:', error);
         }
-      });
+      };
 
-      // Create offer
-      console.log('📞 Creating WebRTC offer...');
+      // Create and send offer
+      setConnectionStatus("در حال برقراری اتصال...");
+      console.log('📞 Creating offer...');
       const offer = await pcRef.current.createOffer();
       await pcRef.current.setLocalDescription(offer);
-      console.log('✅ Local description set');
-
+      
+      // Wait for ICE gathering to complete
+      await new Promise<void>((resolve) => {
+        if (pcRef.current?.iceGatheringState === 'complete') {
+          resolve();
+        } else {
+          pcRef.current!.onicegatheringstatechange = () => {
+            if (pcRef.current?.iceGatheringState === 'complete') {
+              resolve();
+            }
+          };
+          // Timeout after 2 seconds
+          setTimeout(resolve, 2000);
+        }
+      });
+      
+      console.log('🧊 ICE gathering done');
+      
+      // Get the final SDP with all ICE candidates
+      const finalOffer = pcRef.current.localDescription;
+      
       // Connect to OpenAI
-      console.log('🌐 Connecting to OpenAI Realtime API...');
+      console.log('🌐 Connecting to OpenAI...');
       const sdpResponse = await fetch("https://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview-2024-12-17", {
         method: "POST",
-        body: offer.sdp,
+        body: finalOffer!.sdp,
         headers: {
           Authorization: `Bearer ${EPHEMERAL_KEY}`,
           "Content-Type": "application/sdp"
         },
       });
 
-      console.log('📡 SDP Response status:', sdpResponse.status);
+      console.log('📡 Response status:', sdpResponse.status);
       
       if (!sdpResponse.ok) {
         const errorText = await sdpResponse.text();
-        console.error('❌ SDP Response error:', errorText);
-        throw new Error('خطا در برقراری اتصال WebRTC');
+        console.error('❌ SDP error:', errorText);
+        throw new Error('خطا در اتصال به OpenAI');
       }
 
       const answerSdp = await sdpResponse.text();
-      console.log('✅ Received SDP answer');
+      console.log('✅ Got SDP answer');
       
-      const answer = {
-        type: "answer" as RTCSdpType,
+      await pcRef.current.setRemoteDescription({
+        type: "answer",
         sdp: answerSdp,
-      };
+      });
       
-      await pcRef.current.setRemoteDescription(answer);
-      console.log('✅ WebRTC connected successfully!');
+      console.log('✅ Remote description set');
 
       setIsConnected(true);
       setCallDuration(0);
@@ -281,11 +314,11 @@ const VoiceCall = () => {
         setCallDuration(prev => prev + 1);
       }, 1000);
       
-      toast.success("تماس برقرار شد ✓");
     } catch (error) {
       console.error('Error:', error);
       toast.error(error instanceof Error ? error.message : "خطا در اتصال");
       setConnectionStatus("خطا در اتصال");
+      endCall();
     } finally {
       setIsConnecting(false);
     }
@@ -297,8 +330,15 @@ const VoiceCall = () => {
       durationIntervalRef.current = null;
     }
     
-    dcRef.current?.close();
-    pcRef.current?.close();
+    if (dcRef.current) {
+      dcRef.current.close();
+      dcRef.current = null;
+    }
+    
+    if (pcRef.current) {
+      pcRef.current.close();
+      pcRef.current = null;
+    }
     
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach(track => track.stop());
@@ -309,9 +349,6 @@ const VoiceCall = () => {
       audioElRef.current.srcObject = null;
       audioElRef.current = null;
     }
-    
-    pcRef.current = null;
-    dcRef.current = null;
     
     setIsConnected(false);
     setIsAISpeaking(false);
@@ -380,7 +417,7 @@ const VoiceCall = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-between py-6 px-4 relative z-10">
         
-        {/* Voice Selection - Only when not connected */}
+        {/* Voice Selection */}
         {!isConnected && !isConnecting && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -424,10 +461,7 @@ const VoiceCall = () => {
                         isAISpeaking ? 'border-primary/40' : 'border-emerald-500/40'
                       }`}
                       initial={{ scale: 1, opacity: 0.8 }}
-                      animate={{ 
-                        scale: 1.5 + (i * 0.3), 
-                        opacity: 0 
-                      }}
+                      animate={{ scale: 1.5 + (i * 0.3), opacity: 0 }}
                       transition={{
                         duration: 1.5,
                         repeat: Infinity,
@@ -453,11 +487,6 @@ const VoiceCall = () => {
               }`}
               animate={{
                 scale: isAISpeaking ? [1, 1.08, 1] : isUserSpeaking ? [1, 1.05, 1] : 1,
-                boxShadow: isAISpeaking 
-                  ? ['0 0 40px rgba(139, 92, 246, 0.3)', '0 0 80px rgba(139, 92, 246, 0.5)', '0 0 40px rgba(139, 92, 246, 0.3)']
-                  : isUserSpeaking
-                    ? ['0 0 40px rgba(16, 185, 129, 0.3)', '0 0 80px rgba(16, 185, 129, 0.5)', '0 0 40px rgba(16, 185, 129, 0.3)']
-                    : '0 0 40px rgba(0, 0, 0, 0.3)'
               }}
               transition={{
                 duration: 0.8,
@@ -480,12 +509,7 @@ const VoiceCall = () => {
 
         {/* Status & Transcript */}
         <div className="w-full max-w-lg space-y-4">
-          {/* Status */}
-          <motion.div 
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <motion.div className="text-center">
             <p className={`text-sm font-medium ${
               isAISpeaking ? 'text-primary' : 
               isUserSpeaking ? 'text-emerald-400' : 
@@ -511,8 +535,8 @@ const VoiceCall = () => {
                     >
                       <div className={`max-w-[85%] px-4 py-2 rounded-2xl text-sm ${
                         item.role === 'user' 
-                          ? 'bg-emerald-500/20 text-emerald-100 rounded-tr-sm' 
-                          : 'bg-primary/20 text-primary-foreground rounded-tl-sm'
+                          ? 'bg-emerald-500/20 text-emerald-100' 
+                          : 'bg-primary/20 text-white'
                       }`}>
                         <span className="text-xs opacity-60 block mb-1">
                           {item.role === 'user' ? '👤 شما' : '🤖 AI'}
@@ -523,7 +547,7 @@ const VoiceCall = () => {
                   ))}
                   {currentAIText && (
                     <div className="flex justify-end">
-                      <div className="max-w-[85%] px-4 py-2 rounded-2xl rounded-tl-sm bg-primary/20 text-primary-foreground text-sm">
+                      <div className="max-w-[85%] px-4 py-2 rounded-2xl bg-primary/20 text-white text-sm">
                         <span className="text-xs opacity-60 block mb-1">🤖 AI</span>
                         {currentAIText}
                         <span className="inline-block w-2 h-4 bg-white/50 animate-pulse mr-1" />
@@ -540,19 +564,15 @@ const VoiceCall = () => {
         {/* Controls */}
         <div className="pt-6 flex items-center justify-center gap-6">
           {isConnected && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.1 }}
-            >
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={toggleMute}
-                className={`w-14 h-14 rounded-full transition-all border ${
+                className={`w-14 h-14 rounded-full border ${
                   isMuted 
-                    ? 'bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30' 
-                    : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
+                    ? 'bg-red-500/20 border-red-500/30 text-red-400' 
+                    : 'bg-white/5 border-white/10 text-white/70 hover:text-white'
                 }`}
               >
                 {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
@@ -560,18 +580,15 @@ const VoiceCall = () => {
             </motion.div>
           )}
 
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.05 }}
-          >
+          <motion.div whileTap={{ scale: 0.95 }} whileHover={{ scale: 1.05 }}>
             <Button
               size="icon"
               onClick={isConnected ? endCall : startCall}
               disabled={isConnecting}
-              className={`w-20 h-20 rounded-full shadow-2xl transition-all ${
+              className={`w-20 h-20 rounded-full shadow-2xl ${
                 isConnected
-                  ? "bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-red-500/30"
-                  : "bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-emerald-500/30"
+                  ? "bg-gradient-to-br from-red-500 to-red-600 shadow-red-500/30"
+                  : "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-emerald-500/30"
               }`}
             >
               {isConnecting ? (
@@ -585,15 +602,11 @@ const VoiceCall = () => {
           </motion.div>
 
           {isConnected && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-            >
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}>
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
+                className="w-14 h-14 rounded-full bg-white/5 border border-white/10 text-white/70"
               >
                 <Volume2 className="w-5 h-5" />
               </Button>
@@ -601,16 +614,10 @@ const VoiceCall = () => {
           )}
         </div>
 
-        {/* Hint */}
         {!isConnected && !isConnecting && (
-          <motion.p 
-            className="text-white/30 text-xs text-center mt-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
+          <p className="text-white/30 text-xs text-center mt-4">
             با فشردن دکمه سبز، گفتگوی صوتی آغاز می‌شود
-          </motion.p>
+          </p>
         )}
       </div>
     </div>
