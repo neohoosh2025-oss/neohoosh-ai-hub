@@ -992,7 +992,7 @@ const Chat = () => {
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground mt-2">بازگشت به گفتگوهای قبلی</p>
+              
             </SheetHeader>
             
             <div className="flex-1 overflow-y-auto px-6 py-4">
