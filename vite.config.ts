@@ -25,13 +25,8 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react/jsx-runtime',
       'react/jsx-dev-runtime',
-      '@tanstack/react-query',
-      'next-themes'
+      '@tanstack/react-query'
     ],
-    exclude: [],
-    esbuildOptions: {
-      jsx: 'automatic'
-    },
     force: true
   },
   build: {
