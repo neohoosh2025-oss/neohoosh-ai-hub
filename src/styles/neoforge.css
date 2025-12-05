@@ -1,36 +1,42 @@
-/* NeoForge Design System */
+/* NeoForge Premium Design System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Core Colors */
-  --nf-bg-primary: #0D0D0D;
-  --nf-bg-surface: #111111;
-  --nf-bg-panel: #1A1A1A;
-  --nf-bg-elevated: #222222;
-  --nf-bg-hover: #2A2A2A;
+  /* Core Surfaces */
+  --nf-bg-root: #0B0B0D;
+  --nf-bg-primary: #111113;
+  --nf-bg-panel: #18181A;
+  --nf-bg-editor: #1F1F22;
+  --nf-bg-hover: #27272A;
+  --nf-bg-active: #2D2D30;
   
-  /* Accent Colors */
-  --nf-accent-primary: #7C3AED;
-  --nf-accent-primary-hover: #8B5CF6;
-  --nf-accent-secondary: #38BDF8;
-  --nf-accent-success: #10B981;
-  --nf-accent-warning: #F59E0B;
-  --nf-accent-error: #EF4444;
+  /* Brand Colors */
+  --nf-accent: #7C3AED;
+  --nf-accent-hover: #8B5CF6;
+  --nf-accent-glow: rgba(124, 58, 237, 0.4);
+  --nf-accent-subtle: rgba(124, 58, 237, 0.15);
+  --nf-secondary: #38BDF8;
+  --nf-success: #10B981;
+  --nf-warning: #F59E0B;
+  --nf-error: #EF4444;
   
   /* Text Colors */
   --nf-text-primary: #F5F5F5;
   --nf-text-secondary: #A1A1AA;
   --nf-text-muted: #71717A;
+  --nf-text-disabled: #52525B;
   
   /* Border Colors */
-  --nf-border: #27272A;
-  --nf-border-subtle: #1F1F23;
+  --nf-border: #1E1E1E;
+  --nf-border-subtle: #27272A;
+  --nf-border-active: #3F3F46;
   
   /* Shadows */
-  --nf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --nf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --nf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --nf-shadow-glow: 0 0 20px rgba(124, 58, 237, 0.15);
+  --nf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --nf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --nf-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --nf-shadow-glow: 0 0 20px var(--nf-accent-glow);
+  --nf-shadow-glow-lg: 0 0 40px var(--nf-accent-glow);
   
   /* Spacing */
   --nf-space-xs: 4px;
@@ -39,50 +45,59 @@
   --nf-space-lg: 16px;
   --nf-space-xl: 20px;
   --nf-space-2xl: 24px;
+  --nf-space-3xl: 32px;
   
   /* Border Radius */
   --nf-radius-sm: 6px;
   --nf-radius-md: 8px;
   --nf-radius-lg: 12px;
   --nf-radius-xl: 16px;
+  --nf-radius-2xl: 20px;
   
   /* Transitions */
-  --nf-transition-fast: 150ms ease;
-  --nf-transition-normal: 200ms ease;
-  --nf-transition-slow: 300ms ease;
+  --nf-transition-fast: 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  --nf-transition-normal: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --nf-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* NeoForge Container */
+/* Global Container */
 .neoforge-app {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--nf-bg-primary);
+  background: var(--nf-bg-root);
   color: var(--nf-text-primary);
   min-height: 100vh;
   overflow: hidden;
 }
 
-/* Logo Font */
-.neoforge-logo {
+/* Typography */
+.nf-font-logo {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 600;
 }
 
-/* Editor Font */
-.neoforge-code {
+.nf-font-code {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 /* Glass Effect */
-.neoforge-glass {
-  background: rgba(17, 17, 17, 0.8);
+.nf-glass {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.nf-glass-panel {
+  background: rgba(17, 17, 19, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Scrollbar Styling */
+/* Scrollbar */
 .neoforge-app ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .neoforge-app ::-webkit-scrollbar-track {
@@ -90,30 +105,34 @@
 }
 
 .neoforge-app ::-webkit-scrollbar-thumb {
-  background: var(--nf-border);
-  border-radius: 4px;
+  background: var(--nf-border-subtle);
+  border-radius: 3px;
 }
 
 .neoforge-app ::-webkit-scrollbar-thumb:hover {
-  background: #3F3F46;
+  background: var(--nf-border-active);
 }
 
 /* Glow Effects */
-.neoforge-glow-purple {
-  box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+.nf-glow {
+  box-shadow: var(--nf-shadow-glow);
 }
 
-.neoforge-glow-blue {
-  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+.nf-glow-lg {
+  box-shadow: var(--nf-shadow-glow-lg);
 }
 
-/* Button Base */
-.neoforge-btn {
+.nf-glow-text {
+  text-shadow: 0 0 20px var(--nf-accent-glow);
+}
+
+/* Button Styles */
+.nf-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
   border-radius: var(--nf-radius-md);
@@ -123,35 +142,52 @@
   outline: none;
 }
 
-.neoforge-btn-primary {
-  background: var(--nf-accent-primary);
+.nf-btn-primary {
+  background: linear-gradient(135deg, var(--nf-accent), #6D28D9);
   color: white;
-}
-
-.neoforge-btn-primary:hover {
-  background: var(--nf-accent-primary-hover);
   box-shadow: var(--nf-shadow-glow);
 }
 
-.neoforge-btn-ghost {
+.nf-btn-primary:hover {
+  background: linear-gradient(135deg, var(--nf-accent-hover), #7C3AED);
+  box-shadow: var(--nf-shadow-glow-lg);
+  transform: translateY(-1px);
+}
+
+.nf-btn-ghost {
   background: transparent;
   color: var(--nf-text-secondary);
 }
 
-.neoforge-btn-ghost:hover {
+.nf-btn-ghost:hover {
   background: var(--nf-bg-hover);
   color: var(--nf-text-primary);
 }
 
-/* Panel Styling */
-.neoforge-panel {
-  background: var(--nf-bg-surface);
+.nf-btn-glass {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--nf-border);
-  border-radius: var(--nf-radius-lg);
+  color: var(--nf-text-secondary);
 }
 
-/* Input Styling */
-.neoforge-input {
+.nf-btn-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--nf-border-active);
+  color: var(--nf-text-primary);
+}
+
+/* Panel Styles */
+.nf-panel {
+  background: var(--nf-bg-primary);
+  border: 1px solid var(--nf-border);
+}
+
+.nf-panel-dark {
+  background: var(--nf-bg-panel);
+}
+
+/* Input Styles */
+.nf-input {
   background: var(--nf-bg-panel);
   border: 1px solid var(--nf-border);
   border-radius: var(--nf-radius-md);
@@ -161,12 +197,168 @@
   transition: all var(--nf-transition-fast);
 }
 
-.neoforge-input:focus {
+.nf-input:focus {
   outline: none;
-  border-color: var(--nf-accent-primary);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  border-color: var(--nf-accent);
+  box-shadow: 0 0 0 3px var(--nf-accent-subtle);
 }
 
-.neoforge-input::placeholder {
+.nf-input::placeholder {
   color: var(--nf-text-muted);
+}
+
+/* Tab Styles */
+.nf-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: var(--nf-text-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all var(--nf-transition-fast);
+}
+
+.nf-tab:hover {
+  color: var(--nf-text-secondary);
+  background: var(--nf-bg-hover);
+}
+
+.nf-tab-active {
+  color: var(--nf-text-primary);
+  background: var(--nf-bg-editor);
+  border-bottom-color: var(--nf-accent);
+}
+
+/* File Tree */
+.nf-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--nf-text-secondary);
+  cursor: pointer;
+  border-radius: var(--nf-radius-sm);
+  transition: all var(--nf-transition-fast);
+}
+
+.nf-file-item:hover {
+  background: var(--nf-bg-hover);
+  color: var(--nf-text-primary);
+}
+
+.nf-file-item-active {
+  background: var(--nf-accent-subtle);
+  color: var(--nf-text-primary);
+}
+
+/* Code Editor */
+.nf-editor-gutter {
+  width: 50px;
+  background: var(--nf-bg-panel);
+  border-right: 1px solid var(--nf-border);
+  text-align: right;
+  padding-right: 12px;
+  color: var(--nf-text-muted);
+  font-size: 13px;
+  user-select: none;
+}
+
+.nf-editor-content {
+  flex: 1;
+  padding: 0 16px;
+  overflow: auto;
+}
+
+/* Animations */
+@keyframes nf-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes nf-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px var(--nf-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 30px var(--nf-accent-glow), 0 0 40px var(--nf-accent-glow);
+  }
+}
+
+.nf-animate-pulse {
+  animation: nf-pulse 2s ease-in-out infinite;
+}
+
+.nf-animate-glow {
+  animation: nf-glow-pulse 2s ease-in-out infinite;
+}
+
+/* Separator */
+.nf-separator {
+  width: 1px;
+  background: var(--nf-border);
+}
+
+.nf-separator-glow {
+  background: linear-gradient(180deg, transparent, var(--nf-accent-subtle), transparent);
+}
+
+/* Status indicators */
+.nf-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.nf-status-online {
+  background: var(--nf-success);
+  box-shadow: 0 0 8px var(--nf-success);
+}
+
+/* Preview Frame */
+.nf-preview-frame {
+  background: #F0F0F0;
+  border-radius: var(--nf-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--nf-shadow-lg);
+}
+
+.nf-preview-header {
+  background: #E5E5E5;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nf-preview-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.nf-preview-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.nf-preview-dot-red { background: #FF5F57; }
+.nf-preview-dot-yellow { background: #FEBC2E; }
+.nf-preview-dot-green { background: #28C840; }
+
+.nf-preview-url {
+  flex: 1;
+  background: white;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: #666;
 }

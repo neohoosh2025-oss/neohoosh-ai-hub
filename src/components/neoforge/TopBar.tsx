@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { 
   Play, 
   Download, 
@@ -5,13 +6,11 @@ import {
   Github, 
   Settings,
   ChevronDown,
-  Sparkles,
-  Moon,
-  Sun,
-  Home
+  Home,
+  Zap,
+  GitBranch
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from 'next-themes';
 import { useFilesStore } from '@/store/filesStore';
 import {
   DropdownMenu,
@@ -28,8 +27,14 @@ interface TopBarProps {
 
 export const TopBar = ({ onRun }: TopBarProps) => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
   const { projectName, files, resetToDefault } = useFilesStore();
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleRun = () => {
+    setIsRunning(true);
+    onRun();
+    setTimeout(() => setIsRunning(false), 1500);
+  };
 
   const handleExport = () => {
     const exportData = {
@@ -55,83 +60,105 @@ export const TopBar = ({ onRun }: TopBarProps) => {
   };
 
   return (
-    <header className="h-14 neoforge-glass border-b border-[#27272A] flex items-center justify-between px-5">
-      {/* Left Section */}
+    <header className="h-[60px] nf-glass border-b border-[#1E1E1E] flex items-center justify-between px-5 relative z-50">
+      {/* Left - Logo */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate('/')}
-          className="p-2 rounded-lg hover:bg-[#2A2A2A] transition-colors"
+          className="p-2 rounded-lg hover:bg-[#27272A] transition-colors text-[#71717A] hover:text-[#A1A1AA]"
         >
-          <Home className="w-4 h-4 text-[#A1A1AA]" />
+          <Home className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#38BDF8] flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
+          <div className="relative">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#6D28D9] flex items-center justify-center shadow-lg">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+            <div className="absolute -inset-1 rounded-lg bg-[#7C3AED] opacity-20 blur-md -z-10" />
           </div>
-          <span className="neoforge-logo text-lg text-[#F5F5F5]">
+          <span className="nf-font-logo text-xl text-[#F5F5F5] nf-glow-text">
             NeoForge
           </span>
         </div>
-
-        <div className="h-5 w-px bg-[#27272A]" />
-
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1A1A1A] border border-[#27272A]">
-          <span className="text-sm text-[#A1A1AA]">{projectName}</span>
-          <ChevronDown className="w-3 h-3 text-[#71717A]" />
-        </div>
       </div>
 
-      {/* Right Section */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2.5 rounded-lg hover:bg-[#2A2A2A] transition-colors text-[#A1A1AA] hover:text-[#F5F5F5]"
-        >
-          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-        </button>
-
-        <button className="p-2.5 rounded-lg hover:bg-[#2A2A2A] transition-colors text-[#A1A1AA] hover:text-[#F5F5F5]">
-          <History className="w-4 h-4" />
-        </button>
-
-        <button className="p-2.5 rounded-lg hover:bg-[#2A2A2A] transition-colors text-[#A1A1AA] hover:text-[#F5F5F5]">
-          <Github className="w-4 h-4" />
-        </button>
-
-        <button 
-          onClick={handleExport}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#2A2A2A] transition-colors text-[#A1A1AA] hover:text-[#F5F5F5] text-sm font-medium"
-        >
-          <Download className="w-4 h-4" />
-          Export
-        </button>
-
-        <button 
-          onClick={onRun}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#7C3AED] hover:bg-[#8B5CF6] transition-all text-white text-sm font-medium shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)]"
-        >
-          <Play className="w-4 h-4" fill="currentColor" />
-          Run
-        </button>
-
+      {/* Center - Project Info */}
+      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="p-2.5 rounded-lg hover:bg-[#2A2A2A] transition-colors text-[#A1A1AA] hover:text-[#F5F5F5]">
-              <Settings className="w-4 h-4" />
-            </button>
+          <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-[#27272A] transition-colors">
+            <span className="text-sm font-medium text-[#F5F5F5]">{projectName}</span>
+            <ChevronDown className="w-4 h-4 text-[#71717A]" />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48 bg-[#111111] border-[#27272A]">
-            <DropdownMenuItem onClick={handleExport} className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#2A2A2A]">
-              <Download className="w-4 h-4 mr-2" />
-              Export Project
+          <DropdownMenuContent className="bg-[#18181A] border-[#27272A]">
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              Rename Project
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              Duplicate Project
             </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-[#27272A]" />
             <DropdownMenuItem 
               onClick={resetToDefault}
-              className="text-red-400 hover:text-red-300 hover:bg-[#2A2A2A]"
+              className="text-[#EF4444] hover:bg-[#27272A]"
             >
               Reset Project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#18181A] border border-[#27272A]">
+          <GitBranch className="w-3.5 h-3.5 text-[#71717A]" />
+          <span className="text-xs text-[#71717A]">main</span>
+        </div>
+      </div>
+
+      {/* Right - Actions */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleRun}
+          className={`nf-btn-primary px-4 py-2.5 rounded-lg flex items-center gap-2 ${isRunning ? 'nf-animate-glow' : ''}`}
+        >
+          <Play className="w-4 h-4" fill="currentColor" />
+          <span className="text-sm font-medium">Run</span>
+        </button>
+
+        <button 
+          onClick={handleExport}
+          className="nf-btn-glass px-3 py-2.5 rounded-lg flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          <span className="text-sm">Export</span>
+        </button>
+
+        <button className="nf-btn-ghost p-2.5 rounded-lg">
+          <History className="w-4 h-4" />
+        </button>
+
+        <button className="nf-btn-ghost p-2.5 rounded-lg">
+          <Github className="w-4 h-4" />
+        </button>
+
+        <div className="w-px h-6 bg-[#27272A] mx-1" />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger className="nf-btn-ghost p-2.5 rounded-lg">
+            <Settings className="w-4 h-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-[#18181A] border-[#27272A]" align="end">
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              <Zap className="w-4 h-4 mr-2" />
+              AI Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              Editor Preferences
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              Keyboard Shortcuts
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[#27272A]" />
+            <DropdownMenuItem className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A]">
+              About NeoForge
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
