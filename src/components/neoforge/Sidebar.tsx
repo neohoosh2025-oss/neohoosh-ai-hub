@@ -2,18 +2,17 @@ import { useState } from 'react';
 import { 
   ChevronRight, 
   ChevronDown, 
-  File, 
   Folder, 
   FolderOpen,
   Plus,
   Trash2,
-  FileCode,
-  FileText,
-  FileJson
+  FileCode2,
+  FileJson,
+  FileType,
+  File as FileIcon
 } from 'lucide-react';
 import { useFilesStore, VirtualFile } from '@/store/filesStore';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -27,25 +26,27 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 
 const getFileIcon = (name: string) => {
   const ext = name.split('.').pop()?.toLowerCase();
   switch (ext) {
     case 'js':
     case 'jsx':
+      return <FileCode2 className="w-4 h-4 text-yellow-400" />;
     case 'ts':
     case 'tsx':
-      return <FileCode className="w-4 h-4 text-yellow-400" />;
+      return <FileCode2 className="w-4 h-4 text-blue-400" />;
     case 'css':
     case 'scss':
-      return <FileCode className="w-4 h-4 text-blue-400" />;
+      return <FileCode2 className="w-4 h-4 text-pink-400" />;
     case 'html':
-      return <FileCode className="w-4 h-4 text-orange-400" />;
+      return <FileCode2 className="w-4 h-4 text-orange-400" />;
     case 'json':
-      return <FileJson className="w-4 h-4 text-green-400" />;
+      return <FileJson className="w-4 h-4 text-yellow-300" />;
+    case 'md':
+      return <FileType className="w-4 h-4 text-[#A1A1AA]" />;
     default:
-      return <FileText className="w-4 h-4 text-muted-foreground" />;
+      return <FileIcon className="w-4 h-4 text-[#71717A]" />;
   }
 };
 
@@ -90,24 +91,26 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
         <ContextMenuTrigger asChild>
           <div
             className={cn(
-              "flex items-center gap-1.5 px-2 py-1.5 cursor-pointer rounded-md transition-all text-sm",
-              "hover:bg-accent/50",
-              isActive && "bg-accent text-accent-foreground"
+              "group flex items-center gap-2 px-2 py-1.5 mx-2 rounded-md cursor-pointer transition-all duration-150",
+              "hover:bg-[#2A2A2A]",
+              isActive && "bg-[#7C3AED]/20 text-[#F5F5F5]"
             )}
             style={{ paddingLeft: `${depth * 12 + 8}px` }}
             onClick={handleClick}
           >
             {file.type === 'folder' ? (
               <>
+                <span className="text-[#71717A]">
+                  {isExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  )}
+                </span>
                 {isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  <FolderOpen className="w-4 h-4 text-[#38BDF8]" />
                 ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
-                )}
-                {isExpanded ? (
-                  <FolderOpen className="w-4 h-4 text-blue-400" />
-                ) : (
-                  <Folder className="w-4 h-4 text-blue-400" />
+                  <Folder className="w-4 h-4 text-[#38BDF8]" />
                 )}
               </>
             ) : (
@@ -116,17 +119,28 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
                 {getFileIcon(file.name)}
               </>
             )}
-            <span className="truncate">{file.name}</span>
+            <span className={cn(
+              "text-[13px] truncate",
+              isActive ? "text-[#F5F5F5]" : "text-[#A1A1AA] group-hover:text-[#F5F5F5]"
+            )}>
+              {file.name}
+            </span>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent>
+        <ContextMenuContent className="bg-[#111111] border-[#27272A] min-w-[160px]">
           {file.type === 'folder' && (
             <>
-              <ContextMenuItem onClick={() => setShowNewDialog('file')}>
+              <ContextMenuItem 
+                onClick={() => setShowNewDialog('file')}
+                className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#2A2A2A] text-[13px]"
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 New File
               </ContextMenuItem>
-              <ContextMenuItem onClick={() => setShowNewDialog('folder')}>
+              <ContextMenuItem 
+                onClick={() => setShowNewDialog('folder')}
+                className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#2A2A2A] text-[13px]"
+              >
                 <Folder className="w-4 h-4 mr-2" />
                 New Folder
               </ContextMenuItem>
@@ -135,7 +149,7 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
           {file.id !== 'root' && file.id !== 'src' && file.id !== 'public' && (
             <ContextMenuItem 
               onClick={() => deleteFile(file.id)}
-              className="text-destructive"
+              className="text-red-400 hover:text-red-300 hover:bg-[#2A2A2A] text-[13px]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete
@@ -158,23 +172,30 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
       )}
 
       <Dialog open={showNewDialog !== null} onOpenChange={() => setShowNewDialog(null)}>
-        <DialogContent>
+        <DialogContent className="bg-[#111111] border-[#27272A]">
           <DialogHeader>
-            <DialogTitle>
-              Create New {showNewDialog === 'file' ? 'File' : 'Folder'}
+            <DialogTitle className="text-[#F5F5F5]">
+              Create {showNewDialog === 'file' ? 'File' : 'Folder'}
             </DialogTitle>
           </DialogHeader>
-          <Input
+          <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder={showNewDialog === 'file' ? 'filename.js' : 'folder-name'}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            className="neoforge-input w-full"
+            autoFocus
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDialog(null)}>
+            <button 
+              onClick={() => setShowNewDialog(null)}
+              className="neoforge-btn neoforge-btn-ghost"
+            >
               Cancel
-            </Button>
-            <Button onClick={handleCreate}>Create</Button>
+            </button>
+            <button onClick={handleCreate} className="neoforge-btn neoforge-btn-primary">
+              Create
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -182,7 +203,7 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
   );
 };
 
-export const FileTree = () => {
+export const Sidebar = () => {
   const { files, createFile, createFolder } = useFilesStore();
   const [showNewDialog, setShowNewDialog] = useState<'file' | 'folder' | null>(null);
   const [newName, setNewName] = useState('');
@@ -203,29 +224,29 @@ export const FileTree = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-card border-r border-border">
-      <div className="p-3 border-b border-border flex items-center justify-between">
-        <span className="text-sm font-medium text-foreground">Explorer</span>
+    <div className="h-full flex flex-col bg-[#111111] border-r border-[#27272A]">
+      {/* Header */}
+      <div className="h-12 px-4 flex items-center justify-between border-b border-[#27272A]">
+        <span className="text-[13px] font-medium text-[#A1A1AA] uppercase tracking-wider">
+          Explorer
+        </span>
         <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
+          <button
             onClick={() => setShowNewDialog('file')}
+            className="p-1.5 rounded-md hover:bg-[#2A2A2A] transition-colors text-[#71717A] hover:text-[#F5F5F5]"
           >
-            <Plus className="w-3.5 h-3.5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
+            <Plus className="w-4 h-4" />
+          </button>
+          <button
             onClick={() => setShowNewDialog('folder')}
+            className="p-1.5 rounded-md hover:bg-[#2A2A2A] transition-colors text-[#71717A] hover:text-[#F5F5F5]"
           >
-            <Folder className="w-3.5 h-3.5" />
-          </Button>
+            <Folder className="w-4 h-4" />
+          </button>
         </div>
       </div>
       
+      {/* File Tree */}
       <div className="flex-1 overflow-auto py-2">
         {rootFile?.children?.map((id) => {
           const file = files[id];
@@ -235,23 +256,30 @@ export const FileTree = () => {
       </div>
 
       <Dialog open={showNewDialog !== null} onOpenChange={() => setShowNewDialog(null)}>
-        <DialogContent>
+        <DialogContent className="bg-[#111111] border-[#27272A]">
           <DialogHeader>
-            <DialogTitle>
-              Create New {showNewDialog === 'file' ? 'File' : 'Folder'}
+            <DialogTitle className="text-[#F5F5F5]">
+              Create {showNewDialog === 'file' ? 'File' : 'Folder'}
             </DialogTitle>
           </DialogHeader>
-          <Input
+          <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder={showNewDialog === 'file' ? 'filename.js' : 'folder-name'}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            className="neoforge-input w-full"
+            autoFocus
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewDialog(null)}>
+            <button 
+              onClick={() => setShowNewDialog(null)}
+              className="neoforge-btn neoforge-btn-ghost"
+            >
               Cancel
-            </Button>
-            <Button onClick={handleCreate}>Create</Button>
+            </button>
+            <button onClick={handleCreate} className="neoforge-btn neoforge-btn-primary">
+              Create
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
