@@ -1,0 +1,172 @@
+/* NeoForge Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Core Colors */
+  --nf-bg-primary: #0D0D0D;
+  --nf-bg-surface: #111111;
+  --nf-bg-panel: #1A1A1A;
+  --nf-bg-elevated: #222222;
+  --nf-bg-hover: #2A2A2A;
+  
+  /* Accent Colors */
+  --nf-accent-primary: #7C3AED;
+  --nf-accent-primary-hover: #8B5CF6;
+  --nf-accent-secondary: #38BDF8;
+  --nf-accent-success: #10B981;
+  --nf-accent-warning: #F59E0B;
+  --nf-accent-error: #EF4444;
+  
+  /* Text Colors */
+  --nf-text-primary: #F5F5F5;
+  --nf-text-secondary: #A1A1AA;
+  --nf-text-muted: #71717A;
+  
+  /* Border Colors */
+  --nf-border: #27272A;
+  --nf-border-subtle: #1F1F23;
+  
+  /* Shadows */
+  --nf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --nf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --nf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --nf-shadow-glow: 0 0 20px rgba(124, 58, 237, 0.15);
+  
+  /* Spacing */
+  --nf-space-xs: 4px;
+  --nf-space-sm: 8px;
+  --nf-space-md: 12px;
+  --nf-space-lg: 16px;
+  --nf-space-xl: 20px;
+  --nf-space-2xl: 24px;
+  
+  /* Border Radius */
+  --nf-radius-sm: 6px;
+  --nf-radius-md: 8px;
+  --nf-radius-lg: 12px;
+  --nf-radius-xl: 16px;
+  
+  /* Transitions */
+  --nf-transition-fast: 150ms ease;
+  --nf-transition-normal: 200ms ease;
+  --nf-transition-slow: 300ms ease;
+}
+
+/* NeoForge Container */
+.neoforge-app {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--nf-bg-primary);
+  color: var(--nf-text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Logo Font */
+.neoforge-logo {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+}
+
+/* Editor Font */
+.neoforge-code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Glass Effect */
+.neoforge-glass {
+  background: rgba(17, 17, 17, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Scrollbar Styling */
+.neoforge-app ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.neoforge-app ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.neoforge-app ::-webkit-scrollbar-thumb {
+  background: var(--nf-border);
+  border-radius: 4px;
+}
+
+.neoforge-app ::-webkit-scrollbar-thumb:hover {
+  background: #3F3F46;
+}
+
+/* Glow Effects */
+.neoforge-glow-purple {
+  box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+}
+
+.neoforge-glow-blue {
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+}
+
+/* Button Base */
+.neoforge-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--nf-radius-md);
+  transition: all var(--nf-transition-fast);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.neoforge-btn-primary {
+  background: var(--nf-accent-primary);
+  color: white;
+}
+
+.neoforge-btn-primary:hover {
+  background: var(--nf-accent-primary-hover);
+  box-shadow: var(--nf-shadow-glow);
+}
+
+.neoforge-btn-ghost {
+  background: transparent;
+  color: var(--nf-text-secondary);
+}
+
+.neoforge-btn-ghost:hover {
+  background: var(--nf-bg-hover);
+  color: var(--nf-text-primary);
+}
+
+/* Panel Styling */
+.neoforge-panel {
+  background: var(--nf-bg-surface);
+  border: 1px solid var(--nf-border);
+  border-radius: var(--nf-radius-lg);
+}
+
+/* Input Styling */
+.neoforge-input {
+  background: var(--nf-bg-panel);
+  border: 1px solid var(--nf-border);
+  border-radius: var(--nf-radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--nf-text-primary);
+  transition: all var(--nf-transition-fast);
+}
+
+.neoforge-input:focus {
+  outline: none;
+  border-color: var(--nf-accent-primary);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.neoforge-input::placeholder {
+  color: var(--nf-text-muted);
+}
