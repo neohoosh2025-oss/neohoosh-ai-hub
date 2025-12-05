@@ -5,75 +5,146 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+
+// Professional project templates
+const projectTemplates = {
+  react: {
+    name: 'React + Vite',
+    files: ['src/App.tsx', 'src/main.tsx', 'src/index.css', 'index.html', 'vite.config.ts', 'package.json', 'tsconfig.json']
+  },
+  landing: {
+    name: 'Landing Page',
+    files: ['index.html', 'src/styles.css', 'src/main.js', 'src/components/Hero.js', 'src/components/Features.js', 'src/components/Footer.js']
+  },
+  dashboard: {
+    name: 'Admin Dashboard',
+    files: ['src/App.tsx', 'src/pages/Dashboard.tsx', 'src/pages/Settings.tsx', 'src/components/Sidebar.tsx', 'src/components/Header.tsx', 'src/components/Card.tsx']
+  }
+};
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { action, prompt, context, allFiles } = await req.json();
+    const { action, prompt, context, allFiles, projectType } = await req.json();
 
-    if (!OPENROUTER_API_KEY) {
-      throw new Error('OpenRouter API key not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('API key not configured');
     }
 
-    // Build system prompt based on action
-    let systemPrompt = `You are NeoForge AI, an expert code assistant. You help developers write, modify, and understand code.
+    // Master system prompt for autonomous AI builder
+    const masterSystemPrompt = `You are NeoForge AI, a FULL-STACK autonomous AI software engineer. You can:
+- Create complete projects from scratch
+- Generate professional, production-grade UI/UX
+- Write clean TypeScript/JavaScript code
+- Create and manage file structures
+- Implement best practices (SOLID, Clean Code)
 
-IMPORTANT RULES:
-1. When generating or modifying code, return ONLY the code without markdown code blocks unless asked for explanation
-2. Be concise and precise
-3. Follow best practices for the language being used
-4. Maintain consistent code style`;
+🎯 CORE RULES:
+1. ALWAYS return JSON with file operations
+2. Generate COMPLETE, working code - no placeholders
+3. Use modern patterns: TypeScript, functional components, hooks
+4. CSS: Use modern CSS with CSS variables, flexbox/grid
+5. NEVER explain unless asked - just produce code
+6. Code must be pixel-perfect, professional quality
+
+📁 OUTPUT FORMAT (STRICT):
+{
+  "operations": [
+    { "type": "create_file", "path": "/src/Component.tsx", "content": "..." },
+    { "type": "create_folder", "path": "/src/components" },
+    { "type": "update_file", "path": "/src/App.tsx", "content": "..." },
+    { "type": "delete_file", "path": "/src/old.js" }
+  ],
+  "summary": "Brief description of changes",
+  "nextSteps": ["Optional suggestions for next actions"]
+}
+
+🎨 UI STANDARDS:
+- Modern, minimal, pixel-perfect designs
+- Inspired by: Vercel, Linear, Notion, Figma
+- Smooth animations and transitions
+- Professional color schemes
+- Responsive by default
+- Accessible (ARIA, semantic HTML)
+
+💻 CODE STANDARDS:
+- TypeScript strict mode when possible
+- Functional components with hooks
+- Clean separation of concerns
+- Meaningful variable/function names
+- No inline styles - use CSS classes
+- Error handling included`;
 
     let userPrompt = '';
+    let enhancedSystemPrompt = masterSystemPrompt;
 
     switch (action) {
+      case 'scaffold':
+        enhancedSystemPrompt += `\n\n🏗️ PROJECT SCAFFOLDING MODE:
+You are creating a complete project from scratch. Generate ALL necessary files with FULL content.
+Include: entry point, components, styles, config files, and proper folder structure.`;
+        userPrompt = `Create a complete ${projectType || 'web'} project with the following requirements:
+
+${prompt}
+
+Generate a professional, production-ready project structure with all files fully implemented.
+Return JSON with all file operations.`;
+        break;
+
       case 'modify':
-        systemPrompt += `\n\nYou are modifying an existing file. Return the COMPLETE modified file content.`;
-        userPrompt = `Current file: ${context?.fileName || 'Unknown'}
-Path: ${context?.filePath || 'Unknown'}
+        enhancedSystemPrompt += `\n\n✏️ FILE MODIFICATION MODE:
+Modify the existing file while maintaining its style and structure.
+Return ONLY the updated file content in the operations array.`;
+        userPrompt = `File: ${context?.fileName} (${context?.filePath})
 
 Current content:
 \`\`\`
 ${context?.fileContent || ''}
 \`\`\`
 
-User request: ${prompt}
+Project files for context:
+${allFiles}
 
-Return the complete modified file content. Only return the code, no explanations unless specifically asked.`;
+Modification request: ${prompt}
+
+Return JSON with the update_file operation containing the COMPLETE modified content.`;
         break;
 
       case 'create':
-        systemPrompt += `\n\nYou are creating a new file. Return ONLY the file content.`;
-        userPrompt = `Project files for context:
+        enhancedSystemPrompt += `\n\n➕ FILE CREATION MODE:
+Create new files based on the request. Determine appropriate filenames and paths.
+Can create multiple related files if needed.`;
+        userPrompt = `Project structure:
 ${allFiles}
 
-User request: ${prompt}
+Creation request: ${prompt}
 
-Create a new file based on the request. First line should be a comment with the suggested filename (e.g., // filename: Component.jsx), then the actual code.`;
+Create the necessary file(s) with complete, working code. Return JSON with create_file operations.`;
         break;
 
       case 'explain':
-        systemPrompt += `\n\nYou are explaining code. Be clear and educational.`;
-        userPrompt = `File: ${context?.fileName || 'Unknown'}
+        enhancedSystemPrompt = `You are a helpful coding tutor. Explain code clearly in the same language as the user's question (Persian if they write in Persian, English otherwise).`;
+        userPrompt = `File: ${context?.fileName}
 
 Code:
 \`\`\`
 ${context?.fileContent || ''}
 \`\`\`
 
-User question: ${prompt}
+Question: ${prompt}
 
-Provide a clear explanation in Persian (Farsi) if the user writes in Persian, otherwise in English.`;
+Provide a clear, educational explanation.`;
         break;
 
       case 'refactor':
-        systemPrompt += `\n\nYou are refactoring code. Improve structure, readability, and performance while maintaining functionality.`;
-        userPrompt = `File: ${context?.fileName || 'Unknown'}
+        enhancedSystemPrompt += `\n\n🔄 REFACTORING MODE:
+Improve code quality, readability, and maintainability.
+May split into multiple files if needed for better organization.`;
+        userPrompt = `File: ${context?.fileName} (${context?.filePath})
 
 Current code:
 \`\`\`
@@ -82,17 +153,41 @@ ${context?.fileContent || ''}
 
 Refactoring request: ${prompt}
 
-Return the complete refactored file. Only return the code.`;
+Return JSON with file operations (may include multiple files if splitting is beneficial).`;
         break;
 
       case 'generate':
-        systemPrompt += `\n\nYou are generating a new component or feature. Return complete, working code.`;
+        enhancedSystemPrompt += `\n\n⚡ COMPONENT GENERATION MODE:
+Generate professional, reusable components with proper styling.
+Include TypeScript types if applicable.`;
         userPrompt = `Project context:
 ${allFiles}
 
-Generation request: ${prompt}
+Generate: ${prompt}
 
-Generate the requested component/feature. First line should be a comment with the suggested filename, then the code.`;
+Create professional, production-ready component(s). Return JSON with create_file operations.`;
+        break;
+
+      case 'fix':
+        enhancedSystemPrompt += `\n\n🔧 BUG FIX MODE:
+Analyze the code and fix issues. Return corrected version.`;
+        userPrompt = `File: ${context?.fileName}
+
+Code with issue:
+\`\`\`
+${context?.fileContent || ''}
+\`\`\`
+
+Error/Issue: ${prompt}
+
+Fix the issue and return JSON with the corrected file.`;
+        break;
+
+      case 'chat':
+        enhancedSystemPrompt = `You are NeoForge AI assistant. Help with coding questions, architecture decisions, and best practices.
+Respond in the same language as the user (Persian/English).
+If code is needed, include it in your response.`;
+        userPrompt = prompt;
         break;
 
       default:
@@ -101,29 +196,38 @@ Generate the requested component/feature. First line should be a comment with th
 
     console.log(`NeoForge AI - Action: ${action}`);
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://neohoosh.com',
-        'X-Title': 'NeoForge Code Playground',
       },
       body: JSON.stringify({
-        model: 'tngtech/deepseek-r1t-chimera:free',
+        model: 'google/gemini-2.5-flash',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 4096,
+        max_tokens: 16000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter API error:', response.status, errorText);
-      throw new Error(`OpenRouter API error: ${response.status}`);
+      console.error('API error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again in a moment.',
+          type: 'error'
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -131,47 +235,74 @@ Generate the requested component/feature. First line should be a comment with th
 
     console.log('AI Response received, length:', aiResponse.length);
 
-    // Parse the response based on action
+    // Parse the response
     let result: any = {};
 
-    if (action === 'explain') {
+    if (action === 'explain' || action === 'chat') {
       result = {
         type: 'explanation',
         content: aiResponse,
       };
-    } else if (action === 'create' || action === 'generate') {
-      // Try to extract filename from first line comment
-      const lines = aiResponse.split('\n');
-      let fileName = 'NewFile.js';
-      let code = aiResponse;
-
-      const filenameMatch = lines[0].match(/filename:\s*(.+)/i);
-      if (filenameMatch) {
-        fileName = filenameMatch[1].trim();
-        code = lines.slice(1).join('\n').trim();
-      }
-
-      // Remove markdown code blocks if present
-      code = code.replace(/^```[\w]*\n?/gm, '').replace(/```$/gm, '').trim();
-
-      result = {
-        type: 'code',
-        fileName,
-        code,
-        explanation: 'File created successfully!',
-      };
     } else {
-      // modify or refactor
-      let code = aiResponse;
-      
-      // Remove markdown code blocks if present
-      code = code.replace(/^```[\w]*\n?/gm, '').replace(/```$/gm, '').trim();
+      // Try to parse as JSON for file operations
+      try {
+        // Extract JSON from response (might be wrapped in markdown)
+        let jsonStr = aiResponse;
+        const jsonMatch = aiResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[1];
+        }
+        
+        // Try to find JSON object in the response
+        const jsonStart = jsonStr.indexOf('{');
+        const jsonEnd = jsonStr.lastIndexOf('}');
+        if (jsonStart !== -1 && jsonEnd !== -1) {
+          jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
+        }
 
-      result = {
-        type: 'code',
-        code,
-        explanation: action === 'refactor' ? 'Code refactored!' : 'File modified!',
-      };
+        const parsed = JSON.parse(jsonStr);
+        
+        if (parsed.operations && Array.isArray(parsed.operations)) {
+          result = {
+            type: 'operations',
+            operations: parsed.operations,
+            summary: parsed.summary || 'Changes applied successfully!',
+            nextSteps: parsed.nextSteps || [],
+          };
+        } else {
+          throw new Error('Invalid response structure');
+        }
+      } catch (parseError) {
+        console.log('Could not parse as JSON, treating as code:', parseError);
+        
+        // Fallback: treat as single file update
+        let code = aiResponse;
+        code = code.replace(/^```[\w]*\n?/gm, '').replace(/```$/gm, '').trim();
+
+        // Try to extract filename
+        const filenameMatch = code.match(/\/\/\s*filename:\s*(.+)/i) || 
+                             code.match(/\/\*\s*filename:\s*(.+)\*\//i);
+        let fileName = context?.fileName || 'NewFile.js';
+        
+        if (filenameMatch) {
+          fileName = filenameMatch[1].trim();
+          code = code.replace(filenameMatch[0], '').trim();
+        }
+
+        const operationType = action === 'create' || action === 'generate' ? 'create_file' : 'update_file';
+        const path = context?.filePath || `/src/${fileName}`;
+
+        result = {
+          type: 'operations',
+          operations: [{
+            type: operationType,
+            path: path,
+            content: code,
+          }],
+          summary: action === 'create' ? 'File created!' : 'File updated!',
+          nextSteps: [],
+        };
+      }
     }
 
     return new Response(JSON.stringify(result), {
