@@ -11,10 +11,19 @@ export interface VirtualFile {
   parentId?: string;
 }
 
+export interface FileOperation {
+  type: 'create_file' | 'create_folder' | 'update_file' | 'delete_file' | 'rename_file' | 'move_file';
+  path: string;
+  content?: string;
+  newPath?: string;
+}
+
 interface FilesState {
   files: Record<string, VirtualFile>;
   activeFileId: string | null;
   projectName: string;
+  history: { files: Record<string, VirtualFile>; timestamp: number }[];
+  historyIndex: number;
   
   // Actions
   setActiveFile: (id: string | null) => void;
@@ -23,9 +32,24 @@ interface FilesState {
   createFolder: (name: string, parentId?: string) => string;
   deleteFile: (id: string) => void;
   renameFile: (id: string, newName: string) => void;
+  moveFile: (id: string, newParentId: string) => void;
   setProjectName: (name: string) => void;
   resetToDefault: () => void;
   getFileByPath: (path: string) => VirtualFile | undefined;
+  
+  // Bulk operations
+  applyOperations: (operations: FileOperation[]) => void;
+  createFileAtPath: (path: string, content: string) => string;
+  createFolderAtPath: (path: string) => string;
+  
+  // History
+  saveSnapshot: () => void;
+  undo: () => void;
+  redo: () => void;
+  
+  // Project templates
+  loadTemplate: (templateName: string) => void;
+  clearProject: () => void;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15);
@@ -87,11 +111,21 @@ const defaultFiles: Record<string, VirtualFile> = {
   box-sizing: border-box;
 }
 
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #111118;
+  --bg-tertiary: #1a1a24;
+  --text-primary: #f5f5f5;
+  --text-secondary: #a0a0a0;
+  --accent: #7c3aed;
+  --accent-glow: rgba(124, 58, 237, 0.3);
+}
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-primary);
   min-height: 100vh;
-  color: #eee;
+  color: var(--text-primary);
 }
 
 #app {
@@ -104,42 +138,62 @@ body {
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 3rem;
+  font-weight: 700;
   margin-bottom: 1rem;
-  background: linear-gradient(90deg, #00d9ff, #00ff88);
+  background: linear-gradient(135deg, var(--accent), #00d4ff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+p {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin-bottom: 2rem;
 }
 
 .counter {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: var(--bg-secondary);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 button {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.25rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: #00d9ff;
-  color: #1a1a2e;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
   font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--accent);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+  box-shadow: 0 0 24px var(--accent-glow);
+}
+
+button:active {
+  transform: scale(0.98);
 }
 
 .count {
-  font-size: 3rem;
-  font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 700;
   min-width: 80px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }`,
     type: 'file',
     parentId: 'src',
@@ -174,7 +228,7 @@ if (app) {
   }
 }
 
-console.log('🚀 App initialized!');`,
+console.log('🚀 NeoForge App initialized!');`,
     type: 'file',
     parentId: 'src',
   },
@@ -186,8 +240,8 @@ console.log('🚀 App initialized!');`,
 export function createApp() {
   return \`
     <div class="app-container">
-      <h1>🚀 Welcome to NeoForge</h1>
-      <p>Your AI-Powered Code Playground</p>
+      <h1>⚡ NeoForge</h1>
+      <p>AI-Powered Code Playground</p>
       
       <div class="counter">
         <button id="decrement">−</button>
@@ -202,12 +256,95 @@ export function createApp() {
   },
 };
 
+// Project templates
+const templates: Record<string, Record<string, VirtualFile>> = {
+  empty: {
+    'root': {
+      id: 'root',
+      name: 'project',
+      path: '/',
+      content: '',
+      type: 'folder',
+      children: ['src'],
+    },
+    'src': {
+      id: 'src',
+      name: 'src',
+      path: '/src',
+      content: '',
+      type: 'folder',
+      children: [],
+      parentId: 'root',
+    },
+  },
+  landing: {
+    'root': {
+      id: 'root',
+      name: 'project',
+      path: '/',
+      content: '',
+      type: 'folder',
+      children: ['index-html', 'src'],
+    },
+    'src': {
+      id: 'src',
+      name: 'src',
+      path: '/src',
+      content: '',
+      type: 'folder',
+      children: ['styles-css', 'main-js'],
+      parentId: 'root',
+    },
+    'index-html': {
+      id: 'index-html',
+      name: 'index.html',
+      path: '/index.html',
+      content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Page</title>
+  <link rel="stylesheet" href="./src/styles.css">
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>`,
+      type: 'file',
+      parentId: 'root',
+    },
+    'styles-css': {
+      id: 'styles-css',
+      name: 'styles.css',
+      path: '/src/styles.css',
+      content: `/* Landing Page Styles */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; }`,
+      type: 'file',
+      parentId: 'src',
+    },
+    'main-js': {
+      id: 'main-js',
+      name: 'main.js',
+      path: '/src/main.js',
+      content: `// Landing page entry
+console.log('Landing page loaded');`,
+      type: 'file',
+      parentId: 'src',
+    },
+  },
+};
+
 export const useFilesStore = create<FilesState>()(
   persist(
     (set, get) => ({
       files: defaultFiles,
       activeFileId: 'app-jsx',
       projectName: 'my-project',
+      history: [],
+      historyIndex: -1,
 
       setActiveFile: (id) => set({ activeFileId: id }),
 
@@ -222,6 +359,7 @@ export const useFilesStore = create<FilesState>()(
       createFile: (name, parentId = 'src', content = '') => {
         const id = generateId();
         const parent = get().files[parentId];
+        if (!parent) return id;
         const path = `${parent.path}/${name}`;
 
         set((state) => ({
@@ -248,6 +386,7 @@ export const useFilesStore = create<FilesState>()(
       createFolder: (name, parentId = 'root') => {
         const id = generateId();
         const parent = get().files[parentId];
+        if (!parent) return id;
         const path = `${parent.path}/${name}`;
 
         set((state) => ({
@@ -279,7 +418,6 @@ export const useFilesStore = create<FilesState>()(
         set((state) => {
           const newFiles = { ...state.files };
 
-          // Remove from parent's children
           if (file.parentId && newFiles[file.parentId]) {
             newFiles[file.parentId] = {
               ...newFiles[file.parentId],
@@ -287,7 +425,6 @@ export const useFilesStore = create<FilesState>()(
             };
           }
 
-          // Recursively delete children if folder
           const deleteRecursive = (fileId: string) => {
             const f = newFiles[fileId];
             if (f?.children) {
@@ -321,6 +458,41 @@ export const useFilesStore = create<FilesState>()(
           };
         }),
 
+      moveFile: (id, newParentId) => {
+        const file = get().files[id];
+        const oldParentId = file.parentId;
+        const newParent = get().files[newParentId];
+        
+        if (!file || !newParent || newParent.type !== 'folder') return;
+
+        set((state) => {
+          const newFiles = { ...state.files };
+          
+          // Remove from old parent
+          if (oldParentId && newFiles[oldParentId]) {
+            newFiles[oldParentId] = {
+              ...newFiles[oldParentId],
+              children: newFiles[oldParentId].children?.filter((c) => c !== id),
+            };
+          }
+          
+          // Add to new parent
+          newFiles[newParentId] = {
+            ...newFiles[newParentId],
+            children: [...(newFiles[newParentId].children || []), id],
+          };
+          
+          // Update file's parent and path
+          newFiles[id] = {
+            ...newFiles[id],
+            parentId: newParentId,
+            path: `${newParent.path}/${file.name}`,
+          };
+
+          return { files: newFiles };
+        });
+      },
+
       setProjectName: (name) => set({ projectName: name }),
 
       resetToDefault: () => set({ files: defaultFiles, activeFileId: 'app-jsx' }),
@@ -328,6 +500,134 @@ export const useFilesStore = create<FilesState>()(
       getFileByPath: (path) => {
         const files = get().files;
         return Object.values(files).find((f) => f.path === path);
+      },
+
+      // Create file at specific path, creating parent folders as needed
+      createFileAtPath: (path: string, content: string) => {
+        const parts = path.split('/').filter(Boolean);
+        const fileName = parts.pop()!;
+        
+        let currentParentId = 'root';
+        let currentPath = '';
+        
+        // Create parent folders if they don't exist
+        for (const part of parts) {
+          currentPath += '/' + part;
+          const existingFolder = get().getFileByPath(currentPath);
+          
+          if (existingFolder) {
+            currentParentId = existingFolder.id;
+          } else {
+            currentParentId = get().createFolder(part, currentParentId);
+          }
+        }
+        
+        // Check if file already exists
+        const existingFile = get().getFileByPath(path);
+        if (existingFile) {
+          get().updateFileContent(existingFile.id, content);
+          return existingFile.id;
+        }
+        
+        // Create the file
+        return get().createFile(fileName, currentParentId, content);
+      },
+
+      createFolderAtPath: (path: string) => {
+        const parts = path.split('/').filter(Boolean);
+        
+        let currentParentId = 'root';
+        let currentPath = '';
+        
+        for (const part of parts) {
+          currentPath += '/' + part;
+          const existingFolder = get().getFileByPath(currentPath);
+          
+          if (existingFolder) {
+            currentParentId = existingFolder.id;
+          } else {
+            currentParentId = get().createFolder(part, currentParentId);
+          }
+        }
+        
+        return currentParentId;
+      },
+
+      applyOperations: (operations: FileOperation[]) => {
+        // Save snapshot before applying
+        get().saveSnapshot();
+        
+        for (const op of operations) {
+          switch (op.type) {
+            case 'create_file':
+              get().createFileAtPath(op.path, op.content || '');
+              break;
+            case 'create_folder':
+              get().createFolderAtPath(op.path);
+              break;
+            case 'update_file':
+              const file = get().getFileByPath(op.path);
+              if (file) {
+                get().updateFileContent(file.id, op.content || '');
+              } else {
+                // If file doesn't exist, create it
+                get().createFileAtPath(op.path, op.content || '');
+              }
+              break;
+            case 'delete_file':
+              const fileToDelete = get().getFileByPath(op.path);
+              if (fileToDelete) {
+                get().deleteFile(fileToDelete.id);
+              }
+              break;
+            case 'rename_file':
+              const fileToRename = get().getFileByPath(op.path);
+              if (fileToRename && op.newPath) {
+                const newName = op.newPath.split('/').pop()!;
+                get().renameFile(fileToRename.id, newName);
+              }
+              break;
+          }
+        }
+      },
+
+      saveSnapshot: () => {
+        const currentFiles = JSON.parse(JSON.stringify(get().files));
+        set((state) => ({
+          history: [...state.history.slice(0, state.historyIndex + 1), { files: currentFiles, timestamp: Date.now() }].slice(-50),
+          historyIndex: state.historyIndex + 1,
+        }));
+      },
+
+      undo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex > 0) {
+          set({
+            files: JSON.parse(JSON.stringify(history[historyIndex - 1].files)),
+            historyIndex: historyIndex - 1,
+          });
+        }
+      },
+
+      redo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex < history.length - 1) {
+          set({
+            files: JSON.parse(JSON.stringify(history[historyIndex + 1].files)),
+            historyIndex: historyIndex + 1,
+          });
+        }
+      },
+
+      loadTemplate: (templateName: string) => {
+        const template = templates[templateName];
+        if (template) {
+          set({ files: JSON.parse(JSON.stringify(template)), activeFileId: null });
+        }
+      },
+
+      clearProject: () => {
+        set({ files: templates.empty, activeFileId: null });
       },
     }),
     {
