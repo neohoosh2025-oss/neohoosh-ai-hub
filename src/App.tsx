@@ -32,6 +32,7 @@ import TextToVoice from "./pages/TextToVoice";
 import CodeGenerator from "./pages/CodeGenerator";
 import NotFound from "./pages/NotFound";
 import VoiceCall from "./pages/VoiceCall";
+import NeoForge from "./pages/NeoForge";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="/design-system" element={<DesignSystem />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/voice-call" element={<VoiceCall />} />
+              <Route path="/neoforge" element={<NeoForge />} />
               
               {/* Regular routes with Navigation/Footer */}
               <Route path="*" element={
