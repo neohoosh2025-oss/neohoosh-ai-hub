@@ -6,17 +6,16 @@ import { Editor } from '@/components/neoforge/Editor';
 import { Preview } from '@/components/neoforge/Preview';
 import { AiPanel } from '@/components/neoforge/AiPanel';
 import { StatusBar } from '@/components/neoforge/StatusBar';
-import { cn } from '@/lib/utils';
 
 const NeoForge = () => {
   const [triggerBuild, setTriggerBuild] = useState(0);
-  const [sidebarWidth, setSidebarWidth] = useState(240);
-  const [previewWidth, setPreviewWidth] = useState(45); // percentage
   const [aiPanelWidth, setAiPanelWidth] = useState(320);
+  const [previewWidth, setPreviewWidth] = useState(45);
+  const [explorerWidth, setExplorerWidth] = useState(240);
   
-  const isResizingSidebar = useRef(false);
-  const isResizingPreview = useRef(false);
   const isResizingAi = useRef(false);
+  const isResizingPreview = useRef(false);
+  const isResizingExplorer = useRef(false);
 
   useEffect(() => {
     document.title = 'NeoForge - AI Code Playground';
@@ -26,29 +25,28 @@ const NeoForge = () => {
     setTriggerBuild(prev => prev + 1);
   };
 
-  // Handle resize events
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingSidebar.current) {
-        const newWidth = Math.max(180, Math.min(400, e.clientX));
-        setSidebarWidth(newWidth);
+      if (isResizingAi.current) {
+        const newWidth = Math.max(280, Math.min(450, e.clientX));
+        setAiPanelWidth(newWidth);
       }
       if (isResizingPreview.current) {
-        const containerWidth = window.innerWidth - sidebarWidth - aiPanelWidth;
-        const mouseX = e.clientX - sidebarWidth;
-        const newPreviewWidth = Math.max(25, Math.min(75, (mouseX / containerWidth) * 100));
-        setPreviewWidth(newPreviewWidth);
+        const containerWidth = window.innerWidth - aiPanelWidth - explorerWidth;
+        const mouseX = e.clientX - aiPanelWidth;
+        const newWidth = Math.max(30, Math.min(70, (mouseX / containerWidth) * 100));
+        setPreviewWidth(100 - newWidth);
       }
-      if (isResizingAi.current) {
-        const newWidth = Math.max(280, Math.min(500, window.innerWidth - e.clientX));
-        setAiPanelWidth(newWidth);
+      if (isResizingExplorer.current) {
+        const newWidth = Math.max(180, Math.min(350, window.innerWidth - e.clientX));
+        setExplorerWidth(newWidth);
       }
     };
 
     const handleMouseUp = () => {
-      isResizingSidebar.current = false;
-      isResizingPreview.current = false;
       isResizingAi.current = false;
+      isResizingPreview.current = false;
+      isResizingExplorer.current = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
@@ -60,10 +58,10 @@ const NeoForge = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [sidebarWidth, aiPanelWidth]);
+  }, [aiPanelWidth, explorerWidth]);
 
-  const startResizeSidebar = () => {
-    isResizingSidebar.current = true;
+  const startResizeAi = () => {
+    isResizingAi.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
@@ -74,62 +72,59 @@ const NeoForge = () => {
     document.body.style.userSelect = 'none';
   };
 
-  const startResizeAi = () => {
-    isResizingAi.current = true;
+  const startResizeExplorer = () => {
+    isResizingExplorer.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
 
   return (
     <div className="neoforge-app h-screen flex flex-col overflow-hidden">
-      {/* Top Bar */}
       <TopBar onRun={handleRun} />
 
-      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div style={{ width: sidebarWidth }} className="shrink-0">
-          <Sidebar />
-        </div>
-
-        {/* Sidebar Resize Handle */}
-        <div
-          className="w-1 bg-transparent hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
-          onMouseDown={startResizeSidebar}
-        />
-
-        {/* Main Area (Preview + Editor) */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* Preview */}
-          <div style={{ width: `${previewWidth}%` }} className="shrink-0">
-            <Preview triggerBuild={triggerBuild} />
-          </div>
-
-          {/* Preview/Editor Resize Handle */}
-          <div
-            className="w-1 bg-transparent hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
-            onMouseDown={startResizePreview}
-          />
-
-          {/* Editor */}
-          <div className="flex-1 min-w-0">
-            <Editor />
-          </div>
+        {/* AI Panel - Left */}
+        <div style={{ width: aiPanelWidth }} className="shrink-0">
+          <AiPanel />
         </div>
 
         {/* AI Panel Resize Handle */}
         <div
-          className="w-1 bg-transparent hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+          className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
           onMouseDown={startResizeAi}
         />
 
-        {/* AI Panel */}
-        <div style={{ width: aiPanelWidth }} className="shrink-0">
-          <AiPanel />
+        {/* Main Area */}
+        <div className="flex-1 flex overflow-hidden">
+          {/* Editor */}
+          <div style={{ width: `${previewWidth}%` }} className="shrink-0 min-w-0">
+            <Editor />
+          </div>
+
+          {/* Editor/Preview Resize Handle */}
+          <div
+            className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+            onMouseDown={startResizePreview}
+          />
+
+          {/* Preview */}
+          <div className="flex-1 min-w-0">
+            <Preview triggerBuild={triggerBuild} />
+          </div>
+        </div>
+
+        {/* Explorer Resize Handle */}
+        <div
+          className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+          onMouseDown={startResizeExplorer}
+        />
+
+        {/* Explorer - Right */}
+        <div style={{ width: explorerWidth }} className="shrink-0">
+          <Sidebar />
         </div>
       </div>
 
-      {/* Status Bar */}
       <StatusBar />
     </div>
   );
