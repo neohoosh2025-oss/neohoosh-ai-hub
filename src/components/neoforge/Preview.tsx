@@ -49,35 +49,34 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
       .join('\n\n');
   }, [files]);
 
-  // Get main JavaScript/JSX content
-  const getMainJs = useCallback(() => {
+  // Get all JavaScript/JSX content combined
+  const getAllJs = useCallback(() => {
     const fileList = Object.values(files).filter(f => f.type === 'file');
+    const jsFiles: string[] = [];
     
-    // Priority order for main entry
-    const priorities = [
-      'App.jsx', 'App.tsx', 'app.jsx', 'app.tsx',
-      'main.jsx', 'main.tsx', 'main.js', 'index.jsx', 'index.tsx'
-    ];
+    // Get all JS/JSX files
+    fileList.forEach(f => {
+      if (f.name.endsWith('.js') || f.name.endsWith('.jsx') || f.name.endsWith('.ts') || f.name.endsWith('.tsx')) {
+        jsFiles.push(f.content);
+      }
+    });
     
-    for (const name of priorities) {
-      const file = fileList.find(f => f.name === name);
-      if (file) return file.content;
-    }
-    
-    // Fallback: any jsx/tsx/js file in src
-    const jsFile = fileList.find(f => 
-      (f.name.endsWith('.jsx') || f.name.endsWith('.tsx') || f.name.endsWith('.js')) &&
-      f.path.includes('/src/')
+    return jsFiles.join('\n\n');
+  }, [files]);
+
+  // Get HTML content
+  const getHtmlContent = useCallback(() => {
+    const htmlFile = Object.values(files).find(f => 
+      f.type === 'file' && f.name.endsWith('.html')
     );
-    
-    return jsFile?.content || '';
+    return htmlFile?.content || '';
   }, [files]);
 
   const buildPreview = useCallback(() => {
     setIsLoading(true);
     
     const cssContent = getAllCss();
-    const jsContent = getMainJs();
+    const jsContent = getAllJs();
     
     // Clean JS content (remove imports/exports for simple execution)
     let cleanJs = jsContent
@@ -170,7 +169,7 @@ ${cleanJs}
 
     setLastBuildTime(Date.now());
     setTimeout(() => setIsLoading(false), 300);
-  }, [getAllCss, getMainJs]);
+  }, [getAllCss, getAllJs]);
 
   // Build when triggered or when files change
   useEffect(() => {
@@ -191,7 +190,7 @@ ${cleanJs}
 
   const openInNewTab = () => {
     const cssContent = getAllCss();
-    const jsContent = getMainJs();
+    const jsContent = getAllJs();
     
     let cleanJs = jsContent
       .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
