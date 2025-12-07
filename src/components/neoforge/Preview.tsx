@@ -79,9 +79,6 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
     const cssContent = getAllCss();
     const jsContent = getMainJs();
     
-    // Find HTML file or use default
-    const htmlFile = findFile(['index.html', 'public/index.html']);
-    
     // Clean JS content (remove imports/exports for simple execution)
     let cleanJs = jsContent
       .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
@@ -96,6 +93,8 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
 ${cssContent}
   </style>
 </head>
@@ -151,7 +150,7 @@ ${cleanJs}
       console.log('🚀 Preview loaded!');
     } catch (error) {
       console.error('Preview error:', error);
-      document.body.innerHTML = '<div style="padding: 20px; color: #ef4444; font-family: monospace;"><h3>Error:</h3><pre>' + error.message + '</pre></div>';
+      document.body.innerHTML = '<div style="padding: 20px; color: #ef4444; font-family: monospace; background: #0a0a0f; min-height: 100vh;"><h3 style="margin-bottom: 10px;">⚠️ Error:</h3><pre style="white-space: pre-wrap; word-break: break-word;">' + error.message + '</pre></div>';
     }
   </script>
 </body>
@@ -159,17 +158,19 @@ ${cleanJs}
 `;
 
     if (iframeRef.current) {
-      const doc = iframeRef.current.contentDocument;
-      if (doc) {
-        doc.open();
-        doc.write(combinedHtml);
-        doc.close();
-      }
+      const blob = new Blob([combinedHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      iframeRef.current.src = url;
+      
+      // Clean up old blob URL
+      iframeRef.current.onload = () => {
+        URL.revokeObjectURL(url);
+      };
     }
 
     setLastBuildTime(Date.now());
     setTimeout(() => setIsLoading(false), 300);
-  }, [getAllCss, getMainJs, findFile]);
+  }, [getAllCss, getMainJs]);
 
   // Build when triggered or when files change
   useEffect(() => {
@@ -208,13 +209,13 @@ const app=document.getElementById('app');if(app&&typeof createApp==='function'){
   return (
     <div className="h-full flex flex-col bg-[#050507]">
       {/* Toolbar */}
-      <div className="nf-panel-header bg-[#0a0a0d]">
-        <span className="nf-panel-title">Preview</span>
+      <div className="nf-panel-header bg-[#0a0a0d] flex-wrap gap-2">
+        <span className="nf-panel-title hidden sm:inline">Preview</span>
 
-        <div className="flex items-center gap-1">
-          {/* Viewport Toggles */}
+        <div className="flex items-center gap-1 flex-1 sm:flex-none justify-end">
+          {/* Viewport Toggles - Hide on very small screens */}
           <div className={cn(
-            "flex items-center p-1 rounded-lg mr-2",
+            "hidden sm:flex items-center p-1 rounded-lg mr-2",
             "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]"
           )}>
             {(['desktop', 'tablet', 'mobile'] as ViewportSize[]).map((size) => (
@@ -251,41 +252,34 @@ const app=document.getElementById('app');if(app&&typeof createApp==='function'){
           >
             <ExternalLink className="w-4 h-4" />
           </button>
-          <button
-            className="nf-icon-btn w-8 h-8"
-            title="Fullscreen"
-          >
-            <Maximize2 className="w-4 h-4" />
-          </button>
         </div>
       </div>
 
       {/* Preview Container */}
       <div className={cn(
-        "flex-1 overflow-auto p-6 flex items-start justify-center",
+        "flex-1 overflow-auto p-2 sm:p-4 lg:p-6 flex items-start justify-center",
         "bg-[#050507] nf-dots-pattern"
       )}>
         <div
           className={cn(
-            "transition-all duration-300",
+            "transition-all duration-300 w-full h-full",
             viewport !== 'desktop' && "shadow-2xl"
           )}
           style={{ 
-            width: viewportSizes[viewport].width,
-            height: viewport === 'desktop' ? '100%' : viewportSizes[viewport].height,
-            maxWidth: '100%',
-            minHeight: '400px'
+            maxWidth: viewport === 'desktop' ? '100%' : viewportSizes[viewport].width,
+            height: '100%',
+            minHeight: '300px'
           }}
         >
           {/* Browser Chrome */}
-          <div className="nf-preview-frame h-full flex flex-col overflow-hidden">
-            <div className="nf-preview-header shrink-0">
-              <div className="nf-preview-dots">
+          <div className="nf-preview-frame h-full flex flex-col overflow-hidden rounded-lg sm:rounded-xl">
+            <div className="nf-preview-header shrink-0 py-2 sm:py-3">
+              <div className="nf-preview-dots hidden sm:flex">
                 <div className="nf-preview-dot nf-preview-dot-red" />
                 <div className="nf-preview-dot nf-preview-dot-yellow" />
                 <div className="nf-preview-dot nf-preview-dot-green" />
               </div>
-              <div className="nf-preview-url flex items-center gap-2">
+              <div className="nf-preview-url flex items-center gap-2 text-xs sm:text-sm">
                 <Globe className="w-3 h-3 text-[#71717a]" />
                 <span>localhost:3000</span>
               </div>
@@ -305,7 +299,7 @@ const app=document.getElementById('app');if(app&&typeof createApp==='function'){
                   ref={iframeRef}
                   className="w-full h-full border-0"
                   title="Preview"
-                  sandbox="allow-scripts allow-modals"
+                  sandbox="allow-scripts allow-modals allow-same-origin"
                 />
               )}
             </div>
