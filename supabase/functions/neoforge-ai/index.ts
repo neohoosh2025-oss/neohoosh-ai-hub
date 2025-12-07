@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
 
 // Professional project templates
 const projectTemplates = {
@@ -31,8 +31,8 @@ serve(async (req) => {
   try {
     const { action, prompt, context, allFiles, projectType } = await req.json();
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('API key not configured');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     // Master system prompt for autonomous AI builder
@@ -196,14 +196,16 @@ If code is needed, include it in your response.`;
 
     console.log(`NeoForge AI - Action: ${action}`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://neohoosh.com',
+        'X-Title': 'NeoForge AI'
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'deepseek/deepseek-chat-v3.1',
         messages: [
           { role: 'system', content: enhancedSystemPrompt },
           { role: 'user', content: userPrompt },
@@ -215,7 +217,7 @@ If code is needed, include it in your response.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('API error:', response.status, errorText);
+      console.error('OpenRouter API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
