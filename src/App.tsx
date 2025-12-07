@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,15 +35,17 @@ import NotFound from "./pages/NotFound";
 import VoiceCall from "./pages/VoiceCall";
 import NeoForge from "./pages/NeoForge";
 
-const queryClient = new QueryClient();
+const App = () => {
+  // Create QueryClient inside the component using useState to avoid issues with React's reconciliation
+  const [queryClient] = useState(() => new QueryClient());
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
             <Routes>
               {/* Full-screen routes without Navigation/Footer */}
               <Route path="/neohi" element={<NeoHi />} />
@@ -90,7 +93,8 @@ const App = () => (
           </BrowserRouter>
         </TooltipProvider>
       </LanguageProvider>
-  </QueryClientProvider>
-);
+    </QueryClientProvider>
+  );
+};
 
 export default App;
