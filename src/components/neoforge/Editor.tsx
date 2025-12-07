@@ -152,14 +152,14 @@ export const Editor = () => {
       <div className={cn(
         "h-11 flex items-center bg-[#050507]",
         "border-b border-[rgba(255,255,255,0.06)]",
-        "overflow-x-auto"
+        "overflow-x-auto scrollbar-hide"
       )}>
         {openFiles.map((file) => (
           <button
             key={file.id}
             className={cn(
-              "group flex items-center gap-2 h-full px-4 text-[13px] border-r border-[rgba(255,255,255,0.04)]",
-              "transition-all duration-200 whitespace-nowrap relative",
+              "group flex items-center gap-2 h-full px-3 sm:px-4 text-[12px] sm:text-[13px] border-r border-[rgba(255,255,255,0.04)]",
+              "transition-all duration-200 whitespace-nowrap relative shrink-0",
               file.id === activeFileId 
                 ? "bg-[#0a0a0d] text-[#fafafa]" 
                 : "text-[#71717a] hover:text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.02)]"
@@ -170,10 +170,11 @@ export const Editor = () => {
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee]" />
             )}
             {getFileIcon(file.name)}
-            <span>{file.name}</span>
+            <span className="hidden sm:inline">{file.name}</span>
+            <span className="sm:hidden">{file.name.split('.')[0].slice(0, 6)}</span>
             <X className={cn(
               "w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 hover:text-[#fafafa]",
-              "transition-opacity duration-200"
+              "transition-opacity duration-200 hidden sm:block"
             )} />
           </button>
         ))}
@@ -181,15 +182,15 @@ export const Editor = () => {
 
       {/* Editor Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Line Numbers */}
+        {/* Line Numbers - Hide on mobile */}
         <div className={cn(
-          "w-16 bg-[#050507] border-r border-[rgba(255,255,255,0.04)]",
+          "hidden sm:block w-12 lg:w-16 bg-[#050507] border-r border-[rgba(255,255,255,0.04)]",
           "py-4 select-none overflow-hidden shrink-0"
         )}>
           {lineNumbers.map((num) => (
             <div 
               key={num} 
-              className="text-[13px] leading-7 text-right pr-4 nf-font-code text-[#3f3f46]"
+              className="text-[12px] lg:text-[13px] leading-7 text-right pr-3 lg:pr-4 nf-font-code text-[#3f3f46]"
             >
               {num}
             </div>
@@ -202,8 +203,8 @@ export const Editor = () => {
           <pre
             ref={highlightRef}
             className={cn(
-              "absolute inset-0 p-4 overflow-auto pointer-events-none",
-              "nf-font-code text-[13px] leading-7 whitespace-pre-wrap break-words",
+              "absolute inset-0 p-3 sm:p-4 overflow-auto pointer-events-none",
+              "nf-font-code text-[12px] sm:text-[13px] leading-7 whitespace-pre-wrap break-words",
               "text-[#d4d4d8]"
             )}
             dangerouslySetInnerHTML={{
@@ -219,8 +220,8 @@ export const Editor = () => {
             onScroll={handleScroll}
             onKeyDown={handleKeyDown}
             className={cn(
-              "absolute inset-0 p-4 resize-none outline-none",
-              "nf-font-code text-[13px] leading-7",
+              "absolute inset-0 p-3 sm:p-4 resize-none outline-none",
+              "nf-font-code text-[12px] sm:text-[13px] leading-7",
               "bg-transparent text-transparent caret-[#8b5cf6]",
               "whitespace-pre-wrap break-words overflow-auto",
               "selection:bg-[rgba(139,92,246,0.3)]"

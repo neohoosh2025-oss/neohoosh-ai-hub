@@ -179,10 +179,10 @@ export const AiPanel = () => {
   return (
     <div className="h-full flex flex-col bg-[#0a0a0d] border-r border-[rgba(255,255,255,0.06)]">
       {/* Header */}
-      <div className="p-4 border-b border-[rgba(255,255,255,0.06)]">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="p-3 sm:p-4 border-b border-[rgba(255,255,255,0.06)]">
+        <div className="flex items-center gap-3 mb-3 sm:mb-4">
           <div className={cn(
-            "relative w-11 h-11 rounded-xl flex items-center justify-center",
+            "relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center",
             "bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#22d3ee]",
             "shadow-[0_0_30px_rgba(139,92,246,0.4)]"
           )}>
@@ -203,16 +203,16 @@ export const AiPanel = () => {
           <button
             onClick={() => setShowActions(!showActions)}
             className={cn(
-              "w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-sm",
+              "w-full flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-sm",
               "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]",
               "hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(139,92,246,0.3)]",
               "transition-all duration-200"
             )}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <span style={{ color: currentAction?.color }}>{currentAction?.icon}</span>
               <span className="text-[#fafafa] font-medium">{currentAction?.label}</span>
-              <span className="text-[#52525b] text-xs">— {currentAction?.description}</span>
+              <span className="text-[#52525b] text-xs hidden sm:inline">— {currentAction?.description}</span>
             </div>
             <ChevronDown className={cn(
               "w-4 h-4 text-[#71717a] transition-transform duration-200",
@@ -225,7 +225,7 @@ export const AiPanel = () => {
               "absolute top-full left-0 right-0 mt-2 py-2 z-20",
               "bg-[#131316] border border-[rgba(255,255,255,0.08)]",
               "rounded-xl shadow-xl backdrop-blur-xl",
-              "nf-animate-scale-in"
+              "nf-animate-scale-in max-h-[50vh] overflow-y-auto"
             )}>
               {actions.map((action) => (
                 <button
@@ -245,7 +245,7 @@ export const AiPanel = () => {
                   <span className={selectedAction === action.id ? "text-[#fafafa]" : "text-[#a1a1aa]"}>
                     {action.label}
                   </span>
-                  <span className="text-[#52525b] text-xs ml-auto">{action.description}</span>
+                  <span className="text-[#52525b] text-xs ml-auto hidden sm:inline">{action.description}</span>
                 </button>
               ))}
             </div>

@@ -64,12 +64,12 @@ export const TopBar = ({ onRun }: TopBarProps) => {
   };
 
   return (
-    <header className="h-[56px] nf-glass-strong flex items-center justify-between px-4 relative z-50">
+    <header className="h-[52px] sm:h-[56px] nf-glass-strong flex items-center justify-between px-3 sm:px-4 relative z-50">
       {/* Gradient Border Bottom */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(139,92,246,0.3)] to-transparent" />
       
       {/* Left - Logo & Navigation */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           onClick={() => navigate('/')}
           className="nf-icon-btn group"
@@ -77,34 +77,34 @@ export const TopBar = ({ onRun }: TopBarProps) => {
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
         </button>
 
-        <div className="w-px h-6 bg-[rgba(255,255,255,0.08)]" />
+        <div className="w-px h-5 sm:h-6 bg-[rgba(255,255,255,0.08)] hidden sm:block" />
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="relative group">
             <div className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center",
+              "w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center",
               "bg-gradient-to-br from-[#8b5cf6] via-[#7c3aed] to-[#22d3ee]",
               "shadow-[0_0_24px_rgba(139,92,246,0.4)]",
               "transition-all duration-300 group-hover:shadow-[0_0_40px_rgba(139,92,246,0.5)]",
               "group-hover:scale-105"
             )}>
-              <Zap className="w-5 h-5 text-white" />
+              <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee] opacity-0 blur-lg group-hover:opacity-30 transition-opacity -z-10" />
           </div>
           <div className="flex flex-col">
-            <span className="nf-font-logo text-lg text-[#fafafa] leading-tight">
+            <span className="nf-font-logo text-base sm:text-lg text-[#fafafa] leading-tight">
               NeoForge
             </span>
-            <span className="text-[10px] text-[#71717a] tracking-wider uppercase">
+            <span className="text-[9px] sm:text-[10px] text-[#71717a] tracking-wider uppercase hidden sm:block">
               AI Playground
             </span>
           </div>
         </div>
       </div>
 
-      {/* Center - Project Info */}
-      <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+      {/* Center - Project Info (Desktop only) */}
+      <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger className={cn(
             "flex items-center gap-2 px-4 py-2 rounded-xl",
@@ -143,13 +143,13 @@ export const TopBar = ({ onRun }: TopBarProps) => {
       </div>
 
       {/* Right - Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 sm:gap-2">
         <button
           onClick={handleRun}
           className={cn(
-            "flex items-center gap-2 px-5 py-2.5 rounded-xl",
+            "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg sm:rounded-xl",
             "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed]",
-            "text-white font-medium text-sm",
+            "text-white font-medium text-xs sm:text-sm",
             "shadow-[0_0_24px_rgba(139,92,246,0.4)]",
             "hover:shadow-[0_0_40px_rgba(139,92,246,0.5)]",
             "hover:from-[#a78bfa] hover:to-[#8b5cf6]",
@@ -158,50 +158,53 @@ export const TopBar = ({ onRun }: TopBarProps) => {
             isRunning && "animate-pulse"
           )}
         >
-          <Play className="w-4 h-4" fill="currentColor" />
+          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" />
           <span>Run</span>
         </button>
 
         <button 
           onClick={handleExport}
-          className="nf-btn-glass rounded-xl"
+          className="nf-btn-glass rounded-lg sm:rounded-xl hidden sm:flex"
         >
           <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Export</span>
+          <span className="hidden md:inline">Export</span>
         </button>
-
-        <button className="nf-icon-btn">
-          <Share2 className="w-4 h-4" />
-        </button>
-
-        <button className="nf-icon-btn">
-          <Clock className="w-4 h-4" />
-        </button>
-
-        <button className="nf-icon-btn">
-          <Github className="w-4 h-4" />
-        </button>
-
-        <div className="w-px h-6 bg-[rgba(255,255,255,0.06)] mx-1" />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="nf-icon-btn">
-            <Settings className="w-4 h-4" />
+            <MoreHorizontal className="w-4 h-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent className="bg-[#131316] border-[rgba(255,255,255,0.08)] backdrop-blur-xl" align="end">
+            <DropdownMenuItem onClick={handleExport} className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)] sm:hidden">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
+              <Share2 className="w-4 h-4 mr-2" />
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
+              <Clock className="w-4 h-4 mr-2" />
+              History
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
+              <Github className="w-4 h-4 mr-2" />
+              GitHub
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
             <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
               <Zap className="w-4 h-4 mr-2 text-[#8b5cf6]" />
               AI Settings
             </DropdownMenuItem>
             <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
-              Editor Preferences
+              <Settings className="w-4 h-4 mr-2" />
+              Settings
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
-              Keyboard Shortcuts
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
-            <DropdownMenuItem className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)]">
-              About NeoForge
+            <DropdownMenuItem 
+              onClick={resetToDefault}
+              className="text-[#f87171] hover:bg-[rgba(248,113,113,0.1)] lg:hidden"
+            >
+              Reset Project
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
