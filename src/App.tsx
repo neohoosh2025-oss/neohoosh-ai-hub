@@ -7,34 +7,43 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import { PageTransition } from "./components/PageTransition";
-import Home from "./pages/Home";
-import Articles from "./pages/Articles";
-import ArticleDetail from "./pages/ArticleDetail";
-import Products from "./pages/Products";
-import ProductDetail from "./pages/ProductDetail";
-import Services from "./pages/Services";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Chat from "./pages/Chat";
-import Admin from "./pages/Admin";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import MemoryManagement from "./pages/MemoryManagement";
-import AdminTranslate from "./pages/AdminTranslate";
-import NeoHi from "./pages/NeoHi";
-import AISettings from "./pages/AISettings";
-import DesignSystem from "./pages/DesignSystem";
-import Pricing from "./pages/Pricing";
-import Tools from "./pages/Tools";
-import ImageGenerator from "./pages/ImageGenerator";
-import VoiceToText from "./pages/VoiceToText";
-import TextToVoice from "./pages/TextToVoice";
-import CodeGenerator from "./pages/CodeGenerator";
-import NotFound from "./pages/NotFound";
-import VoiceCall from "./pages/VoiceCall";
-import NeoForge from "./pages/NeoForge";
+import { lazy, Suspense } from "react";
+
+// Lazy load all pages to prevent import issues
+const Home = lazy(() => import("./pages/Home"));
+const Articles = lazy(() => import("./pages/Articles"));
+const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
+const Products = lazy(() => import("./pages/Products"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const Services = lazy(() => import("./pages/Services"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Chat = lazy(() => import("./pages/Chat"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const MemoryManagement = lazy(() => import("./pages/MemoryManagement"));
+const AdminTranslate = lazy(() => import("./pages/AdminTranslate"));
+const NeoHi = lazy(() => import("./pages/NeoHi"));
+const AISettings = lazy(() => import("./pages/AISettings"));
+const DesignSystem = lazy(() => import("./pages/DesignSystem"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Tools = lazy(() => import("./pages/Tools"));
+const ImageGenerator = lazy(() => import("./pages/ImageGenerator"));
+const VoiceToText = lazy(() => import("./pages/VoiceToText"));
+const TextToVoice = lazy(() => import("./pages/TextToVoice"));
+const CodeGenerator = lazy(() => import("./pages/CodeGenerator"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const VoiceCall = lazy(() => import("./pages/VoiceCall"));
+const NeoForge = lazy(() => import("./pages/NeoForge"));
 
 const queryClient = new QueryClient();
+
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -43,6 +52,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Full-screen routes without Navigation/Footer */}
               <Route path="/neohi" element={<NeoHi />} />
@@ -87,9 +97,10 @@ const App = () => (
                 </div>
               } />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </LanguageProvider>
+          </Suspense>
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
