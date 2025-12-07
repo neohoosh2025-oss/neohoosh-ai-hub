@@ -317,12 +317,25 @@ ${memories.map(m => `- ${m.key}: ${m.value}`).join("\n")}
       })
     ];
 
-    // Select model based on type - using reliable free models
-    const selectedModel = modelType === "academic" 
+    // Select model based on type - academic uses gemma, others use gpt-oss with reasoning
+    const isAcademic = modelType === "academic";
+    const selectedModel = isAcademic 
       ? "google/gemma-3-27b-it:free" 
-      : "google/gemma-3-27b-it:free";
+      : "openai/gpt-oss-20b:free";
 
     console.log("Calling OpenRouter with model:", selectedModel);
+
+    // Build request body - add reasoning for non-academic models
+    const requestBody: any = {
+      model: selectedModel,
+      messages: apiMessages,
+      stream: true
+    };
+    
+    // Enable reasoning for gpt-oss model
+    if (!isAcademic) {
+      requestBody.reasoning = { enabled: true };
+    }
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -332,11 +345,7 @@ ${memories.map(m => `- ${m.key}: ${m.value}`).join("\n")}
         "HTTP-Referer": "https://neohoosh.com",
         "X-Title": "Neohoosh AI"
       },
-      body: JSON.stringify({
-        model: selectedModel,
-        messages: apiMessages,
-        stream: true
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
