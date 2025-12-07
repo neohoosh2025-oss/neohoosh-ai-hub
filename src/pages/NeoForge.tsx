@@ -17,6 +17,12 @@ const NeoForge = () => {
   const isResizingAi = useRef(false);
   const isResizingPreview = useRef(false);
   const isResizingExplorer = useRef(false);
+  
+  // Expose triggerBuild globally for AI panel to trigger rebuilds
+  useEffect(() => {
+    (window as any).neoforgeRefresh = () => setTriggerBuild(prev => prev + 1);
+    return () => { delete (window as any).neoforgeRefresh; };
+  }, []);
 
   useEffect(() => {
     document.title = 'NeoForge - AI Code Playground';
