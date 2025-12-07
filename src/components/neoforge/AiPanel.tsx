@@ -126,6 +126,13 @@ export const AiPanel = () => {
           }, 100);
         }
         
+        // Trigger preview rebuild
+        setTimeout(() => {
+          if ((window as any).neoforgeRefresh) {
+            (window as any).neoforgeRefresh();
+          }
+        }, 200);
+        
         toast.success(`${operations.length} file operation(s) applied!`);
       }
 

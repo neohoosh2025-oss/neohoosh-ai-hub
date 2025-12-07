@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useFilesStore } from '@/store/filesStore';
 import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Globe, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,20 +20,74 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [viewport, setViewport] = useState<ViewportSize>('desktop');
+  const [lastBuildTime, setLastBuildTime] = useState<number>(0);
 
-  const buildPreview = () => {
-    setIsLoading(true);
-
-    const htmlFile = files['index-html'];
-    const cssFile = files['style-css'];
-    const mainJsFile = files['main-js'];
-    const appJsxFile = files['app-jsx'];
-
-    if (!htmlFile || !cssFile || !mainJsFile || !appJsxFile) {
-      setIsLoading(false);
-      return;
+  // Helper to find file by path or name patterns
+  const findFile = useCallback((patterns: string[]) => {
+    const fileList = Object.values(files);
+    for (const pattern of patterns) {
+      // Try exact path match
+      const exactMatch = fileList.find(f => f.path === pattern || f.path === `/${pattern}`);
+      if (exactMatch) return exactMatch;
+      
+      // Try name match
+      const nameMatch = fileList.find(f => f.name === pattern);
+      if (nameMatch) return nameMatch;
+      
+      // Try path contains
+      const containsMatch = fileList.find(f => f.path.includes(pattern));
+      if (containsMatch) return containsMatch;
     }
+    return null;
+  }, [files]);
 
+  // Get all CSS content
+  const getAllCss = useCallback(() => {
+    return Object.values(files)
+      .filter(f => f.type === 'file' && (f.name.endsWith('.css') || f.path.includes('.css')))
+      .map(f => f.content)
+      .join('\n\n');
+  }, [files]);
+
+  // Get main JavaScript/JSX content
+  const getMainJs = useCallback(() => {
+    const fileList = Object.values(files).filter(f => f.type === 'file');
+    
+    // Priority order for main entry
+    const priorities = [
+      'App.jsx', 'App.tsx', 'app.jsx', 'app.tsx',
+      'main.jsx', 'main.tsx', 'main.js', 'index.jsx', 'index.tsx'
+    ];
+    
+    for (const name of priorities) {
+      const file = fileList.find(f => f.name === name);
+      if (file) return file.content;
+    }
+    
+    // Fallback: any jsx/tsx/js file in src
+    const jsFile = fileList.find(f => 
+      (f.name.endsWith('.jsx') || f.name.endsWith('.tsx') || f.name.endsWith('.js')) &&
+      f.path.includes('/src/')
+    );
+    
+    return jsFile?.content || '';
+  }, [files]);
+
+  const buildPreview = useCallback(() => {
+    setIsLoading(true);
+    
+    const cssContent = getAllCss();
+    const jsContent = getMainJs();
+    
+    // Find HTML file or use default
+    const htmlFile = findFile(['index.html', 'public/index.html']);
+    
+    // Clean JS content (remove imports/exports for simple execution)
+    let cleanJs = jsContent
+      .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+      .replace(/import\s+['"][^'"]+['"];?\s*/g, '')
+      .replace(/export\s+(default\s+)?/g, '');
+    
     const combinedHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -42,37 +96,63 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
   <style>
-${cssFile.content}
+${cssContent}
   </style>
 </head>
 <body>
   <div id="app"></div>
+  <div id="root"></div>
   <script>
-${appJsxFile.content.replace(/export\s+/g, '')}
+    try {
+${cleanJs}
 
-const app = document.getElementById('app');
-if (app && typeof createApp === 'function') {
-  app.innerHTML = createApp();
-  
-  let count = 0;
-  const countEl = document.getElementById('count');
-  const incrementBtn = document.getElementById('increment');
-  const decrementBtn = document.getElementById('decrement');
-  
-  if (incrementBtn && decrementBtn && countEl) {
-    incrementBtn.addEventListener('click', () => {
-      count++;
-      countEl.textContent = count;
-    });
-    
-    decrementBtn.addEventListener('click', () => {
-      count--;
-      countEl.textContent = count;
-    });
-  }
-}
-
-console.log('🚀 Preview loaded!');
+      // Try different app initialization patterns
+      const app = document.getElementById('app') || document.getElementById('root');
+      
+      if (app) {
+        // Pattern 1: createApp function
+        if (typeof createApp === 'function') {
+          const result = createApp();
+          if (typeof result === 'string') {
+            app.innerHTML = result;
+          }
+        }
+        // Pattern 2: App component function
+        else if (typeof App === 'function') {
+          const result = App();
+          if (typeof result === 'string') {
+            app.innerHTML = result;
+          }
+        }
+        // Pattern 3: render function
+        else if (typeof render === 'function') {
+          render(app);
+        }
+      }
+      
+      // Initialize any counters or interactive elements
+      let count = 0;
+      const countEl = document.getElementById('count');
+      const incrementBtn = document.getElementById('increment');
+      const decrementBtn = document.getElementById('decrement');
+      
+      if (incrementBtn && decrementBtn && countEl) {
+        incrementBtn.addEventListener('click', () => {
+          count++;
+          countEl.textContent = count;
+        });
+        
+        decrementBtn.addEventListener('click', () => {
+          count--;
+          countEl.textContent = count;
+        });
+      }
+      
+      console.log('🚀 Preview loaded!');
+    } catch (error) {
+      console.error('Preview error:', error);
+      document.body.innerHTML = '<div style="padding: 20px; color: #ef4444; font-family: monospace;"><h3>Error:</h3><pre>' + error.message + '</pre></div>';
+    }
   </script>
 </body>
 </html>
@@ -87,22 +167,38 @@ console.log('🚀 Preview loaded!');
       }
     }
 
-    setTimeout(() => setIsLoading(false), 400);
-  };
+    setLastBuildTime(Date.now());
+    setTimeout(() => setIsLoading(false), 300);
+  }, [getAllCss, getMainJs, findFile]);
 
+  // Build when triggered or when files change
   useEffect(() => {
     buildPreview();
   }, [triggerBuild]);
+  
+  // Auto-rebuild when files change (with debounce)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // Only rebuild if enough time has passed since last build
+      if (Date.now() - lastBuildTime > 500) {
+        buildPreview();
+      }
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, [files, lastBuildTime]);
 
   const openInNewTab = () => {
-    const htmlFile = files['index-html'];
-    const cssFile = files['style-css'];
-    const appJsxFile = files['app-jsx'];
+    const cssContent = getAllCss();
+    const jsContent = getMainJs();
+    
+    let cleanJs = jsContent
+      .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+      .replace(/import\s+['"][^'"]+['"];?\s*/g, '')
+      .replace(/export\s+(default\s+)?/g, '');
 
-    if (!htmlFile || !cssFile || !appJsxFile) return;
-
-    const combinedHtml = `<!DOCTYPE html><html><head><style>${cssFile.content}</style></head><body><div id="app"></div><script>${appJsxFile.content.replace(/export\s+/g, '')}
-const app = document.getElementById('app');if (app && typeof createApp === 'function') { app.innerHTML = createApp(); }</script></body></html>`;
+    const combinedHtml = `<!DOCTYPE html><html><head><style>${cssContent}</style></head><body><div id="app"></div><script>try{${cleanJs}
+const app=document.getElementById('app');if(app&&typeof createApp==='function'){app.innerHTML=createApp();}}catch(e){document.body.innerHTML='<pre>'+e.message+'</pre>';}</script></body></html>`;
 
     const blob = new Blob([combinedHtml], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
