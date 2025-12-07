@@ -13,8 +13,10 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      react: path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
     },
-    dedupe: ["react", "react-dom", "zustand"],
+    dedupe: ["react", "react-dom", "zustand", "@tanstack/react-query"],
   },
   optimizeDeps: {
     include: ["react", "react-dom", "@tanstack/react-query", "zustand"],
@@ -26,6 +28,14 @@ export default defineConfig(({ mode }) => ({
   build: {
     commonjsOptions: {
       include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+        },
+      },
     },
   },
 }));
