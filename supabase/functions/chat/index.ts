@@ -317,10 +317,10 @@ ${memories.map(m => `- ${m.key}: ${m.value}`).join("\n")}
       })
     ];
 
-    // Select model based on type
+    // Select model based on type - using reliable free models
     const selectedModel = modelType === "academic" 
-      ? "kwaipilot/kat-coder-pro:free" 
-      : "meituan/longcat-flash-chat:free";
+      ? "google/gemma-3-27b-it:free" 
+      : "google/gemma-3-27b-it:free";
 
     console.log("Calling OpenRouter with model:", selectedModel);
 
