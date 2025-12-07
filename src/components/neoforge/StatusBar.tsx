@@ -1,5 +1,6 @@
 import { useFilesStore } from '@/store/filesStore';
-import { Sparkles, GitBranch, FileCode2, Zap } from 'lucide-react';
+import { GitBranch, FileCode2, Zap, Circle, Wifi, Shield } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export const StatusBar = () => {
   const { files, activeFileId } = useFilesStore();
@@ -23,45 +24,71 @@ export const StatusBar = () => {
   const charCount = activeFile?.content?.length || 0;
 
   return (
-    <footer className="h-7 bg-[#0B0B0D] flex items-center justify-between px-4 text-[11px] relative">
-      {/* Top Glow Border */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#7C3AED]/30 to-transparent" />
+    <footer className={cn(
+      "h-8 bg-[#050507] flex items-center justify-between px-4 text-[11px]",
+      "relative border-t border-[rgba(255,255,255,0.04)]"
+    )}>
+      {/* Top Gradient Border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(139,92,246,0.4)] to-transparent" />
 
       {/* Left Section */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-1.5 text-[#71717A]">
+        <div className="flex items-center gap-2">
+          <Circle className="w-2 h-2 fill-[#34d399] text-[#34d399]" />
+          <span className="text-[#71717a]">Ready</span>
+        </div>
+
+        <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+
+        <div className="flex items-center gap-1.5 text-[#71717a]">
           <GitBranch className="w-3 h-3" />
           <span>main</span>
         </div>
 
         {activeFile && (
           <>
-            <div className="w-px h-3 bg-[#27272A]" />
-            <div className="flex items-center gap-1.5 text-[#71717A]">
+            <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+            <div className="flex items-center gap-1.5 text-[#71717a]">
               <FileCode2 className="w-3 h-3" />
-              <span>{activeFile.path}</span>
+              <span className="font-mono">{activeFile.path}</span>
             </div>
-            <div className="w-px h-3 bg-[#27272A]" />
-            <span className="text-[#71717A]">{getLanguage(activeFile.name)}</span>
-            <div className="w-px h-3 bg-[#27272A]" />
-            <span className="text-[#71717A]">Ln {lineCount}, Col 1</span>
+            <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+            <span className="text-[#a1a1aa]">{getLanguage(activeFile.name)}</span>
+            <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+            <span className="text-[#71717a]">Ln {lineCount}, Col 1</span>
           </>
         )}
       </div>
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 px-2 py-0.5 rounded bg-[#18181A]">
-          <span className="text-[#71717A]">React + Vite</span>
+        <div className="flex items-center gap-2">
+          <Wifi className="w-3 h-3 text-[#34d399]" />
+          <span className="text-[#71717a]">Connected</span>
         </div>
         
-        <span className="text-[#71717A]">UTF-8</span>
+        <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+
+        <div className={cn(
+          "flex items-center gap-2 px-2 py-0.5 rounded",
+          "bg-[rgba(255,255,255,0.03)]"
+        )}>
+          <span className="text-[#71717a]">React + Vite</span>
+        </div>
         
-        <div className="w-px h-3 bg-[#27272A]" />
+        <span className="text-[#71717a]">UTF-8</span>
         
-        <div className="flex items-center gap-1.5 text-[#7C3AED]">
-          <Zap className="w-3 h-3" />
-          <span className="font-medium">Powered by DeepSeek</span>
+        <div className="w-px h-3 bg-[rgba(255,255,255,0.06)]" />
+        
+        <div className="flex items-center gap-1.5">
+          <div className={cn(
+            "flex items-center gap-1.5 px-2 py-0.5 rounded",
+            "bg-gradient-to-r from-[rgba(139,92,246,0.1)] to-[rgba(34,211,238,0.1)]",
+            "border border-[rgba(139,92,246,0.2)]"
+          )}>
+            <Zap className="w-3 h-3 text-[#8b5cf6]" />
+            <span className="font-medium nf-gradient-text">AI Powered</span>
+          </div>
         </div>
       </div>
     </footer>

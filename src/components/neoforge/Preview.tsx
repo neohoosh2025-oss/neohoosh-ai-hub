@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFilesStore } from '@/store/filesStore';
-import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Globe } from 'lucide-react';
+import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Globe, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ViewportSize = 'desktop' | 'tablet' | 'mobile';
@@ -87,7 +87,7 @@ console.log('🚀 Preview loaded!');
       }
     }
 
-    setTimeout(() => setIsLoading(false), 300);
+    setTimeout(() => setIsLoading(false), 400);
   };
 
   useEffect(() => {
@@ -110,23 +110,26 @@ const app = document.getElementById('app');if (app && typeof createApp === 'func
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#18181A]">
+    <div className="h-full flex flex-col bg-[#050507]">
       {/* Toolbar */}
-      <div className="h-10 px-3 flex items-center justify-between border-b border-[#1E1E1E] bg-[#111113]">
-        <span className="text-[11px] font-medium text-[#71717A] uppercase tracking-wider">Preview</span>
+      <div className="nf-panel-header bg-[#0a0a0d]">
+        <span className="nf-panel-title">Preview</span>
 
         <div className="flex items-center gap-1">
           {/* Viewport Toggles */}
-          <div className="flex items-center bg-[#18181A] rounded-lg p-0.5 mr-2">
+          <div className={cn(
+            "flex items-center p-1 rounded-lg mr-2",
+            "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]"
+          )}>
             {(['desktop', 'tablet', 'mobile'] as ViewportSize[]).map((size) => (
               <button
                 key={size}
                 onClick={() => setViewport(size)}
                 className={cn(
-                  "p-1.5 rounded-md transition-all",
+                  "p-1.5 rounded-md transition-all duration-200",
                   viewport === size 
-                    ? "bg-[#27272A] text-[#F5F5F5]" 
-                    : "text-[#52525B] hover:text-[#A1A1AA]"
+                    ? "bg-[rgba(139,92,246,0.15)] text-[#8b5cf6]" 
+                    : "text-[#52525b] hover:text-[#a1a1aa]"
                 )}
                 title={viewportSizes[size].label}
               >
@@ -140,26 +143,35 @@ const app = document.getElementById('app');if (app && typeof createApp === 'func
           <button
             onClick={buildPreview}
             disabled={isLoading}
-            className="p-1.5 rounded-md hover:bg-[#27272A] transition-colors text-[#71717A] hover:text-[#A1A1AA]"
+            className="nf-icon-btn w-8 h-8"
             title="Refresh"
           >
-            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+            <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin text-[#8b5cf6]")} />
           </button>
           <button
             onClick={openInNewTab}
-            className="p-1.5 rounded-md hover:bg-[#27272A] transition-colors text-[#71717A] hover:text-[#A1A1AA]"
+            className="nf-icon-btn w-8 h-8"
             title="Open in new tab"
           >
             <ExternalLink className="w-4 h-4" />
+          </button>
+          <button
+            className="nf-icon-btn w-8 h-8"
+            title="Fullscreen"
+          >
+            <Maximize2 className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Preview Container */}
-      <div className="flex-1 overflow-auto p-6 flex items-start justify-center bg-[#0B0B0D]">
+      <div className={cn(
+        "flex-1 overflow-auto p-6 flex items-start justify-center",
+        "bg-[#050507] nf-dots-pattern"
+      )}>
         <div
           className={cn(
-            "nf-preview-frame transition-all duration-300",
+            "transition-all duration-300",
             viewport !== 'desktop' && "shadow-2xl"
           )}
           style={{ 
@@ -170,35 +182,37 @@ const app = document.getElementById('app');if (app && typeof createApp === 'func
           }}
         >
           {/* Browser Chrome */}
-          <div className="nf-preview-header">
-            <div className="nf-preview-dots">
-              <div className="nf-preview-dot nf-preview-dot-red" />
-              <div className="nf-preview-dot nf-preview-dot-yellow" />
-              <div className="nf-preview-dot nf-preview-dot-green" />
-            </div>
-            <div className="nf-preview-url flex items-center gap-2">
-              <Globe className="w-3 h-3 text-[#71717A]" />
-              <span>localhost:3000</span>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="bg-white" style={{ height: 'calc(100% - 36px)' }}>
-            {isLoading ? (
-              <div className="h-full flex items-center justify-center bg-[#F5F5F5]">
-                <div className="flex flex-col items-center gap-3">
-                  <RefreshCw className="w-6 h-6 animate-spin text-[#7C3AED]" />
-                  <span className="text-[13px] text-[#71717A]">Building...</span>
-                </div>
+          <div className="nf-preview-frame h-full flex flex-col overflow-hidden">
+            <div className="nf-preview-header shrink-0">
+              <div className="nf-preview-dots">
+                <div className="nf-preview-dot nf-preview-dot-red" />
+                <div className="nf-preview-dot nf-preview-dot-yellow" />
+                <div className="nf-preview-dot nf-preview-dot-green" />
               </div>
-            ) : (
-              <iframe
-                ref={iframeRef}
-                className="w-full h-full border-0"
-                title="Preview"
-                sandbox="allow-scripts allow-modals"
-              />
-            )}
+              <div className="nf-preview-url flex items-center gap-2">
+                <Globe className="w-3 h-3 text-[#71717a]" />
+                <span>localhost:3000</span>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 bg-white relative overflow-hidden">
+              {isLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#fafafa]">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-8 h-8 border-2 border-[rgba(139,92,246,0.2)] border-t-[#8b5cf6] rounded-full animate-spin" />
+                    <span className="text-[13px] text-[#71717a]">Building...</span>
+                  </div>
+                </div>
+              ) : (
+                <iframe
+                  ref={iframeRef}
+                  className="w-full h-full border-0"
+                  title="Preview"
+                  sandbox="allow-scripts allow-modals"
+                />
+              )}
+            </div>
           </div>
         </div>
       </div>
