@@ -7,7 +7,7 @@ import { Preview } from '@/components/neoforge/Preview';
 import { AiPanel } from '@/components/neoforge/AiPanel';
 import { StatusBar } from '@/components/neoforge/StatusBar';
 import { cn } from '@/lib/utils';
-import { Code2, Eye, FolderTree, Bot, X } from 'lucide-react';
+import { Code2, Eye, FolderTree, Bot, X, MessageCircle } from 'lucide-react';
 
 type ViewMode = 'code' | 'preview';
 type MobilePanel = 'ai' | 'explorer' | null;
@@ -18,6 +18,7 @@ const NeoForge = () => {
   const [explorerWidth, setExplorerWidth] = useState(260);
   const [viewMode, setViewMode] = useState<ViewMode>('code');
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
+  const [showMobileAiChat, setShowMobileAiChat] = useState(false);
   
   const isResizingAi = useRef(false);
   const isResizingExplorer = useRef(false);
@@ -26,7 +27,6 @@ const NeoForge = () => {
   useEffect(() => {
     (window as any).neoforgeRefresh = () => {
       setTriggerBuild(prev => prev + 1);
-      // Switch to preview mode when AI makes changes
       setViewMode('preview');
     };
     return () => { delete (window as any).neoforgeRefresh; };
@@ -132,9 +132,8 @@ const NeoForge = () => {
 
         {/* Main Area */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* Desktop: Both panels side by side */}
+          {/* Desktop: View with tabs */}
           <div className="hidden lg:flex flex-1 overflow-hidden">
-            {/* View Mode Tabs - Desktop */}
             <div className="flex flex-col flex-1 overflow-hidden">
               <div className="flex items-center bg-[#050507] border-b border-[rgba(255,255,255,0.06)]">
                 <button
@@ -196,22 +195,25 @@ const NeoForge = () => {
         </div>
 
         {/* Mobile: Overlay Panels */}
-        {mobilePanel && (
+        {(mobilePanel || showMobileAiChat) && (
           <div 
             className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-            onClick={closeMobilePanel}
+            onClick={() => {
+              closeMobilePanel();
+              setShowMobileAiChat(false);
+            }}
           />
         )}
         
         {/* Mobile: AI Panel Drawer */}
         <div className={cn(
-          "lg:hidden fixed inset-y-0 left-0 w-[85vw] max-w-[380px] z-50 transform transition-transform duration-300 ease-out",
-          mobilePanel === 'ai' ? "translate-x-0" : "-translate-x-full"
+          "lg:hidden fixed inset-y-0 left-0 w-[90vw] max-w-[400px] z-50 transform transition-transform duration-300 ease-out",
+          showMobileAiChat ? "translate-x-0" : "-translate-x-full"
         )}>
-          <div className="h-full relative">
+          <div className="h-full relative bg-[#0a0a0d]">
             <button
-              onClick={closeMobilePanel}
-              className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa]"
+              onClick={() => setShowMobileAiChat(false)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.15)]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -221,13 +223,13 @@ const NeoForge = () => {
 
         {/* Mobile: Explorer Drawer */}
         <div className={cn(
-          "lg:hidden fixed inset-y-0 right-0 w-[75vw] max-w-[320px] z-50 transform transition-transform duration-300 ease-out",
+          "lg:hidden fixed inset-y-0 right-0 w-[80vw] max-w-[320px] z-50 transform transition-transform duration-300 ease-out",
           mobilePanel === 'explorer' ? "translate-x-0" : "translate-x-full"
         )}>
-          <div className="h-full relative">
+          <div className="h-full relative bg-[#0a0a0d]">
             <button
               onClick={closeMobilePanel}
-              className="absolute top-4 left-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa]"
+              className="absolute top-4 left-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.15)]"
             >
               <X className="w-5 h-5" />
             </button>
@@ -236,31 +238,35 @@ const NeoForge = () => {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="lg:hidden flex items-center justify-around py-2 px-4 bg-[#0a0a0d] border-t border-[rgba(255,255,255,0.06)] safe-area-pb">
+      {/* Mobile Bottom Navigation - Enhanced with AI Chat button */}
+      <div className="lg:hidden flex items-center justify-around py-3 px-4 bg-[#0a0a0d] border-t border-[rgba(255,255,255,0.08)]">
         <button
-          onClick={() => setMobilePanel(mobilePanel === 'ai' ? null : 'ai')}
+          onClick={() => setShowMobileAiChat(true)}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all duration-200",
-            mobilePanel === 'ai' 
-              ? "bg-[rgba(139,92,246,0.15)] text-[#8b5cf6]"
-              : "text-[#71717a]"
+            "flex flex-col items-center gap-1.5 px-5 py-2 rounded-xl transition-all duration-200 relative",
+            showMobileAiChat 
+              ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
+              : "text-[#71717a] hover:text-[#a1a1aa]"
           )}
         >
-          <Bot className="w-5 h-5" />
-          <span className="text-[11px] font-medium">AI</span>
+          <div className="relative">
+            <Bot className="w-6 h-6" />
+            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#34d399] rounded-full border-2 border-[#0a0a0d]" />
+          </div>
+          <span className="text-[10px] font-medium">چت با AI</span>
         </button>
+        
         <button
           onClick={() => setMobilePanel(mobilePanel === 'explorer' ? null : 'explorer')}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-xl transition-all duration-200",
+            "flex flex-col items-center gap-1.5 px-5 py-2 rounded-xl transition-all duration-200",
             mobilePanel === 'explorer' 
               ? "bg-[rgba(34,211,238,0.15)] text-[#22d3ee]"
-              : "text-[#71717a]"
+              : "text-[#71717a] hover:text-[#a1a1aa]"
           )}
         >
-          <FolderTree className="w-5 h-5" />
-          <span className="text-[11px] font-medium">فایل‌ها</span>
+          <FolderTree className="w-6 h-6" />
+          <span className="text-[10px] font-medium">فایل‌ها</span>
         </button>
       </div>
 
