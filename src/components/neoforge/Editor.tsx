@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFilesStore } from '@/store/filesStore';
 import { cn } from '@/lib/utils';
-import { X, FileCode2, Code2, FileJson, FileType } from 'lucide-react';
+import { X, FileCode2, Code2, FileJson, FileType, Sparkles } from 'lucide-react';
 
 const highlightCode = (code: string, language: string): string => {
   let highlighted = code
@@ -10,34 +10,34 @@ const highlightCode = (code: string, language: string): string => {
     .replace(/>/g, '&gt;');
 
   // Comments
-  highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #6A737D">$1</span>');
-  highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #6A737D">$1</span>');
+  highlighted = highlighted.replace(/(\/\/.*$)/gm, '<span style="color: #6b7280; font-style: italic">$1</span>');
+  highlighted = highlighted.replace(/(\/\*[\s\S]*?\*\/)/g, '<span style="color: #6b7280; font-style: italic">$1</span>');
 
   // Strings
-  highlighted = highlighted.replace(/(`[^`]*`)/g, '<span style="color: #98C379">$1</span>');
-  highlighted = highlighted.replace(/("[^"]*")/g, '<span style="color: #98C379">$1</span>');
-  highlighted = highlighted.replace(/('[^']*')/g, '<span style="color: #98C379">$1</span>');
+  highlighted = highlighted.replace(/(`[^`]*`)/g, '<span style="color: #34d399">$1</span>');
+  highlighted = highlighted.replace(/("[^"]*")/g, '<span style="color: #34d399">$1</span>');
+  highlighted = highlighted.replace(/('[^']*')/g, '<span style="color: #34d399">$1</span>');
 
   // Keywords
   const keywords = ['const', 'let', 'var', 'function', 'return', 'if', 'else', 'for', 'while', 'import', 'export', 'from', 'default', 'class', 'extends', 'new', 'this', 'async', 'await', 'try', 'catch', 'throw'];
   keywords.forEach((kw) => {
     const regex = new RegExp(`\\b(${kw})\\b`, 'g');
-    highlighted = highlighted.replace(regex, '<span style="color: #C678DD">$1</span>');
+    highlighted = highlighted.replace(regex, '<span style="color: #a78bfa">$1</span>');
   });
 
   // Functions
-  highlighted = highlighted.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span style="color: #61AFEF">$1</span>');
+  highlighted = highlighted.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)\s*(?=\()/g, '<span style="color: #22d3ee">$1</span>');
 
   // Numbers
-  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #D19A66">$1</span>');
+  highlighted = highlighted.replace(/\b(\d+)\b/g, '<span style="color: #fbbf24">$1</span>');
 
   // JSX tags
-  highlighted = highlighted.replace(/(&lt;\/?)([\w-]+)/g, '$1<span style="color: #E06C75">$2</span>');
+  highlighted = highlighted.replace(/(&lt;\/?)([\w-]+)/g, '$1<span style="color: #f472b6">$2</span>');
 
   // CSS
   if (language === 'css') {
-    highlighted = highlighted.replace(/([\w-]+)(\s*:)/g, '<span style="color: #56B6C2">$1</span>$2');
-    highlighted = highlighted.replace(/([.#][\w-]+)/g, '<span style="color: #E5C07B">$1</span>');
+    highlighted = highlighted.replace(/([\w-]+)(\s*:)/g, '<span style="color: #22d3ee">$1</span>$2');
+    highlighted = highlighted.replace(/([.#][\w-]+)/g, '<span style="color: #fbbf24">$1</span>');
   }
 
   return highlighted;
@@ -63,18 +63,18 @@ const getFileIcon = (filename: string) => {
   switch (ext) {
     case 'jsx':
     case 'tsx':
-      return <Code2 className="w-3.5 h-3.5 text-[#61DAFB]" />;
+      return <Code2 className="w-3.5 h-3.5 text-[#22d3ee]" />;
     case 'js':
     case 'ts':
-      return <FileCode2 className="w-3.5 h-3.5 text-[#F7DF1E]" />;
+      return <FileCode2 className="w-3.5 h-3.5 text-[#fbbf24]" />;
     case 'css':
-      return <FileType className="w-3.5 h-3.5 text-[#38BDF8]" />;
+      return <FileType className="w-3.5 h-3.5 text-[#f472b6]" />;
     case 'json':
-      return <FileJson className="w-3.5 h-3.5 text-[#F59E0B]" />;
+      return <FileJson className="w-3.5 h-3.5 text-[#a3e635]" />;
     case 'html':
-      return <FileCode2 className="w-3.5 h-3.5 text-[#E34F26]" />;
+      return <FileCode2 className="w-3.5 h-3.5 text-[#f97316]" />;
     default:
-      return <FileCode2 className="w-3.5 h-3.5 text-[#71717A]" />;
+      return <FileCode2 className="w-3.5 h-3.5 text-[#71717a]" />;
   }
 };
 
@@ -90,9 +90,9 @@ export const Editor = () => {
   useEffect(() => {
     if (activeFile?.content) {
       const lines = activeFile.content.split('\n').length;
-      setLineNumbers(Array.from({ length: Math.max(lines, 25) }, (_, i) => i + 1));
+      setLineNumbers(Array.from({ length: Math.max(lines, 30) }, (_, i) => i + 1));
     } else {
-      setLineNumbers(Array.from({ length: 25 }, (_, i) => i + 1));
+      setLineNumbers(Array.from({ length: 30 }, (_, i) => i + 1));
     }
   }, [activeFile?.content]);
 
@@ -130,12 +130,15 @@ export const Editor = () => {
 
   if (!activeFile) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#1F1F22]">
-        <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-[#18181A] border border-[#27272A] flex items-center justify-center">
-            <FileCode2 className="w-10 h-10 text-[#52525B]" />
+      <div className="h-full flex items-center justify-center bg-[#0a0a0d]">
+        <div className="nf-empty-state">
+          <div className="nf-empty-icon nf-animate-float">
+            <Sparkles className="w-8 h-8 text-[#8b5cf6]" />
           </div>
-          <p className="text-[#71717A] text-sm">Select a file to start editing</p>
+          <p className="nf-empty-title">No file selected</p>
+          <p className="nf-empty-description">
+            Select a file from the explorer to start editing
+          </p>
         </div>
       </div>
     );
@@ -144,23 +147,34 @@ export const Editor = () => {
   const language = getLanguage(activeFile.name);
 
   return (
-    <div className="h-full flex flex-col bg-[#1F1F22]">
+    <div className="h-full flex flex-col bg-[#0a0a0d]">
       {/* Tabs */}
-      <div className="h-10 flex items-center bg-[#18181A] border-b border-[#1E1E1E] overflow-x-auto">
+      <div className={cn(
+        "h-11 flex items-center bg-[#050507]",
+        "border-b border-[rgba(255,255,255,0.06)]",
+        "overflow-x-auto"
+      )}>
         {openFiles.map((file) => (
           <button
             key={file.id}
             className={cn(
-              "group flex items-center gap-2 h-full px-4 text-[13px] border-r border-[#1E1E1E] transition-all whitespace-nowrap",
+              "group flex items-center gap-2 h-full px-4 text-[13px] border-r border-[rgba(255,255,255,0.04)]",
+              "transition-all duration-200 whitespace-nowrap relative",
               file.id === activeFileId 
-                ? "bg-[#1F1F22] text-[#F5F5F5] border-b-2 border-b-[#7C3AED]" 
-                : "text-[#71717A] hover:text-[#A1A1AA] hover:bg-[#1F1F22]/50"
+                ? "bg-[#0a0a0d] text-[#fafafa]" 
+                : "text-[#71717a] hover:text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.02)]"
             )}
             onClick={() => setActiveFile(file.id)}
           >
+            {file.id === activeFileId && (
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee]" />
+            )}
             {getFileIcon(file.name)}
             <span>{file.name}</span>
-            <X className="w-3 h-3 opacity-0 group-hover:opacity-100 hover:text-[#F5F5F5] transition-opacity ml-1" />
+            <X className={cn(
+              "w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 hover:text-[#fafafa]",
+              "transition-opacity duration-200"
+            )} />
           </button>
         ))}
       </div>
@@ -168,11 +182,14 @@ export const Editor = () => {
       {/* Editor Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Line Numbers */}
-        <div className="w-14 bg-[#18181A] border-r border-[#1E1E1E] py-4 select-none overflow-hidden shrink-0">
+        <div className={cn(
+          "w-16 bg-[#050507] border-r border-[rgba(255,255,255,0.04)]",
+          "py-4 select-none overflow-hidden shrink-0"
+        )}>
           {lineNumbers.map((num) => (
             <div 
               key={num} 
-              className="text-[13px] leading-6 text-right pr-4 nf-font-code text-[#52525B]"
+              className="text-[13px] leading-7 text-right pr-4 nf-font-code text-[#3f3f46]"
             >
               {num}
             </div>
@@ -180,11 +197,15 @@ export const Editor = () => {
         </div>
 
         {/* Code Area */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden bg-[#0a0a0d]">
           {/* Syntax Highlighted Layer */}
           <pre
             ref={highlightRef}
-            className="absolute inset-0 p-4 overflow-auto pointer-events-none nf-font-code text-[14px] leading-6 whitespace-pre-wrap break-words text-[#ABB2BF]"
+            className={cn(
+              "absolute inset-0 p-4 overflow-auto pointer-events-none",
+              "nf-font-code text-[13px] leading-7 whitespace-pre-wrap break-words",
+              "text-[#d4d4d8]"
+            )}
             dangerouslySetInnerHTML={{
               __html: highlightCode(activeFile.content || '', language),
             }}
@@ -198,9 +219,11 @@ export const Editor = () => {
             onScroll={handleScroll}
             onKeyDown={handleKeyDown}
             className={cn(
-              "absolute inset-0 p-4 resize-none outline-none nf-font-code text-[14px] leading-6",
-              "bg-transparent text-transparent caret-[#7C3AED]",
-              "whitespace-pre-wrap break-words overflow-auto"
+              "absolute inset-0 p-4 resize-none outline-none",
+              "nf-font-code text-[13px] leading-7",
+              "bg-transparent text-transparent caret-[#8b5cf6]",
+              "whitespace-pre-wrap break-words overflow-auto",
+              "selection:bg-[rgba(139,92,246,0.3)]"
             )}
             spellCheck={false}
             autoCapitalize="off"

@@ -11,7 +11,9 @@ import {
   FileType,
   File as FileIcon,
   Code2,
-  MoreHorizontal
+  MoreHorizontal,
+  Search,
+  FolderPlus
 } from 'lucide-react';
 import { useFilesStore, VirtualFile } from '@/store/filesStore';
 import { cn } from '@/lib/utils';
@@ -34,21 +36,21 @@ const getFileIcon = (name: string) => {
   const ext = name.split('.').pop()?.toLowerCase();
   switch (ext) {
     case 'js':
-      return <FileCode2 className="w-4 h-4 text-[#F7DF1E]" />;
+      return <FileCode2 className="w-4 h-4 text-[#fbbf24]" />;
     case 'jsx':
-      return <Code2 className="w-4 h-4 text-[#61DAFB]" />;
+      return <Code2 className="w-4 h-4 text-[#22d3ee]" />;
     case 'ts':
     case 'tsx':
-      return <Code2 className="w-4 h-4 text-[#3178C6]" />;
+      return <Code2 className="w-4 h-4 text-[#3b82f6]" />;
     case 'css':
     case 'scss':
-      return <FileType className="w-4 h-4 text-[#38BDF8]" />;
+      return <FileType className="w-4 h-4 text-[#f472b6]" />;
     case 'html':
-      return <FileCode2 className="w-4 h-4 text-[#E34F26]" />;
+      return <FileCode2 className="w-4 h-4 text-[#f97316]" />;
     case 'json':
-      return <FileJson className="w-4 h-4 text-[#F59E0B]" />;
+      return <FileJson className="w-4 h-4 text-[#a3e635]" />;
     default:
-      return <FileIcon className="w-4 h-4 text-[#71717A]" />;
+      return <FileIcon className="w-4 h-4 text-[#71717a]" />;
   }
 };
 
@@ -93,19 +95,27 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
         <ContextMenuTrigger asChild>
           <div
             className={cn(
-              "group flex items-center gap-2 py-1.5 px-2 mx-1 rounded-md cursor-pointer transition-all",
-              "hover:bg-[#27272A]",
-              isActive && "bg-[#7C3AED]/15 text-[#F5F5F5]"
+              "group flex items-center gap-2 py-2 px-2 mx-2 rounded-lg cursor-pointer",
+              "transition-all duration-200",
+              "hover:bg-[rgba(255,255,255,0.04)]",
+              isActive && "bg-gradient-to-r from-[rgba(139,92,246,0.15)] to-transparent border-l-2 border-l-[#8b5cf6]"
             )}
-            style={{ paddingLeft: `${depth * 12 + 8}px` }}
+            style={{ paddingLeft: `${depth * 14 + 12}px` }}
             onClick={handleClick}
           >
             {file.type === 'folder' ? (
               <>
-                <span className="text-[#71717A]">
-                  {isExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                <span className={cn(
+                  "text-[#71717a] transition-transform duration-200",
+                  isExpanded && "rotate-90"
+                )}>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </span>
-                {isExpanded ? <FolderOpen className="w-4 h-4 text-[#F59E0B]" /> : <Folder className="w-4 h-4 text-[#F59E0B]" />}
+                {isExpanded ? (
+                  <FolderOpen className="w-4 h-4 text-[#fbbf24]" />
+                ) : (
+                  <Folder className="w-4 h-4 text-[#fbbf24]" />
+                )}
               </>
             ) : (
               <>
@@ -114,37 +124,37 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
               </>
             )}
             <span className={cn(
-              "text-[13px] truncate flex-1",
-              isActive ? "text-[#F5F5F5]" : "text-[#A1A1AA] group-hover:text-[#F5F5F5]"
+              "text-[13px] truncate flex-1 transition-colors duration-200",
+              isActive ? "text-[#fafafa] font-medium" : "text-[#a1a1aa] group-hover:text-[#fafafa]"
             )}>
               {file.name}
             </span>
           </div>
         </ContextMenuTrigger>
-        <ContextMenuContent className="bg-[#18181A] border-[#27272A] min-w-[160px]">
+        <ContextMenuContent className="bg-[#131316] border-[rgba(255,255,255,0.08)] backdrop-blur-xl min-w-[180px]">
           {file.type === 'folder' && (
             <>
               <ContextMenuItem 
                 onClick={() => setShowNewDialog('file')}
-                className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A] text-[13px]"
+                className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)] text-[13px]"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2 text-[#34d399]" />
                 New File
               </ContextMenuItem>
               <ContextMenuItem 
                 onClick={() => setShowNewDialog('folder')}
-                className="text-[#A1A1AA] hover:text-[#F5F5F5] hover:bg-[#27272A] text-[13px]"
+                className="text-[#a1a1aa] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.06)] text-[13px]"
               >
-                <Folder className="w-4 h-4 mr-2" />
+                <FolderPlus className="w-4 h-4 mr-2 text-[#fbbf24]" />
                 New Folder
               </ContextMenuItem>
-              <ContextMenuSeparator className="bg-[#27272A]" />
+              <ContextMenuSeparator className="bg-[rgba(255,255,255,0.06)]" />
             </>
           )}
           {file.id !== 'root' && file.id !== 'src' && file.id !== 'public' && (
             <ContextMenuItem 
               onClick={() => deleteFile(file.id)}
-              className="text-[#EF4444] hover:bg-[#27272A] text-[13px]"
+              className="text-[#f87171] hover:bg-[rgba(248,113,113,0.1)] text-[13px]"
             >
               <Trash2 className="w-4 h-4 mr-2" />
               Delete
@@ -154,7 +164,7 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
       </ContextMenu>
 
       {file.type === 'folder' && isExpanded && children.length > 0 && (
-        <div>
+        <div className="nf-animate-fade-in">
           {children
             .sort((a, b) => {
               if (a.type === b.type) return a.name.localeCompare(b.name);
@@ -167,9 +177,14 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
       )}
 
       <Dialog open={showNewDialog !== null} onOpenChange={() => setShowNewDialog(null)}>
-        <DialogContent className="bg-[#18181A] border-[#27272A]">
+        <DialogContent className="bg-[#131316] border-[rgba(255,255,255,0.08)] backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle className="text-[#F5F5F5]">
+            <DialogTitle className="text-[#fafafa] flex items-center gap-2">
+              {showNewDialog === 'file' ? (
+                <Plus className="w-5 h-5 text-[#34d399]" />
+              ) : (
+                <FolderPlus className="w-5 h-5 text-[#fbbf24]" />
+              )}
               Create {showNewDialog === 'file' ? 'File' : 'Folder'}
             </DialogTitle>
           </DialogHeader>
@@ -181,11 +196,11 @@ const FileTreeItem = ({ file, depth }: FileTreeItemProps) => {
             className="nf-input w-full"
             autoFocus
           />
-          <DialogFooter>
-            <button onClick={() => setShowNewDialog(null)} className="nf-btn nf-btn-ghost">
+          <DialogFooter className="gap-2">
+            <button onClick={() => setShowNewDialog(null)} className="nf-btn nf-btn-ghost rounded-xl">
               Cancel
             </button>
-            <button onClick={handleCreate} className="nf-btn nf-btn-primary">
+            <button onClick={handleCreate} className="nf-btn nf-btn-primary rounded-xl">
               Create
             </button>
           </DialogFooter>
@@ -199,6 +214,7 @@ export const Sidebar = () => {
   const { files, createFile, createFolder } = useFilesStore();
   const [showNewDialog, setShowNewDialog] = useState<'file' | 'folder' | null>(null);
   const [newName, setNewName] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const rootFile = files['root'];
 
@@ -216,25 +232,45 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#111113] border-l border-[#1E1E1E]">
+    <div className="h-full flex flex-col bg-[#0a0a0d] border-l border-[rgba(255,255,255,0.06)]">
       {/* Header */}
-      <div className="h-10 px-3 flex items-center justify-between border-b border-[#1E1E1E]">
-        <span className="text-[11px] font-medium text-[#71717A] uppercase tracking-wider">Explorer</span>
-        <div className="flex gap-0.5">
+      <div className="nf-panel-header">
+        <span className="nf-panel-title">Explorer</span>
+        <div className="flex gap-1">
           <button
             onClick={() => setShowNewDialog('file')}
-            className="p-1.5 rounded-md hover:bg-[#27272A] transition-colors text-[#71717A] hover:text-[#A1A1AA]"
+            className="nf-icon-btn w-7 h-7"
           >
             <Plus className="w-4 h-4" />
           </button>
-          <button className="p-1.5 rounded-md hover:bg-[#27272A] transition-colors text-[#71717A] hover:text-[#A1A1AA]">
+          <button className="nf-icon-btn w-7 h-7">
             <MoreHorizontal className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {/* Search */}
+      <div className="px-3 py-2">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#52525b]" />
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={cn(
+              "w-full pl-9 pr-3 py-2 text-sm rounded-lg",
+              "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]",
+              "text-[#fafafa] placeholder:text-[#52525b]",
+              "focus:outline-none focus:border-[rgba(139,92,246,0.3)]",
+              "transition-colors duration-200"
+            )}
+          />
+        </div>
+      </div>
       
       {/* File Tree */}
-      <div className="flex-1 overflow-auto py-2">
+      <div className="flex-1 overflow-auto py-1">
         {rootFile?.children?.map((id) => {
           const file = files[id];
           if (!file) return null;
@@ -242,10 +278,23 @@ export const Sidebar = () => {
         })}
       </div>
 
+      {/* Footer Stats */}
+      <div className="px-4 py-3 border-t border-[rgba(255,255,255,0.06)]">
+        <div className="flex items-center justify-between text-[11px] text-[#52525b]">
+          <span>{Object.values(files).filter(f => f.type === 'file').length} files</span>
+          <span>{Object.values(files).filter(f => f.type === 'folder').length} folders</span>
+        </div>
+      </div>
+
       <Dialog open={showNewDialog !== null} onOpenChange={() => setShowNewDialog(null)}>
-        <DialogContent className="bg-[#18181A] border-[#27272A]">
+        <DialogContent className="bg-[#131316] border-[rgba(255,255,255,0.08)] backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle className="text-[#F5F5F5]">
+            <DialogTitle className="text-[#fafafa] flex items-center gap-2">
+              {showNewDialog === 'file' ? (
+                <Plus className="w-5 h-5 text-[#34d399]" />
+              ) : (
+                <FolderPlus className="w-5 h-5 text-[#fbbf24]" />
+              )}
               Create {showNewDialog === 'file' ? 'File' : 'Folder'}
             </DialogTitle>
           </DialogHeader>
@@ -257,11 +306,11 @@ export const Sidebar = () => {
             className="nf-input w-full"
             autoFocus
           />
-          <DialogFooter>
-            <button onClick={() => setShowNewDialog(null)} className="nf-btn nf-btn-ghost">
+          <DialogFooter className="gap-2">
+            <button onClick={() => setShowNewDialog(null)} className="nf-btn nf-btn-ghost rounded-xl">
               Cancel
             </button>
-            <button onClick={handleCreate} className="nf-btn nf-btn-primary">
+            <button onClick={handleCreate} className="nf-btn nf-btn-primary rounded-xl">
               Create
             </button>
           </DialogFooter>

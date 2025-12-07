@@ -6,12 +6,13 @@ import { Editor } from '@/components/neoforge/Editor';
 import { Preview } from '@/components/neoforge/Preview';
 import { AiPanel } from '@/components/neoforge/AiPanel';
 import { StatusBar } from '@/components/neoforge/StatusBar';
+import { cn } from '@/lib/utils';
 
 const NeoForge = () => {
   const [triggerBuild, setTriggerBuild] = useState(0);
-  const [aiPanelWidth, setAiPanelWidth] = useState(320);
+  const [aiPanelWidth, setAiPanelWidth] = useState(340);
   const [previewWidth, setPreviewWidth] = useState(45);
-  const [explorerWidth, setExplorerWidth] = useState(240);
+  const [explorerWidth, setExplorerWidth] = useState(260);
   
   const isResizingAi = useRef(false);
   const isResizingPreview = useRef(false);
@@ -28,7 +29,7 @@ const NeoForge = () => {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (isResizingAi.current) {
-        const newWidth = Math.max(280, Math.min(450, e.clientX));
+        const newWidth = Math.max(300, Math.min(480, e.clientX));
         setAiPanelWidth(newWidth);
       }
       if (isResizingPreview.current) {
@@ -38,7 +39,7 @@ const NeoForge = () => {
         setPreviewWidth(100 - newWidth);
       }
       if (isResizingExplorer.current) {
-        const newWidth = Math.max(180, Math.min(350, window.innerWidth - e.clientX));
+        const newWidth = Math.max(200, Math.min(400, window.innerWidth - e.clientX));
         setExplorerWidth(newWidth);
       }
     };
@@ -82,7 +83,7 @@ const NeoForge = () => {
     <div className="neoforge-app h-screen flex flex-col overflow-hidden">
       <TopBar onRun={handleRun} />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* AI Panel - Left */}
         <div style={{ width: aiPanelWidth }} className="shrink-0">
           <AiPanel />
@@ -90,7 +91,7 @@ const NeoForge = () => {
 
         {/* AI Panel Resize Handle */}
         <div
-          className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+          className="nf-resize-handle"
           onMouseDown={startResizeAi}
         />
 
@@ -103,7 +104,7 @@ const NeoForge = () => {
 
           {/* Editor/Preview Resize Handle */}
           <div
-            className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+            className="nf-resize-handle"
             onMouseDown={startResizePreview}
           />
 
@@ -115,7 +116,7 @@ const NeoForge = () => {
 
         {/* Explorer Resize Handle */}
         <div
-          className="w-px bg-[#1E1E1E] hover:bg-[#7C3AED]/50 cursor-col-resize transition-colors"
+          className="nf-resize-handle"
           onMouseDown={startResizeExplorer}
         />
 
