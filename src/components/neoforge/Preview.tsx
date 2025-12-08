@@ -18,69 +18,67 @@ interface PreviewProps {
 export const Preview = ({ triggerBuild }: PreviewProps) => {
   const { files } = useFilesStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [viewport, setViewport] = useState<ViewportSize>('desktop');
   const [error, setError] = useState<string | null>(null);
-  const [hasContent, setHasContent] = useState<boolean>(false);
-  const buildRef = useRef(0);
+  const [hasContent, setHasContent] = useState(false);
+  const buildIdRef = useRef(0);
 
   // Get all CSS content
   const cssContent = useMemo(() => {
     return Object.values(files)
-      .filter(f => f.type === 'file' && (f.name.endsWith('.css')))
+      .filter(f => f.type === 'file' && f.name.endsWith('.css'))
       .map(f => f.content || '')
       .join('\n\n');
   }, [files]);
 
-  // Get all JS/JSX content
+  // Get all JS/JSX content in correct order
   const jsContent = useMemo(() => {
     const fileList = Object.values(files).filter(f => f.type === 'file');
     const jsFiles: string[] = [];
     
-    // First add App.jsx or similar
-    const appFile = fileList.find(f => f.name.toLowerCase().includes('app.jsx') || f.name.toLowerCase().includes('app.js'));
-    if (appFile) {
-      jsFiles.push(appFile.content || '');
+    // Add App.jsx first
+    const appFile = fileList.find(f => f.name.toLowerCase() === 'app.jsx' || f.name.toLowerCase() === 'app.js');
+    if (appFile?.content) {
+      jsFiles.push(appFile.content);
     }
     
     // Then add main.js
     const mainFile = fileList.find(f => f.name === 'main.js' || f.name === 'index.js');
-    if (mainFile) {
-      jsFiles.push(mainFile.content || '');
+    if (mainFile?.content) {
+      jsFiles.push(mainFile.content);
     }
     
-    // Add other JS files
+    // Add other JS files (excluding already added)
     fileList.forEach(f => {
-      if ((f.name.endsWith('.js') || f.name.endsWith('.jsx') || f.name.endsWith('.ts') || f.name.endsWith('.tsx')) &&
-          f !== appFile && f !== mainFile) {
-        jsFiles.push(f.content || '');
+      if ((f.name.endsWith('.js') || f.name.endsWith('.jsx')) && f !== appFile && f !== mainFile && f.content) {
+        jsFiles.push(f.content);
       }
     });
     
     return jsFiles.join('\n\n');
   }, [files]);
 
-  // Get HTML content if exists
+  // Get HTML content
   const htmlContent = useMemo(() => {
     const htmlFile = Object.values(files).find(f => f.type === 'file' && f.name.endsWith('.html'));
     return htmlFile?.content || '';
   }, [files]);
 
   const buildPreview = useCallback(() => {
-    const currentBuild = ++buildRef.current;
+    const currentBuildId = ++buildIdRef.current;
     setIsLoading(true);
     setError(null);
     
-    // Clean JS content (remove imports/exports for simple execution)
+    // Clean JS content - remove imports/exports for browser execution
     let cleanJs = jsContent
       .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
       .replace(/import\s+['"][^'"]+['"];?\s*/g, '')
       .replace(/export\s+(default\s+)?/g, '')
       .trim();
 
-    // Check if there's any content to show
-    const hasAnyContent = cssContent.trim() || cleanJs.trim() || htmlContent.trim();
-    setHasContent(!!hasAnyContent);
+    const hasAnyContent = !!(cssContent.trim() || cleanJs.trim() || htmlContent.trim());
+    setHasContent(hasAnyContent);
 
     if (!hasAnyContent) {
       setIsLoading(false);
@@ -88,14 +86,14 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
     }
     
     const combinedHtml = `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Preview</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
 ${cssContent}
   </style>
 </head>
@@ -105,80 +103,65 @@ ${cssContent}
   <script>
     (function() {
       try {
-        // Execute all JS code
 ${cleanJs}
 
-        // Try to initialize the app
-        var appContainer = document.getElementById('app') || document.getElementById('root');
+        // Initialize app
+        var container = document.getElementById('app') || document.getElementById('root');
         
-        if (appContainer) {
-          // Pattern 1: createApp function
+        if (container) {
+          // Try different initialization patterns
           if (typeof createApp === 'function') {
             var result = createApp();
             if (typeof result === 'string') {
-              appContainer.innerHTML = result;
-            } else if (result && result.outerHTML) {
-              appContainer.appendChild(result);
+              container.innerHTML = result;
             }
-          }
-          // Pattern 2: App function
-          else if (typeof App === 'function') {
+          } else if (typeof App === 'function') {
             var result = App();
             if (typeof result === 'string') {
-              appContainer.innerHTML = result;
+              container.innerHTML = result;
             }
-          }
-          // Pattern 3: render function
-          else if (typeof render === 'function') {
-            render(appContainer);
-          }
-          // Pattern 4: init function
-          else if (typeof init === 'function') {
+          } else if (typeof render === 'function') {
+            render(container);
+          } else if (typeof init === 'function') {
             init();
           }
         }
         
-        // Setup counter interactions if they exist
+        // Setup interactive elements
         var count = 0;
         var countEl = document.getElementById('count');
         var incrementBtn = document.getElementById('increment');
         var decrementBtn = document.getElementById('decrement');
         
         if (incrementBtn && decrementBtn && countEl) {
-          incrementBtn.onclick = function() {
-            count++;
-            countEl.textContent = count;
-          };
-          decrementBtn.onclick = function() {
-            count--;
-            countEl.textContent = count;
-          };
+          incrementBtn.onclick = function() { count++; countEl.textContent = count; };
+          decrementBtn.onclick = function() { count--; countEl.textContent = count; };
         }
         
-        console.log('✅ Preview loaded successfully!');
+        console.log('✅ Preview loaded');
       } catch (error) {
         console.error('Preview error:', error);
-        document.body.innerHTML = '<div style="padding: 24px; color: #ef4444; font-family: monospace; background: #0a0a0f; min-height: 100vh;"><h3 style="margin-bottom: 12px; color: #f87171;">⚠️ Preview Error</h3><pre style="white-space: pre-wrap; word-break: break-word; color: #fca5a5; background: rgba(239,68,68,0.1); padding: 16px; border-radius: 8px;">' + error.message + '</pre></div>';
+        document.body.innerHTML = '<div style="padding: 24px; color: #ef4444; font-family: monospace; background: #0a0a0f; min-height: 100vh;"><h3 style="margin-bottom: 12px; color: #f87171;">⚠️ Error</h3><pre style="white-space: pre-wrap; color: #fca5a5; background: rgba(239,68,68,0.1); padding: 16px; border-radius: 8px;">' + error.message + '</pre></div>';
       }
     })();
   </script>
 </body>
 </html>`;
 
-    if (iframeRef.current && currentBuild === buildRef.current) {
+    if (iframeRef.current && currentBuildId === buildIdRef.current) {
       try {
         const blob = new Blob([combinedHtml], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         
         iframeRef.current.onload = () => {
-          if (currentBuild === buildRef.current) {
+          if (currentBuildId === buildIdRef.current) {
             setIsLoading(false);
           }
           URL.revokeObjectURL(url);
         };
         
         iframeRef.current.onerror = () => {
-          if (currentBuild === buildRef.current) {
+          if (currentBuildId === buildIdRef.current) {
             setError('Failed to load preview');
             setIsLoading(false);
           }
@@ -194,9 +177,7 @@ ${cleanJs}
 
   // Build on mount and when trigger changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      buildPreview();
-    }, 100);
+    const timer = setTimeout(buildPreview, 100);
     return () => clearTimeout(timer);
   }, [triggerBuild, buildPreview]);
 
@@ -206,16 +187,16 @@ ${cleanJs}
       .replace(/import\s+['"][^'"]+['"];?\s*/g, '')
       .replace(/export\s+(default\s+)?/g, '');
 
-    const combinedHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:system-ui,sans-serif;}${cssContent}</style></head><body><div id="app"></div><script>try{${cleanJs}
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:system-ui,sans-serif;}${cssContent}</style></head><body><div id="app"></div><script>try{${cleanJs}
 var app=document.getElementById('app');if(app){if(typeof createApp==='function'){app.innerHTML=createApp();}else if(typeof App==='function'){app.innerHTML=App();}}}catch(e){document.body.innerHTML='<pre style="padding:20px;color:red;">'+e.message+'</pre>';}</script></body></html>`;
 
-    const blob = new Blob([combinedHtml], { type: 'text/html' });
+    const blob = new Blob([html], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   }, [cssContent, jsContent]);
 
   return (
-    <div className="h-full flex flex-col bg-[#050507]">
+    <div className="h-full flex flex-col bg-[#050507]" dir="ltr">
       {/* Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 bg-[#0a0a0d] border-b border-[rgba(255,255,255,0.06)]">
         <span className="text-sm font-medium text-[#a1a1aa] hidden sm:inline">Preview</span>
@@ -313,7 +294,7 @@ var app=document.getElementById('app');if(app){if(typeof createApp==='function')
                       <Globe className="w-8 h-8 text-[#8b5cf6]" />
                     </div>
                     <p className="text-[#a1a1aa] text-sm mb-1">No preview available</p>
-                    <p className="text-[#52525b] text-xs">Ask AI to create a project or add files</p>
+                    <p className="text-[#52525b] text-xs">Ask AI to create a project</p>
                   </div>
                 </div>
               ) : (

@@ -7,27 +7,26 @@ import { Preview } from '@/components/neoforge/Preview';
 import { AiPanel } from '@/components/neoforge/AiPanel';
 import { StatusBar } from '@/components/neoforge/StatusBar';
 import { cn } from '@/lib/utils';
-import { Code2, Eye, FolderTree, Bot, X, MessageCircle } from 'lucide-react';
+import { Code2, Eye, FolderTree, Sparkles, X, PanelLeftClose, PanelRightClose } from 'lucide-react';
 
-type ViewMode = 'code' | 'preview';
-type MobilePanel = 'ai' | 'explorer' | null;
+type ViewMode = 'code' | 'preview' | 'split';
 
 const NeoForge = () => {
   const [triggerBuild, setTriggerBuild] = useState(0);
-  const [aiPanelWidth, setAiPanelWidth] = useState(340);
-  const [explorerWidth, setExplorerWidth] = useState(260);
-  const [viewMode, setViewMode] = useState<ViewMode>('code');
-  const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
-  const [showMobileAiChat, setShowMobileAiChat] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(240);
+  const [previewWidth, setPreviewWidth] = useState(50); // percentage
+  const [viewMode, setViewMode] = useState<ViewMode>('split');
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [mobileView, setMobileView] = useState<'code' | 'preview'>('code');
   
-  const isResizingAi = useRef(false);
-  const isResizingExplorer = useRef(false);
+  const isResizingSidebar = useRef(false);
+  const isResizingPreview = useRef(false);
   
   // Expose triggerBuild globally for AI panel to trigger rebuilds
   useEffect(() => {
     (window as any).neoforgeRefresh = () => {
       setTriggerBuild(prev => prev + 1);
-      setViewMode('preview');
     };
     return () => { delete (window as any).neoforgeRefresh; };
   }, []);
@@ -38,24 +37,25 @@ const NeoForge = () => {
 
   const handleRun = () => {
     setTriggerBuild(prev => prev + 1);
-    setViewMode('preview');
   };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingAi.current) {
-        const newWidth = Math.max(300, Math.min(480, e.clientX));
-        setAiPanelWidth(newWidth);
+      if (isResizingSidebar.current) {
+        const newWidth = Math.max(180, Math.min(400, e.clientX));
+        setSidebarWidth(newWidth);
       }
-      if (isResizingExplorer.current) {
-        const newWidth = Math.max(200, Math.min(400, window.innerWidth - e.clientX));
-        setExplorerWidth(newWidth);
+      if (isResizingPreview.current) {
+        const containerWidth = window.innerWidth - (showSidebar ? sidebarWidth : 0);
+        const mouseX = e.clientX - (showSidebar ? sidebarWidth : 0);
+        const percentage = Math.max(30, Math.min(70, (mouseX / containerWidth) * 100));
+        setPreviewWidth(100 - percentage);
       }
     };
 
     const handleMouseUp = () => {
-      isResizingAi.current = false;
-      isResizingExplorer.current = false;
+      isResizingSidebar.current = false;
+      isResizingPreview.current = false;
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
@@ -67,211 +67,168 @@ const NeoForge = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [showSidebar, sidebarWidth]);
 
-  const startResizeAi = () => {
-    isResizingAi.current = true;
+  const startResizeSidebar = () => {
+    isResizingSidebar.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
 
-  const startResizeExplorer = () => {
-    isResizingExplorer.current = true;
+  const startResizePreview = () => {
+    isResizingPreview.current = true;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   };
-
-  const closeMobilePanel = () => setMobilePanel(null);
 
   return (
-    <div className="neoforge-app h-screen flex flex-col overflow-hidden">
-      <TopBar onRun={handleRun} />
+    <div className="neoforge-app h-screen flex flex-col overflow-hidden" dir="ltr">
+      <TopBar onRun={handleRun} onToggleAi={() => setShowAiPanel(!showAiPanel)} showAiPanel={showAiPanel} />
 
-      {/* Mobile View Mode Toggle */}
+      {/* Mobile View Toggle */}
       <div className="lg:hidden flex items-center gap-1 p-2 bg-[#0a0a0d] border-b border-[rgba(255,255,255,0.06)]">
         <button
-          onClick={() => setViewMode('code')}
+          onClick={() => setMobileView('code')}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-            viewMode === 'code' 
+            mobileView === 'code' 
               ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(139,92,246,0.3)]"
               : "bg-[rgba(255,255,255,0.04)] text-[#71717a]"
           )}
         >
           <Code2 className="w-4 h-4" />
-          <span>کد</span>
+          <span>Code</span>
         </button>
         <button
           onClick={() => {
-            setViewMode('preview');
+            setMobileView('preview');
             setTriggerBuild(prev => prev + 1);
           }}
           className={cn(
             "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-            viewMode === 'preview' 
+            mobileView === 'preview' 
               ? "bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white shadow-[0_0_20px_rgba(34,211,238,0.3)]"
               : "bg-[rgba(255,255,255,0.04)] text-[#71717a]"
           )}
         >
           <Eye className="w-4 h-4" />
-          <span>پیش‌نمایش</span>
+          <span>Preview</span>
         </button>
       </div>
 
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Desktop: AI Panel - Left */}
-        <div style={{ width: aiPanelWidth }} className="hidden lg:block shrink-0">
-          <AiPanel />
+        {/* Desktop: Left Sidebar (File Explorer) */}
+        {showSidebar && (
+          <>
+            <div style={{ width: sidebarWidth }} className="hidden lg:block shrink-0">
+              <Sidebar />
+            </div>
+            <div
+              className="hidden lg:block w-1 cursor-col-resize hover:bg-[rgba(139,92,246,0.3)] transition-colors"
+              onMouseDown={startResizeSidebar}
+            />
+          </>
+        )}
+
+        {/* Toggle Sidebar Button */}
+        <button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="hidden lg:flex absolute left-2 top-2 z-10 p-1.5 rounded-md bg-[rgba(255,255,255,0.05)] text-[#71717a] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.1)] transition-all"
+          style={{ left: showSidebar ? sidebarWidth + 8 : 8 }}
+        >
+          {showSidebar ? <PanelLeftClose className="w-4 h-4" /> : <FolderTree className="w-4 h-4" />}
+        </button>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* Desktop: Split View */}
+          <div className="hidden lg:flex flex-1 overflow-hidden">
+            {/* Code Editor */}
+            {(viewMode === 'code' || viewMode === 'split') && (
+              <div 
+                className="flex-1 overflow-hidden"
+                style={{ width: viewMode === 'split' ? `${100 - previewWidth}%` : '100%' }}
+              >
+                <Editor />
+              </div>
+            )}
+            
+            {/* Resize Handle */}
+            {viewMode === 'split' && (
+              <div
+                className="w-1 cursor-col-resize hover:bg-[rgba(139,92,246,0.3)] bg-[rgba(255,255,255,0.04)] transition-colors"
+                onMouseDown={startResizePreview}
+              />
+            )}
+            
+            {/* Preview */}
+            {(viewMode === 'preview' || viewMode === 'split') && (
+              <div 
+                className="overflow-hidden"
+                style={{ width: viewMode === 'split' ? `${previewWidth}%` : '100%' }}
+              >
+                <Preview triggerBuild={triggerBuild} />
+              </div>
+            )}
+          </div>
+
+          {/* Mobile: Single View */}
+          <div className="flex-1 lg:hidden overflow-hidden">
+            {mobileView === 'code' ? <Editor /> : <Preview triggerBuild={triggerBuild} />}
+          </div>
         </div>
 
-        {/* Desktop: AI Panel Resize Handle */}
-        <div
-          className="hidden lg:block nf-resize-handle"
-          onMouseDown={startResizeAi}
-        />
-
-        {/* Main Area */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* Desktop: View with tabs */}
-          <div className="hidden lg:flex flex-1 overflow-hidden">
-            <div className="flex flex-col flex-1 overflow-hidden">
-              <div className="flex items-center bg-[#050507] border-b border-[rgba(255,255,255,0.06)]">
+        {/* AI Panel Overlay */}
+        {showAiPanel && (
+          <>
+            <div 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => setShowAiPanel(false)}
+            />
+            <div className="fixed inset-x-4 bottom-4 top-20 lg:inset-auto lg:right-4 lg:bottom-4 lg:top-16 lg:w-[420px] z-50">
+              <div className="h-full relative">
                 <button
-                  onClick={() => setViewMode('code')}
-                  className={cn(
-                    "flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all duration-200 relative",
-                    viewMode === 'code' 
-                      ? "text-[#fafafa] bg-[#0a0a0d]"
-                      : "text-[#71717a] hover:text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.02)]"
-                  )}
+                  onClick={() => setShowAiPanel(false)}
+                  className="absolute -top-2 -right-2 z-10 p-2 rounded-full bg-[#1a1a1f] text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.15)] border border-[rgba(255,255,255,0.1)]"
                 >
-                  {viewMode === 'code' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee]" />
-                  )}
-                  <Code2 className="w-4 h-4" />
-                  <span>Code</span>
+                  <X className="w-4 h-4" />
                 </button>
-                <button
-                  onClick={() => {
-                    setViewMode('preview');
-                    setTriggerBuild(prev => prev + 1);
-                  }}
-                  className={cn(
-                    "flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all duration-200 relative",
-                    viewMode === 'preview' 
-                      ? "text-[#fafafa] bg-[#0a0a0d]"
-                      : "text-[#71717a] hover:text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.02)]"
-                  )}
-                >
-                  {viewMode === 'preview' && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#22d3ee] to-[#06b6d4]" />
-                  )}
-                  <Eye className="w-4 h-4" />
-                  <span>Preview</span>
-                </button>
-              </div>
-              
-              <div className="flex-1 overflow-hidden">
-                {viewMode === 'code' ? <Editor /> : <Preview triggerBuild={triggerBuild} />}
+                <AiPanel onClose={() => setShowAiPanel(false)} />
               </div>
             </div>
-          </div>
-
-          {/* Mobile: Single view based on mode */}
-          <div className="flex-1 lg:hidden overflow-hidden">
-            {viewMode === 'code' ? <Editor /> : <Preview triggerBuild={triggerBuild} />}
-          </div>
-        </div>
-
-        {/* Desktop: Explorer Resize Handle */}
-        <div
-          className="hidden lg:block nf-resize-handle"
-          onMouseDown={startResizeExplorer}
-        />
-
-        {/* Desktop: Explorer - Right */}
-        <div style={{ width: explorerWidth }} className="hidden lg:block shrink-0">
-          <Sidebar />
-        </div>
-
-        {/* Mobile: Overlay Panels */}
-        {(mobilePanel || showMobileAiChat) && (
-          <div 
-            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-            onClick={() => {
-              closeMobilePanel();
-              setShowMobileAiChat(false);
-            }}
-          />
+          </>
         )}
-        
-        {/* Mobile: AI Panel Drawer */}
-        <div className={cn(
-          "lg:hidden fixed inset-y-0 left-0 w-[90vw] max-w-[400px] z-50 transform transition-transform duration-300 ease-out",
-          showMobileAiChat ? "translate-x-0" : "-translate-x-full"
-        )}>
-          <div className="h-full relative bg-[#0a0a0d]">
-            <button
-              onClick={() => setShowMobileAiChat(false)}
-              className="absolute top-4 right-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.15)]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <AiPanel />
-          </div>
-        </div>
-
-        {/* Mobile: Explorer Drawer */}
-        <div className={cn(
-          "lg:hidden fixed inset-y-0 right-0 w-[80vw] max-w-[320px] z-50 transform transition-transform duration-300 ease-out",
-          mobilePanel === 'explorer' ? "translate-x-0" : "translate-x-full"
-        )}>
-          <div className="h-full relative bg-[#0a0a0d]">
-            <button
-              onClick={closeMobilePanel}
-              className="absolute top-4 left-4 z-10 p-2 rounded-lg bg-[rgba(255,255,255,0.1)] text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.15)]"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <Sidebar />
-          </div>
-        </div>
       </div>
 
-      {/* Mobile Bottom Navigation - Enhanced with AI Chat button */}
+      {/* Mobile Bottom Navigation */}
       <div className="lg:hidden flex items-center justify-around py-3 px-4 bg-[#0a0a0d] border-t border-[rgba(255,255,255,0.08)]">
         <button
-          onClick={() => setShowMobileAiChat(true)}
+          onClick={() => setShowAiPanel(true)}
           className={cn(
             "flex flex-col items-center gap-1.5 px-5 py-2 rounded-xl transition-all duration-200 relative",
-            showMobileAiChat 
+            showAiPanel 
               ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(139,92,246,0.4)]"
               : "text-[#71717a] hover:text-[#a1a1aa]"
           )}
         >
           <div className="relative">
-            <Bot className="w-6 h-6" />
+            <Sparkles className="w-6 h-6" />
             <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#34d399] rounded-full border-2 border-[#0a0a0d]" />
           </div>
-          <span className="text-[10px] font-medium">چت با AI</span>
+          <span className="text-[10px] font-medium">AI</span>
         </button>
         
         <button
-          onClick={() => setMobilePanel(mobilePanel === 'explorer' ? null : 'explorer')}
-          className={cn(
-            "flex flex-col items-center gap-1.5 px-5 py-2 rounded-xl transition-all duration-200",
-            mobilePanel === 'explorer' 
-              ? "bg-[rgba(34,211,238,0.15)] text-[#22d3ee]"
-              : "text-[#71717a] hover:text-[#a1a1aa]"
-          )}
+          onClick={() => {}}
+          className="flex flex-col items-center gap-1.5 px-5 py-2 rounded-xl transition-all duration-200 text-[#71717a] hover:text-[#a1a1aa]"
         >
           <FolderTree className="w-6 h-6" />
-          <span className="text-[10px] font-medium">فایل‌ها</span>
+          <span className="text-[10px] font-medium">Files</span>
         </button>
       </div>
 
       <div className="hidden lg:block">
-        <StatusBar />
+        <StatusBar viewMode={viewMode} onViewModeChange={setViewMode} />
       </div>
     </div>
   );
