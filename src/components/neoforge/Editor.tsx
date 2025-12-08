@@ -62,19 +62,13 @@ const getFileIcon = (filename: string) => {
   const ext = filename.split('.').pop()?.toLowerCase();
   switch (ext) {
     case 'jsx':
-    case 'tsx':
-      return <Code2 className="w-3.5 h-3.5 text-[#22d3ee]" />;
+    case 'tsx': return <Code2 className="w-3.5 h-3.5 text-[#22d3ee]" />;
     case 'js':
-    case 'ts':
-      return <FileCode2 className="w-3.5 h-3.5 text-[#fbbf24]" />;
-    case 'css':
-      return <FileType className="w-3.5 h-3.5 text-[#f472b6]" />;
-    case 'json':
-      return <FileJson className="w-3.5 h-3.5 text-[#a3e635]" />;
-    case 'html':
-      return <FileCode2 className="w-3.5 h-3.5 text-[#f97316]" />;
-    default:
-      return <FileCode2 className="w-3.5 h-3.5 text-[#71717a]" />;
+    case 'ts': return <FileCode2 className="w-3.5 h-3.5 text-[#fbbf24]" />;
+    case 'css': return <FileType className="w-3.5 h-3.5 text-[#f472b6]" />;
+    case 'json': return <FileJson className="w-3.5 h-3.5 text-[#a3e635]" />;
+    case 'html': return <FileCode2 className="w-3.5 h-3.5 text-[#f97316]" />;
+    default: return <FileCode2 className="w-3.5 h-3.5 text-[#71717a]" />;
   }
 };
 
@@ -82,10 +76,11 @@ export const Editor = () => {
   const { files, activeFileId, updateFileContent, setActiveFile } = useFilesStore();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLPreElement>(null);
+  const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [lineNumbers, setLineNumbers] = useState<number[]>([1]);
 
   const activeFile = activeFileId ? files[activeFileId] : null;
-  const openFiles = Object.values(files).filter(f => f.type === 'file').slice(0, 6);
+  const openFiles = Object.values(files).filter(f => f.type === 'file').slice(0, 8);
 
   useEffect(() => {
     if (activeFile?.content) {
@@ -97,9 +92,10 @@ export const Editor = () => {
   }, [activeFile?.content]);
 
   const handleScroll = () => {
-    if (textareaRef.current && highlightRef.current) {
+    if (textareaRef.current && highlightRef.current && lineNumbersRef.current) {
       highlightRef.current.scrollTop = textareaRef.current.scrollTop;
       highlightRef.current.scrollLeft = textareaRef.current.scrollLeft;
+      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
     }
   };
 
@@ -130,15 +126,13 @@ export const Editor = () => {
 
   if (!activeFile) {
     return (
-      <div className="h-full flex items-center justify-center bg-[#0a0a0d]">
-        <div className="nf-empty-state">
-          <div className="nf-empty-icon nf-animate-float">
+      <div className="h-full flex items-center justify-center bg-[#0a0a0d]" dir="ltr">
+        <div className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-[rgba(139,92,246,0.1)] flex items-center justify-center">
             <Sparkles className="w-8 h-8 text-[#8b5cf6]" />
           </div>
-          <p className="nf-empty-title">No file selected</p>
-          <p className="nf-empty-description">
-            Select a file from the explorer to start editing
-          </p>
+          <p className="text-[#a1a1aa] text-sm mb-1">No file selected</p>
+          <p className="text-[#52525b] text-xs">Select a file from the explorer</p>
         </div>
       </div>
     );
@@ -147,19 +141,19 @@ export const Editor = () => {
   const language = getLanguage(activeFile.name);
 
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0d]">
+    <div className="h-full flex flex-col bg-[#0a0a0d]" dir="ltr">
       {/* Tabs */}
       <div className={cn(
-        "h-11 flex items-center bg-[#050507]",
+        "h-10 flex items-center bg-[#050507]",
         "border-b border-[rgba(255,255,255,0.06)]",
-        "overflow-x-auto scrollbar-hide"
-      )}>
+        "overflow-x-auto"
+      )} style={{ scrollbarWidth: 'none' }}>
         {openFiles.map((file) => (
           <button
             key={file.id}
             className={cn(
-              "group flex items-center gap-2 h-full px-3 sm:px-4 text-[12px] sm:text-[13px] border-r border-[rgba(255,255,255,0.04)]",
-              "transition-all duration-200 whitespace-nowrap relative shrink-0",
+              "group flex items-center gap-2 h-full px-3 text-[12px] border-r border-[rgba(255,255,255,0.04)]",
+              "transition-all duration-150 whitespace-nowrap relative shrink-0",
               file.id === activeFileId 
                 ? "bg-[#0a0a0d] text-[#fafafa]" 
                 : "text-[#71717a] hover:text-[#a1a1aa] hover:bg-[rgba(255,255,255,0.02)]"
@@ -170,27 +164,25 @@ export const Editor = () => {
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#8b5cf6] to-[#22d3ee]" />
             )}
             {getFileIcon(file.name)}
-            <span className="hidden sm:inline">{file.name}</span>
-            <span className="sm:hidden">{file.name.split('.')[0].slice(0, 6)}</span>
-            <X className={cn(
-              "w-3 h-3 ml-1 opacity-0 group-hover:opacity-100 hover:text-[#fafafa]",
-              "transition-opacity duration-200 hidden sm:block"
-            )} />
+            <span>{file.name}</span>
           </button>
         ))}
       </div>
 
       {/* Editor Area */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Line Numbers - Hide on mobile */}
-        <div className={cn(
-          "hidden sm:block w-12 lg:w-16 bg-[#050507] border-r border-[rgba(255,255,255,0.04)]",
-          "py-4 select-none overflow-hidden shrink-0"
-        )}>
+        {/* Line Numbers */}
+        <div 
+          ref={lineNumbersRef}
+          className={cn(
+            "hidden sm:block w-12 bg-[#050507] border-r border-[rgba(255,255,255,0.04)]",
+            "py-4 select-none overflow-hidden shrink-0"
+          )}
+        >
           {lineNumbers.map((num) => (
             <div 
               key={num} 
-              className="text-[12px] lg:text-[13px] leading-7 text-right pr-3 lg:pr-4 nf-font-code text-[#3f3f46]"
+              className="text-[12px] leading-6 text-right pr-3 font-mono text-[#3f3f46]"
             >
               {num}
             </div>
@@ -203,8 +195,8 @@ export const Editor = () => {
           <pre
             ref={highlightRef}
             className={cn(
-              "absolute inset-0 p-3 sm:p-4 overflow-auto pointer-events-none",
-              "nf-font-code text-[12px] sm:text-[13px] leading-7 whitespace-pre-wrap break-words",
+              "absolute inset-0 p-4 overflow-auto pointer-events-none",
+              "font-mono text-[13px] leading-6 whitespace-pre-wrap break-words",
               "text-[#d4d4d8]"
             )}
             dangerouslySetInnerHTML={{
@@ -220,8 +212,8 @@ export const Editor = () => {
             onScroll={handleScroll}
             onKeyDown={handleKeyDown}
             className={cn(
-              "absolute inset-0 p-3 sm:p-4 resize-none outline-none",
-              "nf-font-code text-[12px] sm:text-[13px] leading-7",
+              "absolute inset-0 p-4 resize-none outline-none",
+              "font-mono text-[13px] leading-6",
               "bg-transparent text-transparent caret-[#8b5cf6]",
               "whitespace-pre-wrap break-words overflow-auto",
               "selection:bg-[rgba(139,92,246,0.3)]"

@@ -3,14 +3,14 @@ import { useFilesStore, FileOperation } from '@/store/filesStore';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { 
-  Sparkles, Send, FileEdit, FilePlus, MessageSquare, 
-  RefreshCw, Wand2, Loader2, Copy, Check, Rocket,
-  Bug, FolderPlus, Trash2, ChevronDown, Zap, Bot, User,
-  CheckCircle2
+  Sparkles, Send, FileEdit, FilePlus, 
+  Loader2, Copy, Check, Rocket,
+  FolderPlus, Trash2, Bot, User,
+  CheckCircle2, Wand2
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-type ActionType = 'modify' | 'create' | 'explain' | 'refactor' | 'generate' | 'scaffold' | 'fix' | 'chat';
+type ActionType = 'scaffold' | 'generate' | 'modify' | 'chat';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -20,29 +20,29 @@ interface Message {
   applied?: boolean;
 }
 
-const actions: { id: ActionType; label: string; icon: React.ReactNode; description: string; color: string }[] = [
-  { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-4 h-4" />, description: 'Ask anything', color: '#8b5cf6' },
-  { id: 'scaffold', label: 'Scaffold', icon: <Rocket className="w-4 h-4" />, description: 'Create project', color: '#f472b6' },
-  { id: 'generate', label: 'Generate', icon: <Wand2 className="w-4 h-4" />, description: 'New component', color: '#22d3ee' },
-  { id: 'create', label: 'Create', icon: <FilePlus className="w-4 h-4" />, description: 'New file', color: '#34d399' },
-  { id: 'modify', label: 'Modify', icon: <FileEdit className="w-4 h-4" />, description: 'Edit file', color: '#fbbf24' },
-  { id: 'refactor', label: 'Refactor', icon: <RefreshCw className="w-4 h-4" />, description: 'Improve code', color: '#a78bfa' },
-  { id: 'fix', label: 'Fix', icon: <Bug className="w-4 h-4" />, description: 'Debug', color: '#f87171' },
-  { id: 'explain', label: 'Explain', icon: <Sparkles className="w-4 h-4" />, description: 'Explain code', color: '#60a5fa' },
+const actions = [
+  { id: 'scaffold' as ActionType, label: 'Create Project', icon: <Rocket className="w-4 h-4" />, placeholder: 'Describe your project...' },
+  { id: 'generate' as ActionType, label: 'Generate', icon: <Wand2 className="w-4 h-4" />, placeholder: 'What component to generate...' },
+  { id: 'modify' as ActionType, label: 'Modify', icon: <FileEdit className="w-4 h-4" />, placeholder: 'What changes to make...' },
+  { id: 'chat' as ActionType, label: 'Chat', icon: <Sparkles className="w-4 h-4" />, placeholder: 'Ask anything...' },
 ];
 
-export const AiPanel = () => {
+interface AiPanelProps {
+  onClose?: () => void;
+}
+
+export const AiPanel = ({ onClose }: AiPanelProps) => {
   const { files, activeFileId, applyOperations, setActiveFile, getFileByPath } = useFilesStore();
   const [selectedAction, setSelectedAction] = useState<ActionType>('scaffold');
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [showActions, setShowActions] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const activeFile = activeFileId ? files[activeFileId] : null;
+  const currentAction = actions.find(a => a.id === selectedAction);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -106,10 +106,10 @@ export const AiPanel = () => {
         assistantContent = data.content;
       } else if (data.type === 'operations') {
         operations = data.operations || [];
-        assistantContent = data.summary || `✅ ${operations.length} file(s) updated`;
+        assistantContent = data.summary || `✅ ${operations.length} file(s) ready`;
         
         if (data.nextSteps?.length > 0) {
-          assistantContent += '\n\n**پیشنهادات:**\n' + data.nextSteps.map((s: string) => `• ${s}`).join('\n');
+          assistantContent += '\n\n**Next steps:**\n' + data.nextSteps.map((s: string) => `• ${s}`).join('\n');
         }
       } else {
         assistantContent = data.content || JSON.stringify(data);
@@ -148,7 +148,7 @@ export const AiPanel = () => {
           }
         }, 300);
         
-        toast.success(`${operations.length} تغییر اعمال شد!`, {
+        toast.success(`${operations.length} file(s) updated!`, {
           description: operations.map(op => op.path.split('/').pop()).join(', '),
         });
       }
@@ -157,11 +157,11 @@ export const AiPanel = () => {
       console.error('AI error:', error);
       const errorMessage: Message = {
         role: 'assistant',
-        content: `❌ خطا: ${error instanceof Error ? error.message : 'Failed to process request'}`,
+        content: `❌ Error: ${error instanceof Error ? error.message : 'Failed to process request'}`,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
-      toast.error('خطا در پردازش درخواست');
+      toast.error('Error processing request');
     } finally {
       setIsLoading(false);
     }
@@ -170,7 +170,7 @@ export const AiPanel = () => {
   const copyToClipboard = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedIndex(index);
-    toast.success('کپی شد!');
+    toast.success('Copied!');
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
@@ -178,7 +178,7 @@ export const AiPanel = () => {
     <div className="mt-3 space-y-1.5">
       <div className="flex items-center gap-2 text-[11px] text-[#71717a] uppercase tracking-wider mb-2">
         {applied && <CheckCircle2 className="w-3.5 h-3.5 text-[#34d399]" />}
-        <span>{applied ? 'تغییرات اعمال شد' : 'عملیات فایل'}</span>
+        <span>{applied ? 'Changes Applied' : 'File Operations'}</span>
       </div>
       {operations.map((op, i) => (
         <div key={i} className={cn(
@@ -195,10 +195,8 @@ export const AiPanel = () => {
     </div>
   );
 
-  const currentAction = actions.find(a => a.id === selectedAction);
-
   return (
-    <div className="h-full flex flex-col bg-[#0a0a0d]">
+    <div className="h-full flex flex-col bg-[#0f0f12] rounded-xl border border-[rgba(255,255,255,0.08)] shadow-2xl overflow-hidden" dir="ltr">
       {/* Header */}
       <div className="p-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
         <div className="flex items-center gap-3 mb-4">
@@ -208,96 +206,58 @@ export const AiPanel = () => {
             "shadow-[0_0_25px_rgba(139,92,246,0.35)]"
           )}>
             <Bot className="w-5 h-5 text-white" />
-            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#0a0a0d]" />
+            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-[#34d399] border-2 border-[#0f0f12]" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-[#fafafa] font-semibold text-sm flex items-center gap-2">
-              NeoForge AI
-              <span className="nf-badge text-[10px]">Pro</span>
-            </h2>
-            <p className="text-[#52525b] text-xs">سازنده خودکار</p>
+            <h2 className="text-[#fafafa] font-semibold text-sm">NeoForge AI</h2>
+            <p className="text-[#52525b] text-xs">Autonomous Builder</p>
           </div>
         </div>
 
-        {/* Action Selector */}
-        <div className="relative">
-          <button
-            onClick={() => setShowActions(!showActions)}
-            className={cn(
-              "w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm",
-              "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]",
-              "hover:bg-[rgba(255,255,255,0.05)] hover:border-[rgba(139,92,246,0.3)]",
-              "transition-all duration-200"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <span style={{ color: currentAction?.color }}>{currentAction?.icon}</span>
-              <span className="text-[#fafafa] font-medium">{currentAction?.label}</span>
-              <span className="text-[#52525b] text-xs">— {currentAction?.description}</span>
-            </div>
-            <ChevronDown className={cn(
-              "w-4 h-4 text-[#71717a] transition-transform duration-200",
-              showActions && "rotate-180"
-            )} />
-          </button>
-          
-          {showActions && (
-            <div className={cn(
-              "absolute top-full left-0 right-0 mt-2 py-2 z-30",
-              "bg-[#131316] border border-[rgba(255,255,255,0.08)]",
-              "rounded-xl shadow-2xl backdrop-blur-xl",
-              "nf-animate-scale-in max-h-[45vh] overflow-y-auto"
-            )}>
-              {actions.map((action) => (
-                <button
-                  key={action.id}
-                  onClick={() => {
-                    setSelectedAction(action.id);
-                    setShowActions(false);
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-200",
-                    selectedAction === action.id 
-                      ? "bg-[rgba(139,92,246,0.1)]" 
-                      : "hover:bg-[rgba(255,255,255,0.04)]"
-                  )}
-                >
-                  <span style={{ color: action.color }}>{action.icon}</span>
-                  <span className={selectedAction === action.id ? "text-[#fafafa]" : "text-[#a1a1aa]"}>
-                    {action.label}
-                  </span>
-                  <span className="text-[#52525b] text-xs mr-auto">{action.description}</span>
-                </button>
-              ))}
-            </div>
-          )}
+        {/* Action Tabs */}
+        <div className="flex gap-1 p-1 bg-[rgba(255,255,255,0.03)] rounded-lg">
+          {actions.map((action) => (
+            <button
+              key={action.id}
+              onClick={() => setSelectedAction(action.id)}
+              className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-xs font-medium transition-all",
+                selectedAction === action.id 
+                  ? "bg-[rgba(139,92,246,0.2)] text-[#a78bfa]"
+                  : "text-[#71717a] hover:text-[#a1a1aa]"
+              )}
+            >
+              {action.icon}
+              <span className="hidden sm:inline">{action.label}</span>
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 px-4">
+          <div className="flex flex-col items-center justify-center py-8 px-4">
             <div className="w-14 h-14 rounded-2xl bg-[rgba(139,92,246,0.1)] flex items-center justify-center mb-4">
               <Sparkles className="w-7 h-7 text-[#8b5cf6]" />
             </div>
-            <p className="text-[#fafafa] text-sm font-medium mb-1">شروع ساخت با AI</p>
+            <p className="text-[#fafafa] text-sm font-medium mb-1">Start Building with AI</p>
             <p className="text-[#52525b] text-xs text-center leading-relaxed">
-              پروژه بساز، کامپوننت تولید کن،<br/>فایل ویرایش کن و خیلی کارای دیگه
+              Create projects, generate components,<br/>modify files and more
             </p>
             
             {/* Quick examples */}
             <div className="mt-6 w-full space-y-2">
-              <p className="text-[#52525b] text-[10px] uppercase tracking-wider mb-2 text-center">نمونه‌ها</p>
+              <p className="text-[#52525b] text-[10px] uppercase tracking-wider mb-2 text-center">Examples</p>
               {[
-                'یه لندینگ پیج حرفه‌ای بساز',
-                'یه کامپوننت کارت محصول بساز',
-                'یه فرم تماس با استایل مدرن',
+                'Create a modern landing page',
+                'Build a product card component',
+                'Add a contact form',
               ].map((example, i) => (
                 <button
                   key={i}
                   onClick={() => setPrompt(example)}
-                  className="w-full text-right px-3 py-2 rounded-lg text-xs text-[#a1a1aa] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs text-[#a1a1aa] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] transition-colors"
                 >
                   {example}
                 </button>
@@ -345,7 +305,7 @@ export const AiPanel = () => {
                     {copiedIndex === i ? <Check className="w-3 h-3 text-[#34d399]" /> : <Copy className="w-3 h-3" />}
                   </button>
                   <span className="text-[#3f3f46] text-[10px]">
-                    {msg.timestamp.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })}
+                    {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
               )}
@@ -359,12 +319,8 @@ export const AiPanel = () => {
               <Bot className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="flex items-center gap-2 p-3 rounded-2xl rounded-tl-md bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)]">
-              <div className="flex gap-1">
-                <div className="w-1.5 h-1.5 bg-[#8b5cf6] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-1.5 h-1.5 bg-[#8b5cf6] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-1.5 h-1.5 bg-[#8b5cf6] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-              <span className="text-[#71717a] text-xs">در حال فکر کردن...</span>
+              <Loader2 className="w-4 h-4 text-[#8b5cf6] animate-spin" />
+              <span className="text-[#71717a] text-xs">Thinking...</span>
             </div>
           </div>
         )}
@@ -373,11 +329,11 @@ export const AiPanel = () => {
       </div>
 
       {/* Active File Indicator */}
-      {activeFile && (selectedAction === 'modify' || selectedAction === 'refactor' || selectedAction === 'explain' || selectedAction === 'fix') && (
+      {activeFile && selectedAction === 'modify' && (
         <div className="px-4 py-2 border-t border-[rgba(255,255,255,0.06)] shrink-0">
           <div className="flex items-center gap-2 text-xs text-[#71717a]">
             <FileEdit className="w-3 h-3 text-[#8b5cf6]" />
-            <span>فایل انتخابی:</span>
+            <span>Selected:</span>
             <span className="text-[#a1a1aa] font-mono bg-[rgba(255,255,255,0.04)] px-2 py-0.5 rounded text-[11px]">
               {activeFile.name}
             </span>
@@ -398,32 +354,25 @@ export const AiPanel = () => {
                 handleSubmit();
               }
             }}
-            placeholder={
-              selectedAction === 'scaffold' ? "پروژه‌ات رو توضیح بده..." :
-              selectedAction === 'generate' ? "کامپوننت مورد نظرت رو توضیح بده..." :
-              selectedAction === 'create' ? "چه فایلی بسازم؟" :
-              selectedAction === 'modify' ? "چه تغییراتی بدم؟" :
-              "چی می‌خوای بسازم؟..."
-            }
-            dir="rtl"
+            placeholder={currentAction?.placeholder}
             className={cn(
               "w-full resize-none rounded-xl px-4 py-3 pr-12 text-sm",
               "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]",
               "text-[#fafafa] placeholder:text-[#3f3f46]",
-              "focus:outline-none focus:border-[rgba(139,92,246,0.4)]",
-              "focus:shadow-[0_0_0_3px_rgba(139,92,246,0.1)]",
-              "transition-all duration-200 min-h-[48px] max-h-[120px]"
+              "focus:outline-none focus:border-[rgba(139,92,246,0.4)] focus:ring-1 focus:ring-[rgba(139,92,246,0.2)]",
+              "transition-all duration-200"
             )}
             rows={1}
+            disabled={isLoading}
           />
           <button
             onClick={handleSubmit}
             disabled={!prompt.trim() || isLoading}
             className={cn(
-              "absolute left-2 bottom-2 p-2 rounded-lg transition-all duration-200",
+              "absolute right-2 bottom-2 p-2 rounded-lg transition-all duration-200",
               prompt.trim() && !isLoading
-                ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_16px_rgba(139,92,246,0.4)] hover:shadow-[0_0_24px_rgba(139,92,246,0.5)]"
-                : "bg-[rgba(255,255,255,0.04)] text-[#3f3f46] cursor-not-allowed"
+                ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                : "bg-[rgba(255,255,255,0.03)] text-[#3f3f46]"
             )}
           >
             {isLoading ? (
@@ -432,15 +381,6 @@ export const AiPanel = () => {
               <Send className="w-4 h-4" />
             )}
           </button>
-        </div>
-        
-        <div className="flex items-center justify-between mt-2 px-1">
-          <span className="text-[#3f3f46] text-[10px]">Shift + Enter برای خط جدید</span>
-          <span className="text-[10px] flex items-center gap-1">
-            <Zap className="w-3 h-3 text-[#8b5cf6]" />
-            <span className="text-[#3f3f46]">قدرت گرفته از</span>
-            <span className="text-[#8b5cf6]">DeepSeek</span>
-          </span>
         </div>
       </div>
     </div>
