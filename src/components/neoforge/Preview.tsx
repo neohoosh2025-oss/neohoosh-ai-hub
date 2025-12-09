@@ -153,7 +153,15 @@ ${cleanJs}
         const blob = new Blob([combinedHtml], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         
+        // Timeout fallback - hide loading after 3 seconds max
+        const loadingTimeout = setTimeout(() => {
+          if (currentBuildId === buildIdRef.current) {
+            setIsLoading(false);
+          }
+        }, 3000);
+        
         iframeRef.current.onload = () => {
+          clearTimeout(loadingTimeout);
           if (currentBuildId === buildIdRef.current) {
             setIsLoading(false);
           }
@@ -161,6 +169,7 @@ ${cleanJs}
         };
         
         iframeRef.current.onerror = () => {
+          clearTimeout(loadingTimeout);
           if (currentBuildId === buildIdRef.current) {
             setError('Failed to load preview');
             setIsLoading(false);
@@ -172,6 +181,8 @@ ${cleanJs}
         setError('Failed to build preview');
         setIsLoading(false);
       }
+    } else {
+      setIsLoading(false);
     }
   }, [cssContent, jsContent, htmlContent]);
 
