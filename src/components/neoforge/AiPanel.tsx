@@ -1,30 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { useFilesStore, FileOperation } from '@/store/filesStore';
+import { useNeoForgeStore } from '@/store/neoforgeStore';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { 
   Sparkles, Send, FileEdit, FilePlus, 
   Loader2, Copy, Check, Rocket,
   FolderPlus, Trash2, Bot, User,
-  CheckCircle2, Wand2
+  CheckCircle2, Wand2, AlertTriangle,
+  Wrench, X, MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type ActionType = 'scaffold' | 'generate' | 'modify' | 'chat';
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  operations?: FileOperation[];
-  timestamp: Date;
-  applied?: boolean;
-}
-
 const actions = [
-  { id: 'scaffold' as ActionType, label: 'Create Project', icon: <Rocket className="w-4 h-4" />, placeholder: 'Describe your project...' },
+  { id: 'scaffold' as ActionType, label: 'Create', icon: <Rocket className="w-4 h-4" />, placeholder: 'Describe your project...' },
   { id: 'generate' as ActionType, label: 'Generate', icon: <Wand2 className="w-4 h-4" />, placeholder: 'What component to generate...' },
   { id: 'modify' as ActionType, label: 'Modify', icon: <FileEdit className="w-4 h-4" />, placeholder: 'What changes to make...' },
-  { id: 'chat' as ActionType, label: 'Chat', icon: <Sparkles className="w-4 h-4" />, placeholder: 'Ask anything...' },
+  { id: 'chat' as ActionType, label: 'Chat', icon: <MessageCircle className="w-4 h-4" />, placeholder: 'Ask anything...' },
 ];
 
 interface AiPanelProps {
@@ -33,10 +27,19 @@ interface AiPanelProps {
 
 export const AiPanel = ({ onClose }: AiPanelProps) => {
   const { files, activeFileId, applyOperations, setActiveFile, getFileByPath } = useFilesStore();
-  const [selectedAction, setSelectedAction] = useState<ActionType>('scaffold');
+  const { 
+    messages, 
+    isLoading, 
+    selectedAction,
+    previewError,
+    addMessage, 
+    setLoading, 
+    setSelectedAction,
+    setPreviewError,
+    getErrorContext,
+  } = useNeoForgeStore();
+  
   const [prompt, setPrompt] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -58,17 +61,22 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
   const getAllFilesContext = () => {
     return Object.values(files)
       .filter(f => f.type === 'file')
-      .map(f => `${f.path}:\n\`\`\`\n${f.content.slice(0, 400)}${f.content.length > 400 ? '...' : ''}\n\`\`\``)
+      .map(f => `${f.path}:\n\`\`\`\n${f.content || ''}\n\`\`\``)
       .join('\n\n');
   };
 
-  const handleSubmit = async () => {
-    if (!prompt.trim() || isLoading) return;
+  const handleSubmit = async (overridePrompt?: string) => {
+    const finalPrompt = overridePrompt || prompt;
+    if (!finalPrompt.trim() || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: prompt, timestamp: new Date() };
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage = { role: 'user' as const, content: finalPrompt, timestamp: Date.now() };
+    addMessage(userMessage);
     setPrompt('');
-    setIsLoading(true);
+    setLoading(true);
+    setPreviewError(null);
+
+    // Add assistant placeholder
+    addMessage({ role: 'assistant', content: 'Thinking...', timestamp: Date.now() });
 
     try {
       const context = activeFile ? {
@@ -77,12 +85,12 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
         fileContent: activeFile.content,
       } : undefined;
 
-      console.log('Sending to NeoForge AI:', { action: selectedAction, prompt: prompt.slice(0, 100) });
+      console.log('Sending to NeoForge AI:', { action: selectedAction, prompt: finalPrompt.slice(0, 100) });
 
       const { data, error } = await supabase.functions.invoke('neoforge-ai', {
         body: {
           action: selectedAction,
-          prompt: prompt,
+          prompt: finalPrompt,
           context,
           allFiles: getAllFilesContext(),
         },
@@ -115,15 +123,16 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
         assistantContent = data.content || JSON.stringify(data);
       }
 
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: assistantContent,
-        operations,
-        timestamp: new Date(),
-        applied: operations.length > 0,
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
+      // Update the last assistant message
+      const { messages: currentMessages } = useNeoForgeStore.getState();
+      const lastIndex = currentMessages.length - 1;
+      if (lastIndex >= 0) {
+        useNeoForgeStore.setState({
+          messages: currentMessages.map((m, i) => 
+            i === lastIndex ? { ...m, content: assistantContent, operations, applied: operations.length > 0 } : m
+          )
+        });
+      }
 
       // Apply file operations directly
       if (operations.length > 0) {
@@ -155,16 +164,30 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
 
     } catch (error) {
       console.error('AI error:', error);
-      const errorMessage: Message = {
-        role: 'assistant',
-        content: `❌ Error: ${error instanceof Error ? error.message : 'Failed to process request'}`,
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      const errorContent = `❌ Error: ${error instanceof Error ? error.message : 'Failed to process request'}`;
+      
+      const { messages: currentMessages } = useNeoForgeStore.getState();
+      const lastIndex = currentMessages.length - 1;
+      if (lastIndex >= 0) {
+        useNeoForgeStore.setState({
+          messages: currentMessages.map((m, i) => 
+            i === lastIndex ? { ...m, content: errorContent } : m
+          )
+        });
+      }
+      
       toast.error('Error processing request');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
+  };
+
+  const handleTryToFix = () => {
+    if (!previewError) return;
+    
+    const fixPrompt = `Fix this error in the preview:\n\nError: ${previewError.message}\n${previewError.stack ? `\nStack trace:\n${previewError.stack}` : ''}\n\nPlease analyze the code and fix the issue.`;
+    
+    handleSubmit(fixPrompt);
   };
 
   const copyToClipboard = (content: string, index: number) => {
@@ -234,6 +257,40 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
         </div>
       </div>
 
+      {/* Error Banner */}
+      {previewError && (
+        <div className="mx-4 mt-4 p-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.3)]">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-[#f87171] shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-[#f87171] font-medium mb-1">Preview Error</p>
+              <p className="text-xs text-[#fca5a5] break-words line-clamp-2">{previewError.message}</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleTryToFix}
+                disabled={isLoading}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                  "bg-[#8b5cf6] text-white hover:bg-[#7c3aed]",
+                  "shadow-[0_0_15px_rgba(139,92,246,0.3)]",
+                  isLoading && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                Try to Fix
+              </button>
+              <button
+                onClick={() => setPreviewError(null)}
+                className="p-1.5 rounded-lg text-[#f87171] hover:bg-[rgba(239,68,68,0.2)] transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.length === 0 && (
@@ -251,13 +308,14 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
               <p className="text-[#52525b] text-[10px] uppercase tracking-wider mb-2 text-center">Examples</p>
               {[
                 'Create a modern landing page',
-                'Build a product card component',
-                'Add a contact form',
+                'Build a music player component',
+                'Add a contact form with validation',
               ].map((example, i) => (
                 <button
                   key={i}
-                  onClick={() => setPrompt(example)}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs text-[#a1a1aa] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] transition-colors"
+                  onClick={() => handleSubmit(example)}
+                  disabled={isLoading}
+                  className="w-full text-left px-3 py-2.5 rounded-lg text-xs text-[#a1a1aa] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.04)] transition-colors disabled:opacity-50"
                 >
                   {example}
                 </button>
@@ -268,7 +326,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
         
         {messages.map((msg, i) => (
           <div 
-            key={i} 
+            key={msg.id} 
             className={cn(
               "flex gap-2.5",
               msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'
@@ -292,38 +350,35 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
                 ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white rounded-tr-md" 
                 : "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-[#e4e4e7] rounded-tl-md"
             )}>
-              <div className="whitespace-pre-wrap leading-relaxed text-[13px]">{msg.content}</div>
-              
-              {msg.operations && msg.operations.length > 0 && renderOperationsList(msg.operations, msg.applied)}
-              
-              {msg.role === 'assistant' && (
-                <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-[rgba(255,255,255,0.06)]">
-                  <button
-                    onClick={() => copyToClipboard(msg.content, i)}
-                    className="text-[#71717a] hover:text-[#fafafa] transition-colors"
-                  >
-                    {copiedIndex === i ? <Check className="w-3 h-3 text-[#34d399]" /> : <Copy className="w-3 h-3" />}
-                  </button>
-                  <span className="text-[#3f3f46] text-[10px]">
-                    {msg.timestamp.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+              {msg.content === 'Thinking...' ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin text-[#8b5cf6]" />
+                  <span className="text-[#71717a] text-xs">Thinking...</span>
                 </div>
+              ) : (
+                <>
+                  <div className="whitespace-pre-wrap leading-relaxed text-[13px]">{msg.content}</div>
+                  
+                  {msg.operations && msg.operations.length > 0 && renderOperationsList(msg.operations, msg.applied)}
+                  
+                  {msg.role === 'assistant' && (
+                    <div className="flex items-center gap-3 mt-2.5 pt-2.5 border-t border-[rgba(255,255,255,0.06)]">
+                      <button
+                        onClick={() => copyToClipboard(msg.content, i)}
+                        className="text-[#71717a] hover:text-[#fafafa] transition-colors"
+                      >
+                        {copiedIndex === i ? <Check className="w-3 h-3 text-[#34d399]" /> : <Copy className="w-3 h-3" />}
+                      </button>
+                      <span className="text-[#3f3f46] text-[10px]">
+                        {new Date(msg.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
         ))}
-        
-        {isLoading && (
-          <div className="flex gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#8b5cf6] to-[#22d3ee] flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-white" />
-            </div>
-            <div className="flex items-center gap-2 p-3 rounded-2xl rounded-tl-md bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)]">
-              <Loader2 className="w-4 h-4 text-[#8b5cf6] animate-spin" />
-              <span className="text-[#71717a] text-xs">Thinking...</span>
-            </div>
-          </div>
-        )}
         
         <div ref={messagesEndRef} />
       </div>
@@ -366,7 +421,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
             disabled={isLoading}
           />
           <button
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             disabled={!prompt.trim() || isLoading}
             className={cn(
               "w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-all duration-200",
