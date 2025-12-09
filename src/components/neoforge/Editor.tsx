@@ -194,11 +194,13 @@ export const Editor = () => {
           {/* Syntax Highlighted Layer */}
           <pre
             ref={highlightRef}
+            dir="ltr"
             className={cn(
               "absolute inset-0 p-4 overflow-auto pointer-events-none",
               "font-mono text-[13px] leading-6 whitespace-pre-wrap break-words",
-              "text-[#d4d4d8]"
+              "text-[#d4d4d8] text-left"
             )}
+            style={{ direction: 'ltr', textAlign: 'left' }}
             dangerouslySetInnerHTML={{
               __html: highlightCode(activeFile.content || '', language),
             }}
@@ -207,6 +209,7 @@ export const Editor = () => {
           {/* Editable Textarea */}
           <textarea
             ref={textareaRef}
+            dir="ltr"
             value={activeFile.content || ''}
             onChange={handleChange}
             onScroll={handleScroll}
@@ -216,8 +219,10 @@ export const Editor = () => {
               "font-mono text-[13px] leading-6",
               "bg-transparent text-transparent caret-[#8b5cf6]",
               "whitespace-pre-wrap break-words overflow-auto",
-              "selection:bg-[rgba(139,92,246,0.3)]"
+              "selection:bg-[rgba(139,92,246,0.3)]",
+              "text-left"
             )}
+            style={{ direction: 'ltr', textAlign: 'left', unicodeBidi: 'plaintext' }}
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
