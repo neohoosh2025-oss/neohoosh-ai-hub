@@ -1,8 +1,16 @@
+import { Dispatch, SetStateAction } from 'react';
 import { useFilesStore } from '@/store/filesStore';
-import { GitBranch, FileCode2, Zap, Circle, Wifi, Shield } from 'lucide-react';
+import { GitBranch, FileCode2, Zap, Circle, Wifi, Code2, Eye, Columns } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export const StatusBar = () => {
+type ViewMode = 'code' | 'preview' | 'split';
+
+interface StatusBarProps {
+  viewMode?: ViewMode;
+  onViewModeChange?: Dispatch<SetStateAction<ViewMode>>;
+}
+
+export const StatusBar = ({ viewMode, onViewModeChange }: StatusBarProps = {}) => {
   const { files, activeFileId } = useFilesStore();
   const activeFile = activeFileId ? files[activeFileId] : null;
 

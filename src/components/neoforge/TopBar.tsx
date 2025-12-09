@@ -27,9 +27,11 @@ import { cn } from '@/lib/utils';
 
 interface TopBarProps {
   onRun: () => void;
+  onToggleAi?: () => void;
+  showAiPanel?: boolean;
 }
 
-export const TopBar = ({ onRun }: TopBarProps) => {
+export const TopBar = ({ onRun, onToggleAi, showAiPanel }: TopBarProps) => {
   const navigate = useNavigate();
   const { projectName, files, resetToDefault } = useFilesStore();
   const [isRunning, setIsRunning] = useState(false);
