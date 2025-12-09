@@ -8,7 +8,8 @@ import {
   Loader2, Copy, Check, Rocket,
   FolderPlus, Trash2, Bot, User,
   CheckCircle2, Wand2, AlertTriangle,
-  Wrench, X, MessageCircle
+  Wrench, X, MessageCircle, History,
+  Plus, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,17 +29,25 @@ interface AiPanelProps {
 export const AiPanel = ({ onClose }: AiPanelProps) => {
   const { files, activeFileId, applyOperations, setActiveFile, getFileByPath } = useFilesStore();
   const { 
-    messages, 
+    conversations,
+    activeConversationId,
     isLoading, 
     selectedAction,
     previewError,
+    showHistory,
+    getMessages,
     addMessage, 
+    updateLastMessage,
     setLoading, 
     setSelectedAction,
     setPreviewError,
-    getErrorContext,
+    setShowHistory,
+    createConversation,
+    setActiveConversation,
+    deleteConversation,
   } = useNeoForgeStore();
   
+  const messages = getMessages();
   const [prompt, setPrompt] = useState('');
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -69,14 +78,13 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
     const finalPrompt = overridePrompt || prompt;
     if (!finalPrompt.trim() || isLoading) return;
 
-    const userMessage = { role: 'user' as const, content: finalPrompt, timestamp: Date.now() };
-    addMessage(userMessage);
+    addMessage({ role: 'user', content: finalPrompt, timestamp: Date.now() });
     setPrompt('');
     setLoading(true);
     setPreviewError(null);
 
     // Add assistant placeholder
-    addMessage({ role: 'assistant', content: 'Thinking...', timestamp: Date.now() });
+    addMessage({ role: 'assistant', content: 'Building...', timestamp: Date.now() });
 
     try {
       const context = activeFile ? {
@@ -124,15 +132,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
       }
 
       // Update the last assistant message
-      const { messages: currentMessages } = useNeoForgeStore.getState();
-      const lastIndex = currentMessages.length - 1;
-      if (lastIndex >= 0) {
-        useNeoForgeStore.setState({
-          messages: currentMessages.map((m, i) => 
-            i === lastIndex ? { ...m, content: assistantContent, operations, applied: operations.length > 0 } : m
-          )
-        });
-      }
+      updateLastMessage(assistantContent, operations);
 
       // Apply file operations directly
       if (operations.length > 0) {
@@ -165,17 +165,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
     } catch (error) {
       console.error('AI error:', error);
       const errorContent = `❌ Error: ${error instanceof Error ? error.message : 'Failed to process request'}`;
-      
-      const { messages: currentMessages } = useNeoForgeStore.getState();
-      const lastIndex = currentMessages.length - 1;
-      if (lastIndex >= 0) {
-        useNeoForgeStore.setState({
-          messages: currentMessages.map((m, i) => 
-            i === lastIndex ? { ...m, content: errorContent } : m
-          )
-        });
-      }
-      
+      updateLastMessage(errorContent);
       toast.error('Error processing request');
     } finally {
       setLoading(false);
@@ -188,6 +178,11 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
     const fixPrompt = `Fix this error in the preview:\n\nError: ${previewError.message}\n${previewError.stack ? `\nStack trace:\n${previewError.stack}` : ''}\n\nPlease analyze the code and fix the issue.`;
     
     handleSubmit(fixPrompt);
+  };
+
+  const handleNewConversation = () => {
+    createConversation();
+    setShowHistory(false);
   };
 
   const copyToClipboard = (content: string, index: number) => {
@@ -218,6 +213,83 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
     </div>
   );
 
+  // History Sidebar View
+  if (showHistory) {
+    return (
+      <div className="h-full flex flex-col bg-[#0f0f12] rounded-xl border border-[rgba(255,255,255,0.08)] shadow-2xl overflow-hidden" dir="ltr">
+        <div className="p-4 border-b border-[rgba(255,255,255,0.06)] shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <History className="w-5 h-5 text-[#8b5cf6]" />
+              <h2 className="text-[#fafafa] font-semibold text-sm">History</h2>
+            </div>
+            <button
+              onClick={() => setShowHistory(false)}
+              className="p-1.5 rounded-lg text-[#71717a] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.05)]"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          <button
+            onClick={handleNewConversation}
+            className="w-full flex items-center gap-2 p-3 rounded-lg bg-gradient-to-r from-[#8b5cf6]/20 to-[#7c3aed]/20 border border-[#8b5cf6]/30 text-[#a78bfa] hover:border-[#8b5cf6]/50 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span className="text-sm font-medium">New Project</span>
+          </button>
+
+          {conversations.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-[#52525b] text-sm">No conversations yet</p>
+            </div>
+          ) : (
+            conversations.map(conv => (
+              <button
+                key={conv.id}
+                onClick={() => {
+                  setActiveConversation(conv.id);
+                  setShowHistory(false);
+                }}
+                className={cn(
+                  "w-full text-left p-3 rounded-lg transition-all group",
+                  conv.id === activeConversationId
+                    ? "bg-[rgba(139,92,246,0.15)] border border-[rgba(139,92,246,0.3)]"
+                    : "bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.05)]"
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <p className={cn(
+                      "text-sm font-medium truncate",
+                      conv.id === activeConversationId ? "text-[#a78bfa]" : "text-[#e4e4e7]"
+                    )}>
+                      {conv.title}
+                    </p>
+                    <p className="text-[10px] text-[#52525b] mt-0.5">
+                      {new Date(conv.updatedAt).toLocaleDateString()} · {conv.messages.length} messages
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteConversation(conv.id);
+                    }}
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 text-[#f87171] hover:bg-[rgba(248,113,113,0.1)] transition-all"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col bg-[#0f0f12] rounded-xl border border-[rgba(255,255,255,0.08)] shadow-2xl overflow-hidden" dir="ltr">
       {/* Header */}
@@ -234,6 +306,22 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
           <div className="flex-1 min-w-0">
             <h2 className="text-[#fafafa] font-semibold text-sm">NeoForge AI</h2>
             <p className="text-[#52525b] text-xs">Autonomous Builder</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setShowHistory(true)}
+              className="p-2 rounded-lg text-[#71717a] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+              title="History"
+            >
+              <History className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleNewConversation}
+              className="p-2 rounded-lg text-[#71717a] hover:text-[#fafafa] hover:bg-[rgba(255,255,255,0.05)] transition-colors"
+              title="New Project"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
@@ -350,10 +438,10 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
                 ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white rounded-tr-md" 
                 : "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.06)] text-[#e4e4e7] rounded-tl-md"
             )}>
-              {msg.content === 'Thinking...' ? (
+              {msg.content === 'Building...' ? (
                 <div className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-[#8b5cf6]" />
-                  <span className="text-[#71717a] text-xs">Thinking...</span>
+                  <span className="text-[#71717a] text-xs">Building your project...</span>
                 </div>
               ) : (
                 <>
