@@ -167,14 +167,14 @@ const NeoForge = () => {
                 className="overflow-hidden"
                 style={{ width: viewMode === 'split' ? `${previewWidth}%` : '100%' }}
               >
-                <Preview triggerBuild={triggerBuild} />
+                <Preview triggerBuild={triggerBuild} onShowAiPanel={() => setShowAiPanel(true)} />
               </div>
             )}
           </div>
 
           {/* Mobile: Single View */}
           <div className="flex-1 lg:hidden overflow-hidden">
-            {mobileView === 'code' ? <Editor /> : <Preview triggerBuild={triggerBuild} />}
+            {mobileView === 'code' ? <Editor /> : <Preview triggerBuild={triggerBuild} onShowAiPanel={() => setShowAiPanel(true)} />}
           </div>
         </div>
 

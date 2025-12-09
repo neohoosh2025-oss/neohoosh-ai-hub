@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useFilesStore } from '@/store/filesStore';
-import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Globe, AlertCircle } from 'lucide-react';
+import { useNeoForgeStore } from '@/store/neoforgeStore';
+import { RefreshCw, ExternalLink, Monitor, Tablet, Smartphone, Globe, AlertCircle, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type ViewportSize = 'desktop' | 'tablet' | 'mobile';
@@ -13,10 +14,12 @@ const viewportSizes: Record<ViewportSize, { width: string; height: string; label
 
 interface PreviewProps {
   triggerBuild: number;
+  onShowAiPanel?: () => void;
 }
 
-export const Preview = ({ triggerBuild }: PreviewProps) => {
+export const Preview = ({ triggerBuild, onShowAiPanel }: PreviewProps) => {
   const { files } = useFilesStore();
+  const { setPreviewError, previewError } = useNeoForgeStore();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [viewport, setViewport] = useState<ViewportSize>('desktop');
@@ -69,6 +72,7 @@ export const Preview = ({ triggerBuild }: PreviewProps) => {
     const currentBuildId = ++buildIdRef.current;
     setIsLoading(true);
     setError(null);
+    setPreviewError(null);
     
     // Clean JS content - remove imports/exports for browser execution
     let cleanJs = jsContent
@@ -101,6 +105,31 @@ ${cssContent}
   <div id="app"></div>
   <div id="root"></div>
   <script>
+    // Error reporting to parent
+    window.onerror = function(message, source, lineno, colno, error) {
+      window.parent.postMessage({
+        type: 'NEOFORGE_ERROR',
+        error: {
+          message: message,
+          source: source,
+          lineno: lineno,
+          colno: colno,
+          stack: error ? error.stack : null
+        }
+      }, '*');
+      return false;
+    };
+
+    window.addEventListener('unhandledrejection', function(event) {
+      window.parent.postMessage({
+        type: 'NEOFORGE_ERROR',
+        error: {
+          message: 'Unhandled Promise Rejection: ' + (event.reason?.message || event.reason),
+          stack: event.reason?.stack || null
+        }
+      }, '*');
+    });
+
     (function() {
       try {
 ${cleanJs}
@@ -139,8 +168,16 @@ ${cleanJs}
         }
         
         console.log('✅ Preview loaded');
+        window.parent.postMessage({ type: 'NEOFORGE_SUCCESS' }, '*');
       } catch (error) {
         console.error('Preview error:', error);
+        window.parent.postMessage({
+          type: 'NEOFORGE_ERROR',
+          error: {
+            message: error.message,
+            stack: error.stack
+          }
+        }, '*');
         document.body.innerHTML = '<div style="padding: 24px; color: #ef4444; font-family: monospace; background: #0a0a0f; min-height: 100vh;"><h3 style="margin-bottom: 12px; color: #f87171;">⚠️ Error</h3><pre style="white-space: pre-wrap; color: #fca5a5; background: rgba(239,68,68,0.1); padding: 16px; border-radius: 8px;">' + error.message + '</pre></div>';
       }
     })();
@@ -184,7 +221,28 @@ ${cleanJs}
     } else {
       setIsLoading(false);
     }
-  }, [cssContent, jsContent, htmlContent]);
+  }, [cssContent, jsContent, htmlContent, setPreviewError]);
+
+  // Listen for error messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'NEOFORGE_ERROR') {
+        const { message, stack } = event.data.error;
+        setPreviewError({
+          message: message || 'Unknown error',
+          stack: stack || undefined,
+          timestamp: Date.now(),
+        });
+        setError(message);
+      } else if (event.data?.type === 'NEOFORGE_SUCCESS') {
+        setError(null);
+        setPreviewError(null);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [setPreviewError]);
 
   // Build on mount and when trigger changes
   useEffect(() => {
@@ -205,6 +263,12 @@ var app=document.getElementById('app');if(app){if(typeof createApp==='function')
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank');
   }, [cssContent, jsContent]);
+
+  const handleTryToFix = () => {
+    if (onShowAiPanel) {
+      onShowAiPanel();
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-[#050507]" dir="ltr">
@@ -292,10 +356,22 @@ var app=document.getElementById('app');if(app){if(typeof createApp==='function')
               
               {error ? (
                 <div className="absolute inset-0 flex items-center justify-center bg-[#0a0a0f] text-[#f87171] p-4">
-                  <div className="text-center">
-                    <AlertCircle className="w-8 h-8 mx-auto mb-2 text-[#f87171]" />
-                    <p className="text-sm mb-2">Error</p>
-                    <p className="text-xs text-[#71717a]">{error}</p>
+                  <div className="text-center max-w-md">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-[#f87171]" />
+                    <p className="text-lg font-medium mb-2">Preview Error</p>
+                    <p className="text-sm text-[#fca5a5] mb-6 break-words">{error}</p>
+                    <button
+                      onClick={handleTryToFix}
+                      className={cn(
+                        "flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium mx-auto",
+                        "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white",
+                        "shadow-[0_0_25px_rgba(139,92,246,0.4)]",
+                        "hover:shadow-[0_0_35px_rgba(139,92,246,0.6)] transition-all"
+                      )}
+                    >
+                      <Wrench className="w-4 h-4" />
+                      Try to Fix
+                    </button>
                   </div>
                 </div>
               ) : !hasContent && !isLoading ? (
