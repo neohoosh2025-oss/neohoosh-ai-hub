@@ -343,7 +343,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
 
       {/* Input Area */}
       <div className="p-4 border-t border-[rgba(255,255,255,0.06)] shrink-0">
-        <div className="relative">
+        <div className="flex items-end gap-2">
           <textarea
             ref={textareaRef}
             value={prompt}
@@ -356,7 +356,7 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
             }}
             placeholder={currentAction?.placeholder}
             className={cn(
-              "w-full resize-none rounded-xl px-4 py-3 pr-12 text-sm",
+              "flex-1 resize-none rounded-xl px-4 py-3 text-sm",
               "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]",
               "text-[#fafafa] placeholder:text-[#3f3f46]",
               "focus:outline-none focus:border-[rgba(139,92,246,0.4)] focus:ring-1 focus:ring-[rgba(139,92,246,0.2)]",
@@ -369,16 +369,16 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
             onClick={handleSubmit}
             disabled={!prompt.trim() || isLoading}
             className={cn(
-              "absolute right-2 bottom-2 p-2 rounded-lg transition-all duration-200",
+              "w-11 h-11 shrink-0 rounded-xl flex items-center justify-center transition-all duration-200",
               prompt.trim() && !isLoading
                 ? "bg-gradient-to-r from-[#8b5cf6] to-[#7c3aed] text-white shadow-[0_0_20px_rgba(139,92,246,0.3)]"
-                : "bg-[rgba(255,255,255,0.03)] text-[#3f3f46]"
+                : "bg-[rgba(255,255,255,0.03)] text-[#3f3f46] border border-[rgba(255,255,255,0.08)]"
             )}
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="w-5 h-5" />
             )}
           </button>
         </div>
