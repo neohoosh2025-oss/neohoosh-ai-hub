@@ -7,6 +7,42 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Cache helper functions
+async function getCachedData(supabase: any, key: string): Promise<any | null> {
+  try {
+    const { data, error } = await supabase
+      .from('api_cache')
+      .select('cache_value, hits')
+      .eq('cache_key', key)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (error || !data) return null;
+
+    // Update hit count (fire and forget)
+    supabase.from('api_cache').update({ hits: ((data as any).hits || 0) + 1 }).eq('cache_key', key).then(() => {});
+    
+    console.log(`[Cache] Hit: ${key}`);
+    return (data as any).cache_value;
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedData(supabase: any, key: string, value: any, ttlSeconds: number = 60): Promise<void> {
+  try {
+    await supabase.from('api_cache').upsert({
+      cache_key: key,
+      cache_value: value,
+      expires_at: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+      hits: 0,
+    }, { onConflict: 'cache_key' });
+    console.log(`[Cache] Set: ${key}`);
+  } catch (e) {
+    console.error('[Cache] Error:', e);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -115,19 +151,30 @@ serve(async (req) => {
       });
     }
 
-    // Load user memory
+    // Load user memory with caching (5 minute TTL)
     let userContext = "";
     if (userId) {
-      const { data: memories } = await supabase
-        .from('user_memory')
-        .select('key, value')
-        .eq('user_id', userId);
+      const memoryCacheKey = `user_memory:${userId}`;
+      let memories = await getCachedData(supabase, memoryCacheKey);
+      
+      if (!memories) {
+        console.log('[Chat] Loading user memory from database');
+        const { data } = await supabase
+          .from('user_memory')
+          .select('key, value')
+          .eq('user_id', userId);
+        memories = data;
+        
+        if (memories && memories.length > 0) {
+          await setCachedData(supabase, memoryCacheKey, memories, 300); // 5 min TTL
+        }
+      }
       
       if (memories && memories.length > 0) {
         userContext = `
 
 🔒 حافظه پنهان (فقط برای مرجع داخلی - هرگز مستقیماً ذکر نکن):
-${memories.map(m => `- ${m.key}: ${m.value}`).join("\n")}
+${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
 
 قوانین استفاده از حافظه:
 1. این اطلاعات را هرگز خودبه‌خود و بدون درخواست کاربر ذکر نکن
