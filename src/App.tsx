@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
 import Footer from "./components/Footer";
 import { PageTransition } from "./components/PageTransition";
+import { SystemMonitor } from "./components/SystemMonitor";
 import { lazy, Suspense } from "react";
 
 // Lazy load all pages to prevent import issues
@@ -37,7 +38,21 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const VoiceCall = lazy(() => import("./pages/VoiceCall"));
 const NeoForge = lazy(() => import("./pages/NeoForge"));
 
-const queryClient = new QueryClient();
+// Optimized QueryClient for high-volume requests
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000, // 30 seconds
+      gcTime: 300000, // 5 minutes (formerly cacheTime)
+      retry: 3,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 2,
+    },
+  },
+});
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen">
@@ -51,6 +66,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SystemMonitor />
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
