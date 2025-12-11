@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+// Use Lovable AI Gateway for high-quality code generation
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -15,181 +16,236 @@ serve(async (req) => {
   try {
     const { action, prompt, context, allFiles } = await req.json();
 
-    if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    // Lovable-quality system prompt for beautiful code generation
-    const masterSystemPrompt = `You are NeoForge AI, a PREMIUM code generator that creates STUNNING, PRODUCTION-READY web applications.
+    // Premium system prompt for Lovable-quality code generation
+    const masterSystemPrompt = `You are NeoForge AI, an ELITE code generator that creates STUNNING, PRODUCTION-READY web applications like Lovable.dev.
 
-You generate code like Lovable.dev - beautiful, modern, and functional.
+## YOUR MISSION
+Generate the most BEAUTIFUL, MODERN, and IMPRESSIVE code possible. Every project you create should WOW users and make them excited to use NeoForge.
 
 ## CRITICAL: OUTPUT FORMAT
-You MUST return ONLY valid JSON in this exact format:
+Return ONLY valid JSON - no markdown, no explanation outside JSON:
 {
   "operations": [
     { "type": "create_file", "path": "/index.html", "content": "..." },
     { "type": "create_file", "path": "/src/styles.css", "content": "..." },
     { "type": "create_file", "path": "/src/app.js", "content": "..." }
   ],
-  "summary": "Created a beautiful landing page with hero section, features, and footer",
-  "nextSteps": ["Add contact form", "Integrate animations"]
+  "summary": "Created a stunning [description]",
+  "nextSteps": ["Suggestion 1", "Suggestion 2"]
 }
 
 ## FILE PATH RULES:
-- HTML files: /index.html (root level)
-- CSS files: /src/styles.css or /src/style.css
-- JS files: /src/app.js or /src/main.js
-- Always use forward slashes, paths start with /
+- HTML: /index.html
+- CSS: /src/styles.css
+- JS: /src/app.js
+- Always start paths with /
 
-## DESIGN REQUIREMENTS (MANDATORY):
-1. **Color Scheme**: Use sophisticated dark themes
-   - Background: #0a0a0f to #121218 gradients
-   - Text: #ffffff, #e4e4e7, #a1a1aa
-   - Accents: Purple (#8b5cf6, #a78bfa), Cyan (#22d3ee), or custom gradients
-   
-2. **Typography**:
-   - Use system-ui, -apple-system, or 'Inter' font stack
-   - Large hero headings (3rem-5rem) with gradient text
-   - Proper hierarchy (h1 > h2 > h3 > p)
-   
-3. **Visual Effects**:
-   - Glassmorphism: backdrop-filter: blur(10px); background: rgba(255,255,255,0.05)
-   - Soft shadows: box-shadow with rgba values
-   - Border radius: 12px-24px for cards
-   - Subtle borders: 1px solid rgba(255,255,255,0.1)
-   
-4. **Animations**:
-   - CSS @keyframes for fade-in, slide-up effects
-   - Smooth transitions: transition: all 0.3s ease
-   - Hover states with transforms and glows
-   
-5. **Layout**:
-   - Flexbox and CSS Grid
-   - Max-width containers (1200px) with centered content
-   - Generous padding and spacing (2rem-4rem)
-   - Responsive design with media queries
+## DESIGN PHILOSOPHY (MANDATORY):
 
-## EXAMPLE LANDING PAGE STRUCTURE:
-\`\`\`html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project Name</title>
-  <link rel="stylesheet" href="./src/styles.css">
-</head>
-<body>
-  <nav class="navbar">...</nav>
-  <section class="hero">...</section>
-  <section class="features">...</section>
-  <section class="cta">...</section>
-  <footer>...</footer>
-  <script src="./src/app.js"></script>
-</body>
-</html>
+### 1. COLOR PALETTE - Dark Luxury Theme
+\`\`\`css
+--bg-deep: #050508;
+--bg-primary: #0a0a0f;
+--bg-elevated: #111116;
+--bg-card: rgba(255,255,255,0.02);
+--bg-glass: rgba(255,255,255,0.04);
+
+--text-primary: #fafafa;
+--text-secondary: #a1a1aa;
+--text-muted: #71717a;
+
+--accent-purple: #8b5cf6;
+--accent-violet: #a78bfa;
+--accent-cyan: #22d3ee;
+--accent-pink: #ec4899;
+--accent-emerald: #34d399;
+
+--gradient-hero: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #22d3ee 100%);
+--gradient-button: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+--gradient-card: linear-gradient(145deg, rgba(139,92,246,0.1), rgba(34,211,238,0.05));
 \`\`\`
 
-## CSS TEMPLATE:
+### 2. GLASSMORPHISM - Always Use
 \`\`\`css
-:root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #121218;
-  --bg-card: rgba(255,255,255,0.03);
-  --text-primary: #ffffff;
-  --text-secondary: #a1a1aa;
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139,92,246,0.4);
-  --border: rgba(255,255,255,0.08);
+.glass {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.05);
 }
+\`\`\`
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+### 3. TYPOGRAPHY - Modern & Bold
+- Font: system-ui, -apple-system, 'Inter', sans-serif
+- Hero titles: 4rem-6rem, font-weight 800, gradient text
+- Subheadings: 1.5rem-2rem, font-weight 600
+- Body: 1rem, line-height 1.7, font-weight 400
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
-  color: var(--text-primary);
-  min-height: 100vh;
-  line-height: 1.6;
-}
-
-.container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-
-/* Glassmorphism card */
-.card {
-  background: var(--bg-card);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 2rem;
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent), #22d3ee);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Button with glow */
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
-  color: white;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px var(--accent-glow);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--accent-glow);
-}
-
-/* Animations */
+### 4. ANIMATIONS - Smooth & Elegant
+\`\`\`css
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fade-in { animation: fadeInUp 0.6s ease forwards; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3); }
+  50% { box-shadow: 0 0 40px rgba(139,92,246,0.6); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 \`\`\`
 
-## MUSIC PLAYER EXAMPLE:
-When asked for a music player, create:
-- Beautiful glass card with album art placeholder
-- Progress bar with gradient
-- Play/pause, skip buttons with icons (use HTML entities or SVG)
-- Volume slider
-- Track info display
-- Hover effects on all buttons
+### 5. BUTTONS - Premium Feel
+\`\`\`css
+.btn-primary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  padding: 1rem 2.5rem;
+  border: none;
+  border-radius: 14px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 25px rgba(139,92,246,0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 40px rgba(139,92,246,0.5);
+}
+
+.btn-primary:hover::before { left: 100%; }
+\`\`\`
+
+### 6. CARDS - Depth & Glass
+\`\`\`css
+.card {
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 2.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: linear-gradient(145deg, rgba(139,92,246,0.2), transparent, rgba(34,211,238,0.1));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  border-color: rgba(139,92,246,0.2);
+}
+\`\`\`
+
+### 7. LAYOUT - Spacious & Centered
+- Max-width: 1280px with auto margins
+- Generous padding: 2rem-4rem
+- CSS Grid for complex layouts
+- Flexbox for alignment
+- Gap: 2rem-4rem between sections
+
+### 8. RESPONSIVE - Mobile-First
+\`\`\`css
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.5rem; }
+  .container { padding: 0 1.5rem; }
+  .card { padding: 1.5rem; }
+}
+\`\`\`
+
+## EXAMPLE PROJECTS:
+
+### Music Player
+- Album art with animated glow ring
+- Gradient progress bar with time markers
+- Frosted glass control buttons
+- Animated equalizer bars
+- Floating album art with shadow
+
+### Landing Page
+- Animated gradient hero with floating elements
+- Glass navbar with blur effect
+- Feature cards with hover animations
+- Testimonials carousel
+- Newsletter signup with glow effect
+- Footer with social icons
+
+### Dashboard
+- Sidebar with icons and active states
+- Stat cards with animated counters
+- Charts with gradient fills
+- Data tables with hover rows
+- User avatar with status dot
 
 ## RULES:
-1. Return ONLY the JSON object, no markdown code blocks
-2. Escape all quotes and special characters in content strings
+1. Return ONLY the JSON object
+2. Escape quotes and special characters properly
 3. Create ALL necessary files (HTML, CSS, JS)
-4. Make it BEAUTIFUL - this is your #1 priority
-5. Include smooth animations and transitions
-6. Use modern CSS features (grid, flexbox, custom properties)
-7. Add interactive JavaScript for functionality`;
+4. Make it STUNNING - beauty is your #1 priority
+5. Include smooth animations everywhere
+6. Use CSS custom properties for theming
+7. Add interactive JavaScript
+8. NO placeholder content - make it complete`;
 
     let userPrompt = '';
     let isCodeAction = true;
 
     switch (action) {
       case 'scaffold':
-        userPrompt = `Create a complete, beautiful project for: "${prompt}"
+        userPrompt = `Create a STUNNING, COMPLETE project for: "${prompt}"
 
-Include:
-1. index.html with semantic HTML5 structure
-2. /src/styles.css with modern CSS (variables, animations, responsive)
-3. /src/app.js with interactive JavaScript
+Requirements:
+1. index.html - Semantic HTML5, meta tags, proper structure
+2. /src/styles.css - Modern CSS with all the premium effects (glassmorphism, animations, gradients)
+3. /src/app.js - Interactive JavaScript with smooth animations
 
-Make it STUNNING - use gradients, glassmorphism, animations.
+Make this SO BEAUTIFUL that users will be amazed. Use:
+- Animated gradient backgrounds
+- Glassmorphism cards
+- Smooth hover effects
+- Fade-in animations
+- Premium typography
+- Perfect spacing
+
 Return the JSON with all file operations.`;
         break;
         
@@ -201,27 +257,31 @@ ${context?.fileContent}
 
 User request: ${prompt}
 
-Update the file and return JSON with the update_file operation.
-Make any improvements beautiful and maintain the existing design language.`;
+Update the file while maintaining beautiful design. Enhance the aesthetics if possible.
+Return JSON with update_file operation.`;
         break;
         
       case 'generate':
-        userPrompt = `Generate a beautiful component/feature: "${prompt}"
+        userPrompt = `Generate a beautiful component: "${prompt}"
 
-Create all necessary files and make it visually stunning.
-Return JSON with create_file operations for each file.`;
+Make it visually stunning with:
+- Glassmorphism effects
+- Smooth animations
+- Premium styling
+- Interactive states
+
+Return JSON with create_file operations.`;
         break;
         
       case 'fix':
-        userPrompt = `There's an error in the code. Here's the context:
-
+        userPrompt = `Fix this error:
 ${prompt}
 
 Current files:
 ${allFiles}
 
-Analyze the error and fix it. Return JSON with the corrected file(s).
-Make sure the fix is complete and the code is beautiful.`;
+Analyze and fix the issue. Keep the code beautiful.
+Return JSON with corrected file(s).`;
         break;
         
       case 'chat':
@@ -231,33 +291,29 @@ Make sure the fix is complete and the code is beautiful.`;
         break;
         
       default:
-        userPrompt = `${prompt}\n\nReturn beautiful, production-ready code as JSON with file operations.`;
+        userPrompt = `${prompt}\n\nCreate beautiful, production-ready code as JSON with file operations.`;
     }
 
-    console.log(`NeoForge AI - Action: ${action}, Prompt length: ${userPrompt.length}`);
+    console.log(`NeoForge AI - Action: ${action}, Model: gemini-2.5-flash`);
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://neohoosh.com',
-        'X-Title': 'NeoForge AI'
       },
       body: JSON.stringify({
-        model: 'google/gemma-3-27b-it:free',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: isCodeAction ? masterSystemPrompt : 'You are a helpful coding assistant. Be concise and helpful.' },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.7,
-        max_tokens: 16000,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenRouter error:', response.status, errorText);
+      console.error('Lovable AI error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
@@ -269,13 +325,23 @@ Make sure the fix is complete and the code is beautiful.`;
         });
       }
       
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ 
+          error: 'Usage limit reached. Please add credits to continue.',
+          type: 'error'
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || '';
 
-    console.log('AI Response received, length:', aiResponse.length);
+    console.log('AI Response length:', aiResponse.length);
 
     let result: any = {};
 
@@ -283,31 +349,24 @@ Make sure the fix is complete and the code is beautiful.`;
       result = { type: 'explanation', content: aiResponse };
     } else {
       try {
-        // Extract JSON from response
         let jsonStr = aiResponse;
         
-        // Remove markdown code blocks if present
+        // Remove markdown code blocks
         const jsonMatch = aiResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
         if (jsonMatch) {
           jsonStr = jsonMatch[1];
         }
         
-        // Find the JSON object
+        // Find JSON object
         const jsonStart = jsonStr.indexOf('{');
         const jsonEnd = jsonStr.lastIndexOf('}');
         if (jsonStart !== -1 && jsonEnd !== -1) {
           jsonStr = jsonStr.substring(jsonStart, jsonEnd + 1);
         }
 
-        // Clean up common issues
-        jsonStr = jsonStr
-          .replace(/\r\n/g, '\\n')
-          .replace(/\t/g, '  ');
-
         const parsed = JSON.parse(jsonStr);
         
         if (parsed.operations && Array.isArray(parsed.operations) && parsed.operations.length > 0) {
-          // Normalize file paths
           const normalizedOps = parsed.operations.map((op: any) => ({
             ...op,
             path: op.path.startsWith('/') ? op.path : '/' + op.path,
@@ -327,9 +386,8 @@ Make sure the fix is complete and the code is beautiful.`;
         }
       } catch (parseError) {
         console.error('JSON parse error:', parseError);
-        console.log('Raw response:', aiResponse.substring(0, 500));
         
-        // Fallback: create a simple landing page
+        // Premium fallback landing page
         const fallbackHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -339,102 +397,397 @@ Make sure the fix is complete and the code is beautiful.`;
   <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
-  <div class="container">
-    <section class="hero">
-      <h1 class="gradient-text">Welcome</h1>
-      <p>Your beautiful project starts here</p>
-      <button class="btn-primary">Get Started</button>
-    </section>
-  </div>
+  <nav class="navbar">
+    <div class="container nav-content">
+      <a href="#" class="logo">NeoForge<span>.</span></a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <button class="btn-primary btn-sm">Get Started</button>
+      </div>
+    </div>
+  </nav>
+  
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-orb orb-1"></div>
+      <div class="hero-orb orb-2"></div>
+      <div class="hero-orb orb-3"></div>
+    </div>
+    <div class="container hero-content">
+      <div class="hero-badge">✨ Built with NeoForge AI</div>
+      <h1 class="hero-title">
+        Build Something
+        <span class="gradient-text">Amazing</span>
+        Today
+      </h1>
+      <p class="hero-subtitle">Create stunning web experiences with AI-powered development. Fast, beautiful, and production-ready.</p>
+      <div class="hero-buttons">
+        <button class="btn-primary">Start Building</button>
+        <button class="btn-secondary">Learn More</button>
+      </div>
+    </div>
+  </section>
+  
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Powerful <span class="gradient-text">Features</span></h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Lightning Fast</h3>
+          <p>Build projects in seconds with AI-powered code generation.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎨</div>
+          <h3>Beautiful Design</h3>
+          <p>Every project comes with stunning, modern UI out of the box.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🚀</div>
+          <h3>Production Ready</h3>
+          <p>Clean, optimized code that's ready for deployment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <footer class="footer">
+    <div class="container">
+      <p>Built with 💜 using NeoForge AI</p>
+    </div>
+  </footer>
+  
   <script src="./src/app.js"></script>
 </body>
 </html>`;
 
         const fallbackCSS = `:root {
+  --bg-deep: #050508;
   --bg-primary: #0a0a0f;
-  --bg-secondary: #121218;
-  --text-primary: #ffffff;
+  --bg-elevated: #111116;
+  --bg-card: rgba(255,255,255,0.02);
+  --bg-glass: rgba(255,255,255,0.04);
+  
+  --text-primary: #fafafa;
   --text-secondary: #a1a1aa;
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139,92,246,0.4);
+  --text-muted: #71717a;
+  
+  --accent-purple: #8b5cf6;
+  --accent-violet: #a78bfa;
+  --accent-cyan: #22d3ee;
+  
+  --gradient-hero: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #22d3ee 100%);
+  --gradient-button: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+  font-family: system-ui, -apple-system, 'Inter', sans-serif;
+  background: var(--bg-deep);
   color: var(--text-primary);
-  min-height: 100vh;
+  line-height: 1.7;
+  overflow-x: hidden;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-.hero {
-  min-height: 100vh;
+/* Navbar */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1rem 0;
+  background: rgba(5,5,8,0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.nav-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 1.5rem;
+  justify-content: space-between;
 }
 
-.hero h1 {
-  font-size: 4rem;
+.logo {
+  font-size: 1.5rem;
   font-weight: 800;
+  color: var(--text-primary);
+  text-decoration: none;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent), #22d3ee);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.logo span { color: var(--accent-purple); }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
 }
 
-.hero p {
-  font-size: 1.25rem;
+.nav-links a {
   color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.3s;
 }
 
+.nav-links a:hover { color: var(--text-primary); }
+
+/* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  background: var(--gradient-button);
   color: white;
-  padding: 1rem 2.5rem;
+  padding: 1rem 2rem;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 25px rgba(139,92,246,0.35);
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 30px var(--accent-glow);
+  box-shadow: 0 8px 40px rgba(139,92,246,0.5);
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+.btn-sm { padding: 0.6rem 1.2rem; font-size: 0.875rem; }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  padding: 1rem 2rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.hero > * {
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding-top: 80px;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.4;
+  animation: float 8s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 600px; height: 600px;
+  background: var(--accent-purple);
+  top: -200px; left: -200px;
+}
+
+.orb-2 {
+  width: 500px; height: 500px;
+  background: var(--accent-cyan);
+  bottom: -150px; right: -150px;
+  animation-delay: -4s;
+}
+
+.orb-3 {
+  width: 300px; height: 300px;
+  background: #ec4899;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -2s;
+}
+
+.hero-content {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(139,92,246,0.15);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: 100px;
+  font-size: 0.875rem;
+  color: var(--accent-violet);
+  margin-bottom: 2rem;
   animation: fadeInUp 0.6s ease forwards;
 }
 
-.hero > *:nth-child(2) { animation-delay: 0.1s; }
-.hero > *:nth-child(3) { animation-delay: 0.2s; }`;
+.hero-title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.1s;
+  opacity: 0;
+}
 
-        const fallbackJS = `// App JavaScript
-console.log('🚀 App loaded!');
+.gradient-text {
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-document.querySelector('.btn-primary')?.addEventListener('click', () => {
-  alert('Welcome to your new project!');
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.2s;
+  opacity: 0;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  animation: fadeInUp 0.6s ease forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+/* Features */
+.features {
+  padding: 8rem 0;
+  background: var(--bg-primary);
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 2.5rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(139,92,246,0.3);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.feature-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* Footer */
+.footer {
+  padding: 3rem 0;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.footer p { color: var(--text-muted); }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(20px, -20px); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .hero-buttons { flex-direction: column; }
+  .hero-title { font-size: 2.5rem; }
+  .features { padding: 4rem 0; }
+}`;
+
+        const fallbackJS = `// NeoForge App
+console.log('🚀 NeoForge App loaded!');
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Intersection Observer for animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.feature-card').forEach((card, i) => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(30px)';
+  card.style.transition = \`all 0.6s ease \${i * 0.1}s\`;
+  observer.observe(card);
+});
+
+// Button click handlers
+document.querySelectorAll('.btn-primary').forEach(btn => {
+  btn.addEventListener('click', () => {
+    console.log('Getting started!');
+  });
 });`;
 
         result = {
@@ -444,8 +797,8 @@ document.querySelector('.btn-primary')?.addEventListener('click', () => {
             { type: 'create_file', path: '/src/styles.css', content: fallbackCSS },
             { type: 'create_file', path: '/src/app.js', content: fallbackJS },
           ],
-          summary: '✅ Created a beautiful landing page',
-          nextSteps: ['Customize the content', 'Add more sections'],
+          summary: '✅ Created a stunning landing page with animations',
+          nextSteps: ['Customize the content', 'Add more sections', 'Connect a backend'],
         };
       }
     }
