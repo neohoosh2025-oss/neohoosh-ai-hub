@@ -499,15 +499,24 @@ export const useFilesStore = create<FilesState>()(
 
       getFileByPath: (path) => {
         const files = get().files;
-        return Object.values(files).find((f) => f.path === path);
+        // Normalize path for matching
+        const normalizedPath = path.startsWith('/') ? path : '/' + path;
+        const altPath = normalizedPath.replace(/^\//, '');
+        return Object.values(files).find((f) => 
+          f.path === path || f.path === normalizedPath || f.path === altPath || f.path === '/' + altPath
+        );
       },
 
       // Create file at specific path, creating parent folders as needed
       createFileAtPath: (path: string, content: string) => {
-        // Normalize path - remove leading slash for consistent matching
-        const normalizedPath = path.startsWith('/') ? path : '/' + path;
+        // Normalize path - remove ./ and leading slashes, ensure consistent format
+        let normalizedPath = path.replace(/^\.?\/+/, '').replace(/\/+/g, '/');
+        if (!normalizedPath.startsWith('/')) {
+          normalizedPath = '/' + normalizedPath;
+        }
+        
         const parts = normalizedPath.split('/').filter(Boolean);
-        const fileName = parts.pop()!;
+        const fileName = parts.pop();
         
         if (!fileName) return 'root';
         
@@ -528,8 +537,9 @@ export const useFilesStore = create<FilesState>()(
         
         const finalPath = currentPath + '/' + fileName;
         
-        // Check if file already exists at this path
-        const existingFile = get().getFileByPath(finalPath);
+        // Check if file already exists at this path (also check without leading slash)
+        const existingFile = get().getFileByPath(finalPath) || 
+                             get().getFileByPath(finalPath.replace(/^\//, ''));
         if (existingFile) {
           // Update existing file instead of creating duplicate
           get().updateFileContent(existingFile.id, content);
