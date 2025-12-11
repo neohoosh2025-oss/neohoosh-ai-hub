@@ -11,7 +11,7 @@ import { SystemMonitor } from "./components/SystemMonitor";
 import { lazy, Suspense } from "react";
 
 // Lazy load all pages to prevent import issues
-const Home = lazy(() => import("./pages/Home"));
+const Home = lazy(() => import("./pages/Index"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
 const Products = lazy(() => import("./pages/Products"));
@@ -71,6 +71,7 @@ const App = () => (
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Full-screen routes without Navigation/Footer */}
+              <Route path="/" element={<Home />} />
               <Route path="/neohi" element={<NeoHi />} />
               <Route path="/ai-settings" element={<AISettings />} />
               <Route path="/design-system" element={<DesignSystem />} />
@@ -85,7 +86,6 @@ const App = () => (
                   <main className="flex-1">
                     <PageTransition>
                       <Routes>
-                        <Route path="/" element={<Home />} />
                         <Route path="/articles" element={<Articles />} />
                         <Route path="/articles/:id" element={<ArticleDetail />} />
                         <Route path="/products" element={<Products />} />
