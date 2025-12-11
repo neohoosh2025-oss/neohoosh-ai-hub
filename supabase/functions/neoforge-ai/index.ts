@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +8,56 @@ const corsHeaders = {
 
 // Use OpenRouter free models
 const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+// Cache helper for similar prompts
+async function getCachedResponse(supabase: any, promptHash: string): Promise<any | null> {
+  try {
+    const { data, error } = await supabase
+      .from('api_cache')
+      .select('cache_value, hits')
+      .eq('cache_key', `neoforge:${promptHash}`)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (error || !data) return null;
+
+    // Update hit count
+    supabase.from('api_cache').update({ hits: ((data as any).hits || 0) + 1 }).eq('cache_key', `neoforge:${promptHash}`).then(() => {});
+    
+    console.log(`[NeoForge Cache] Hit for prompt hash: ${promptHash}`);
+    return (data as any).cache_value;
+  } catch {
+    return null;
+  }
+}
+
+async function setCachedResponse(supabase: any, promptHash: string, response: any, ttlSeconds: number = 3600): Promise<void> {
+  try {
+    await supabase.from('api_cache').upsert({
+      cache_key: `neoforge:${promptHash}`,
+      cache_value: response,
+      expires_at: new Date(Date.now() + ttlSeconds * 1000).toISOString(),
+      hits: 0,
+    }, { onConflict: 'cache_key' });
+    console.log(`[NeoForge Cache] Stored response for: ${promptHash}`);
+  } catch (e) {
+    console.error('[NeoForge Cache] Error:', e);
+  }
+}
+
+// Simple hash function for prompt deduplication
+function hashPrompt(action: string, prompt: string): string {
+  const str = `${action}:${prompt.toLowerCase().trim().slice(0, 200)}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -18,6 +69,25 @@ serve(async (req) => {
 
     if (!OPENROUTER_API_KEY) {
       throw new Error('OPENROUTER_API_KEY not configured');
+    }
+
+    // Initialize Supabase for caching
+    let supabase = null;
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    }
+
+    // Check cache for scaffold actions (these are more likely to be similar)
+    if (supabase && action === 'scaffold') {
+      const promptHash = hashPrompt(action, prompt);
+      const cachedResponse = await getCachedResponse(supabase, promptHash);
+      
+      if (cachedResponse) {
+        console.log('[NeoForge] Returning cached scaffold response');
+        return new Response(JSON.stringify(cachedResponse), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // Premium system prompt for Lovable-quality code generation
@@ -793,6 +863,12 @@ document.querySelectorAll('.btn-primary').forEach(btn => {
           nextSteps: ['Customize the content', 'Add more sections', 'Connect a backend'],
         };
       }
+    }
+
+    // Cache scaffold responses for 1 hour
+    if (supabase && action === 'scaffold' && result.type === 'operations') {
+      const promptHash = hashPrompt(action, prompt);
+      await setCachedResponse(supabase, promptHash, result, 3600);
     }
 
     return new Response(JSON.stringify(result), {
