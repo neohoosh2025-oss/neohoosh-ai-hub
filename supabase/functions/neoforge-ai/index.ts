@@ -5,8 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Use Lovable AI Gateway for high-quality code generation
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+// Use OpenRouter free models
+const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,8 +16,8 @@ serve(async (req) => {
   try {
     const { action, prompt, context, allFiles } = await req.json();
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     // Premium system prompt for Lovable-quality code generation
@@ -294,16 +294,18 @@ Return JSON with corrected file(s).`;
         userPrompt = `${prompt}\n\nCreate beautiful, production-ready code as JSON with file operations.`;
     }
 
-    console.log(`NeoForge AI - Action: ${action}, Model: gemini-2.5-flash`);
+    console.log(`NeoForge AI - Action: ${action}, Model: deepseek/deepseek-chat-v3.1`);
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
         'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://neohoosh.com',
+        'X-Title': 'NeoForge AI',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'deepseek/deepseek-chat-v3.1',
         messages: [
           { role: 'system', content: isCodeAction ? masterSystemPrompt : 'You are a helpful coding assistant. Be concise and helpful.' },
           { role: 'user', content: userPrompt },
@@ -313,7 +315,7 @@ Return JSON with corrected file(s).`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('OpenRouter error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(JSON.stringify({ 
@@ -321,16 +323,6 @@ Return JSON with corrected file(s).`;
           type: 'error'
         }), {
           status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'Usage limit reached. Please add credits to continue.',
-          type: 'error'
-        }), {
-          status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
