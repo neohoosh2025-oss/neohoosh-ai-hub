@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_cache: {
+        Row: {
+          cache_key: string
+          cache_value: Json
+          created_at: string
+          expires_at: string
+          hits: number | null
+          id: string
+        }
+        Insert: {
+          cache_key: string
+          cache_value: Json
+          created_at?: string
+          expires_at: string
+          hits?: number | null
+          id?: string
+        }
+        Update: {
+          cache_key?: string
+          cache_value?: Json
+          created_at?: string
+          expires_at?: string
+          hits?: number | null
+          id?: string
+        }
+        Relationships: []
+      }
       article_translations: {
         Row: {
           article_id: string
@@ -1023,6 +1050,7 @@ export type Database = {
         Args: { p_chat_id: string; p_user_id: string }
         Returns: boolean
       }
+      cleanup_expired_cache: { Args: never; Returns: number }
       is_admin: { Args: { user_id: string }; Returns: boolean }
       is_chat_member: {
         Args: { p_chat_id: string; p_user_id: string }
