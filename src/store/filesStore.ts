@@ -504,8 +504,12 @@ export const useFilesStore = create<FilesState>()(
 
       // Create file at specific path, creating parent folders as needed
       createFileAtPath: (path: string, content: string) => {
-        const parts = path.split('/').filter(Boolean);
+        // Normalize path - remove leading slash for consistent matching
+        const normalizedPath = path.startsWith('/') ? path : '/' + path;
+        const parts = normalizedPath.split('/').filter(Boolean);
         const fileName = parts.pop()!;
+        
+        if (!fileName) return 'root';
         
         let currentParentId = 'root';
         let currentPath = '';
@@ -522,14 +526,17 @@ export const useFilesStore = create<FilesState>()(
           }
         }
         
-        // Check if file already exists
-        const existingFile = get().getFileByPath(path);
+        const finalPath = currentPath + '/' + fileName;
+        
+        // Check if file already exists at this path
+        const existingFile = get().getFileByPath(finalPath);
         if (existingFile) {
+          // Update existing file instead of creating duplicate
           get().updateFileContent(existingFile.id, content);
           return existingFile.id;
         }
         
-        // Create the file
+        // Create the new file
         return get().createFile(fileName, currentParentId, content);
       },
 
