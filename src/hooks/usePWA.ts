@@ -38,11 +38,16 @@ export const usePWA = (): UsePWAReturn => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   const [online, setOnline] = useState(true);
+  const [pushSupported, setPushSupported] = useState(false);
 
-  // Check installation status
+  // Check installation status - safely access browser APIs
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     setIsInstalled(isAppInstalled());
     setOnline(isOnline());
+    setPushSupported(isPushSupported());
     
     if (isPushSupported()) {
       setNotificationPermission(getNotificationPermission());
@@ -51,6 +56,8 @@ export const usePWA = (): UsePWAReturn => {
 
   // Listen for install prompt
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -59,20 +66,24 @@ export const usePWA = (): UsePWAReturn => {
 
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Listen for successful installation
-    window.addEventListener('appinstalled', () => {
+    const installedHandler = () => {
       setIsInstalled(true);
       setCanInstall(false);
       setDeferredPrompt(null);
-    });
+    };
+    
+    window.addEventListener('appinstalled', installedHandler);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
     };
   }, []);
 
   // Listen for network changes
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const cleanup = addNetworkListeners(
       () => setOnline(true),
       () => setOnline(false)
@@ -118,7 +129,7 @@ export const usePWA = (): UsePWAReturn => {
     canInstall,
     installPrompt: canInstall ? installPrompt : null,
     notificationPermission,
-    isPushSupported: isPushSupported(),
+    isPushSupported: pushSupported,
     requestPermission,
     subscribe,
     unsubscribe,

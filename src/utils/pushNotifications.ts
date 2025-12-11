@@ -1,4 +1,5 @@
 // Push notification utilities for PWA
+// All functions are safe to call in SSR environments
 
 const VAPID_PUBLIC_KEY = 'YOUR_VAPID_PUBLIC_KEY'; // This should be configured via environment
 
@@ -10,13 +11,18 @@ export interface PushSubscriptionData {
   };
 }
 
+// Check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined' && typeof navigator !== 'undefined';
+
 // Check if push notifications are supported
 export const isPushSupported = (): boolean => {
+  if (!isBrowser) return false;
   return 'serviceWorker' in navigator && 'PushManager' in window;
 };
 
 // Check if notifications are permitted
 export const getNotificationPermission = (): NotificationPermission => {
+  if (!isBrowser || typeof Notification === 'undefined') return 'denied';
   return Notification.permission;
 };
 
@@ -69,6 +75,8 @@ export const subscribeToPush = async (): Promise<PushSubscription | null> => {
 
 // Unsubscribe from push notifications
 export const unsubscribeFromPush = async (): Promise<boolean> => {
+  if (!isBrowser) return false;
+  
   try {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
@@ -126,12 +134,14 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
 
 // Check if app is installed (standalone mode)
 export const isAppInstalled = (): boolean => {
+  if (!isBrowser) return false;
   return window.matchMedia('(display-mode: standalone)').matches ||
     (window.navigator as any).standalone === true;
 };
 
 // Check online status
 export const isOnline = (): boolean => {
+  if (!isBrowser) return true;
   return navigator.onLine;
 };
 
@@ -140,6 +150,8 @@ export const addNetworkListeners = (
   onOnline: () => void,
   onOffline: () => void
 ): (() => void) => {
+  if (!isBrowser) return () => {};
+  
   window.addEventListener('online', onOnline);
   window.addEventListener('offline', onOffline);
   
