@@ -9,8 +9,9 @@ import Footer from "./components/Footer";
 import { PageTransition } from "./components/PageTransition";
 import { SystemMonitor } from "./components/SystemMonitor";
 import { lazy, Suspense } from "react";
+import Chat from "./pages/Chat";
 
-// Lazy load all pages to prevent import issues
+// Lazy load most pages
 const Home = lazy(() => import("./pages/Index"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
@@ -19,7 +20,6 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Services = lazy(() => import("./pages/Services"));
 const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
-const Chat = lazy(() => import("./pages/Chat"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
@@ -35,8 +35,6 @@ const VoiceToText = lazy(() => import("./pages/VoiceToText"));
 const TextToVoice = lazy(() => import("./pages/TextToVoice"));
 const CodeGenerator = lazy(() => import("./pages/CodeGenerator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
-const VoiceCall = lazy(() => import("./pages/VoiceCall"));
-const NeoForge = lazy(() => import("./pages/NeoForge"));
 
 // Optimized QueryClient for high-volume requests
 const queryClient = new QueryClient({
@@ -76,8 +74,6 @@ const App = () => (
               <Route path="/ai-settings" element={<AISettings />} />
               <Route path="/design-system" element={<DesignSystem />} />
               <Route path="/chat" element={<Chat />} />
-              <Route path="/voice-call" element={<VoiceCall />} />
-              <Route path="/neoforge" element={<NeoForge />} />
               
               {/* Regular routes with Navigation/Footer */}
               <Route path="*" element={

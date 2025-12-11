@@ -19,7 +19,6 @@ import {
   Users,
   Volume2,
   Zap,
-  Phone,
   User,
   Bell,
   Home,
@@ -29,21 +28,23 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/neohoosh-logo-new.png";
-import { usePWA } from "@/hooks/usePWA";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
+  const [canInstall, setCanInstall] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
-  const { 
-    isOnline, 
-    canInstall, 
-    installPrompt, 
-    notificationPermission,
-    requestPermission,
-    isPushSupported 
-  } = usePWA();
+  // Check if first visit
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('neohoosh_visited');
+    if (!hasVisited) {
+      setShowOnboarding(true);
+      localStorage.setItem('neohoosh_visited', 'true');
+    }
+  }, []);
 
   // Check if first visit
   useEffect(() => {
@@ -54,6 +55,36 @@ const Index = () => {
     }
   }, []);
 
+  // Listen for install prompt
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    const installedHandler = () => {
+      setCanInstall(false);
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('appinstalled', installedHandler);
+
+    // Network status
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    setIsOnline(navigator.onLine);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', installedHandler);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   // Show install banner when install is available
   useEffect(() => {
     if (canInstall) {
@@ -62,15 +93,11 @@ const Index = () => {
   }, [canInstall]);
 
   const handleInstall = async () => {
-    if (installPrompt) {
-      await installPrompt();
+    if (deferredPrompt) {
+      await deferredPrompt.prompt();
+      setDeferredPrompt(null);
+      setCanInstall(false);
       setShowInstallBanner(false);
-    }
-  };
-
-  const handleEnableNotifications = async () => {
-    if (isPushSupported && notificationPermission === 'default') {
-      await requestPermission();
     }
   };
 
@@ -121,12 +148,12 @@ const Index = () => {
     { icon: Mic, label: "صدا به متن", href: "/tools/voice-to-text", color: "bg-green-500", description: "تبدیل ویس به متن" },
     { icon: Volume2, label: "متن به صدا", href: "/tools/text-to-voice", color: "bg-teal-500", description: "تبدیل متن به صوت" },
     { icon: Code, label: "تولید کد", href: "/tools/code-generator", color: "bg-orange-500", description: "کدنویسی با AI" },
-    { icon: Phone, label: "تماس صوتی", href: "/voice-call", color: "bg-pink-500", description: "مکالمه با AI" },
+    { icon: Users, label: "NEOHI", href: "/neohi", color: "bg-pink-500", description: "شبکه اجتماعی" },
     { icon: BookOpen, label: "مقالات", href: "/articles", color: "bg-indigo-500", description: "آموزش و دانش" },
     { icon: Wand2, label: "ابزارها", href: "/tools", color: "bg-amber-500", description: "همه ابزارها" },
   ];
 
-  // Featured services (without NeoForge)
+  // Featured services (without NeoForge and VoiceCall)
   const featuredServices = [
     {
       title: "NEOHI",
@@ -134,13 +161,6 @@ const Index = () => {
       icon: Users,
       href: "/neohi",
       gradient: "from-blue-600 to-cyan-600"
-    },
-    {
-      title: "تماس صوتی",
-      description: "مکالمه زنده با AI",
-      icon: Phone,
-      href: "/voice-call",
-      gradient: "from-pink-600 to-rose-600"
     }
   ];
 
