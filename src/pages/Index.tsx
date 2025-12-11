@@ -8,7 +8,6 @@ import {
   Image as ImageIcon,
   Mic,
   Code,
-  FileText,
   Sparkles,
   X,
   Download,
@@ -19,33 +18,32 @@ import {
   BookOpen,
   Users,
   Volume2,
-  Languages,
   Zap,
   Phone,
-  Settings,
   User,
   Bell,
-  Search,
-  Plus,
-  ArrowLeft,
   Home,
   Compass,
-  Grid3X3
+  WifiOff,
+  BellRing
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import logo from "@/assets/neohoosh-logo-new.png";
-
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
-}
+import { usePWA } from "@/hooks/usePWA";
 
 const Index = () => {
-  const navigate = useNavigate();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  
+  const { 
+    isOnline, 
+    canInstall, 
+    installPrompt, 
+    notificationPermission,
+    requestPermission,
+    isPushSupported 
+  } = usePWA();
 
   // Check if first visit
   useEffect(() => {
@@ -56,25 +54,23 @@ const Index = () => {
     }
   }, []);
 
-  // PWA install prompt
+  // Show install banner when install is available
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    if (canInstall) {
       setShowInstallBanner(true);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
-  }, []);
+    }
+  }, [canInstall]);
 
   const handleInstall = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setShowInstallBanner(false);
-      }
-      setDeferredPrompt(null);
+    if (installPrompt) {
+      await installPrompt();
+      setShowInstallBanner(false);
+    }
+  };
+
+  const handleEnableNotifications = async () => {
+    if (isPushSupported && notificationPermission === 'default') {
+      await requestPermission();
     }
   };
 
@@ -130,29 +126,46 @@ const Index = () => {
     { icon: Wand2, label: "ابزارها", href: "/tools", color: "bg-amber-500", description: "همه ابزارها" },
   ];
 
-  // Featured services
+  // Featured services (without NeoForge)
   const featuredServices = [
-    {
-      title: "NeoForge",
-      description: "محیط توسعه کد با AI",
-      icon: Code,
-      href: "/neoforge",
-      gradient: "from-violet-600 to-purple-600"
-    },
     {
       title: "NEOHI",
       description: "شبکه اجتماعی هوشمند",
       icon: Users,
       href: "/neohi",
       gradient: "from-blue-600 to-cyan-600"
+    },
+    {
+      title: "تماس صوتی",
+      description: "مکالمه زنده با AI",
+      icon: Phone,
+      href: "/voice-call",
+      gradient: "from-pink-600 to-rose-600"
     }
   ];
 
   return (
     <div className="min-h-screen bg-background pb-24 safe-area-inset">
+      {/* Offline Indicator */}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -50, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-[60] bg-amber-500 p-3 safe-area-top"
+          >
+            <div className="flex items-center justify-center gap-2 text-white text-sm">
+              <WifiOff className="w-4 h-4" />
+              <span>شما آفلاین هستید - برخی امکانات محدود است</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* PWA Install Banner */}
       <AnimatePresence>
-        {showInstallBanner && (
+        {showInstallBanner && isOnline && (
           <motion.div
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -419,7 +432,7 @@ const Index = () => {
           <div className="space-y-3">
             {[
               { icon: Zap, text: "برای نتیجه بهتر، سوالات واضح و دقیق بپرسید" },
-              { icon: Languages, text: "هم فارسی و هم انگلیسی پشتیبانی می‌شه" },
+              { icon: MessageCircle, text: "هم فارسی و هم انگلیسی پشتیبانی می‌شه" },
               { icon: Sparkles, text: "از پرامپت‌های خلاقانه استفاده کنید" }
             ].map((tip, i) => (
               <motion.div

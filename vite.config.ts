@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => ({
         start_url: "/",
         dir: "rtl",
         lang: "fa",
+        categories: ["productivity", "utilities", "education"],
         icons: [
           {
             src: "/favicon.png",
@@ -41,11 +42,47 @@ export default defineConfig(({ mode }) => ({
             type: "image/png",
             purpose: "any maskable"
           }
+        ],
+        // App shortcuts for quick actions
+        shortcuts: [
+          {
+            name: "چت با AI",
+            short_name: "چت",
+            description: "شروع گفتگو با هوش مصنوعی",
+            url: "/chat",
+            icons: [{ src: "/favicon.png", sizes: "96x96" }]
+          },
+          {
+            name: "تولید تصویر",
+            short_name: "تصویر",
+            description: "ساخت تصویر با AI",
+            url: "/tools/image-generator",
+            icons: [{ src: "/favicon.png", sizes: "96x96" }]
+          },
+          {
+            name: "صدا به متن",
+            short_name: "صدا",
+            description: "تبدیل ویس به متن",
+            url: "/tools/voice-to-text",
+            icons: [{ src: "/favicon.png", sizes: "96x96" }]
+          },
+          {
+            name: "تماس صوتی",
+            short_name: "تماس",
+            description: "مکالمه صوتی با AI",
+            url: "/voice-call",
+            icons: [{ src: "/favicon.png", sizes: "96x96" }]
+          }
         ]
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,jpg,jpeg,webp}"],
+        // Offline fallback
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api/],
+        // Runtime caching strategies
         runtimeCaching: [
+          // Google Fonts - Cache First (long-term)
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: "CacheFirst",
@@ -53,7 +90,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -73,8 +110,54 @@ export default defineConfig(({ mode }) => ({
                 statuses: [0, 200]
               }
             }
+          },
+          // Images - Cache First with network fallback
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "images-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // API calls - Network First with cache fallback
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "api-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutes
+              },
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Static assets - Stale While Revalidate
+          {
+            urlPattern: /\.(?:js|css)$/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "static-resources",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              }
+            }
           }
         ]
+      },
+      devOptions: {
+        enabled: false
       }
     })
   ].filter(Boolean),
