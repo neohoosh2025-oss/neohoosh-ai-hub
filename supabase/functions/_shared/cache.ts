@@ -1,181 +1,140 @@
 // Server-side caching utility for Edge Functions
-// Uses in-memory cache with TTL support
+// Uses Supabase table as persistent cache storage
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-  ttl: number;
-  hits: number;
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+
+interface CacheResult<T> {
+  data: T | null;
+  hit: boolean;
 }
 
-interface CacheStats {
-  size: number;
-  hits: number;
-  misses: number;
-  hitRate: number;
-}
+// Get cached value from database
+export async function getCache<T>(
+  supabase: ReturnType<typeof createClient>,
+  key: string
+): Promise<CacheResult<T>> {
+  try {
+    const { data, error } = await supabase
+      .from('api_cache')
+      .select('cache_value, hits')
+      .eq('cache_key', key)
+      .gt('expires_at', new Date().toISOString())
+      .single();
 
-class EdgeCache {
-  private cache: Map<string, CacheEntry<any>> = new Map();
-  private hits = 0;
-  private misses = 0;
-  private maxSize = 500;
-  private cleanupInterval: number | null = null;
-
-  constructor() {
-    // Cleanup every 60 seconds
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60000) as unknown as number;
-  }
-
-  // Get cached value
-  get<T>(key: string): T | null {
-    const entry = this.cache.get(key);
-    
-    if (!entry) {
-      this.misses++;
-      return null;
+    if (error || !data) {
+      return { data: null, hit: false };
     }
 
-    // Check if expired
-    if (Date.now() - entry.timestamp > entry.ttl) {
-      this.cache.delete(key);
-      this.misses++;
-      return null;
-    }
+    const cacheData = data as unknown as { cache_value: T; hits: number };
 
-    entry.hits++;
-    this.hits++;
-    return entry.data as T;
-  }
+    // Update hit count async (fire and forget)
+    supabase
+      .from('api_cache')
+      .update({ hits: (cacheData.hits || 0) + 1 })
+      .eq('cache_key', key)
+      .then(() => {});
 
-  // Set cached value with TTL
-  set<T>(key: string, data: T, ttlMs: number = 60000): void {
-    // Evict if at max capacity
-    if (this.cache.size >= this.maxSize) {
-      this.evictLRU();
-    }
-
-    this.cache.set(key, {
-      data,
-      timestamp: Date.now(),
-      ttl: ttlMs,
-      hits: 0,
-    });
-  }
-
-  // Get or set pattern - returns cached value or executes fn and caches result
-  async getOrSet<T>(
-    key: string,
-    fn: () => Promise<T>,
-    ttlMs: number = 60000
-  ): Promise<T> {
-    const cached = this.get<T>(key);
-    if (cached !== null) {
-      console.log(`[EdgeCache] Hit: ${key}`);
-      return cached;
-    }
-
-    console.log(`[EdgeCache] Miss: ${key}`);
-    const result = await fn();
-    this.set(key, result, ttlMs);
-    return result;
-  }
-
-  // Delete specific key
-  delete(key: string): boolean {
-    return this.cache.delete(key);
-  }
-
-  // Delete by prefix (useful for invalidating related entries)
-  deleteByPrefix(prefix: string): number {
-    let deleted = 0;
-    this.cache.forEach((_, key) => {
-      if (key.startsWith(prefix)) {
-        this.cache.delete(key);
-        deleted++;
-      }
-    });
-    return deleted;
-  }
-
-  // Clear all cache
-  clear(): void {
-    this.cache.clear();
-    this.hits = 0;
-    this.misses = 0;
-  }
-
-  // Get cache statistics
-  getStats(): CacheStats {
-    const total = this.hits + this.misses;
-    return {
-      size: this.cache.size,
-      hits: this.hits,
-      misses: this.misses,
-      hitRate: total > 0 ? this.hits / total : 0,
-    };
-  }
-
-  // Evict least recently used entry
-  private evictLRU(): void {
-    let lruKey: string | null = null;
-    let lruTime = Infinity;
-
-    this.cache.forEach((entry, key) => {
-      if (entry.timestamp < lruTime) {
-        lruTime = entry.timestamp;
-        lruKey = key;
-      }
-    });
-
-    if (lruKey) {
-      this.cache.delete(lruKey);
-      console.log(`[EdgeCache] Evicted LRU: ${lruKey}`);
-    }
-  }
-
-  // Cleanup expired entries
-  private cleanup(): void {
-    const now = Date.now();
-    let cleaned = 0;
-
-    this.cache.forEach((entry, key) => {
-      if (now - entry.timestamp > entry.ttl) {
-        this.cache.delete(key);
-        cleaned++;
-      }
-    });
-
-    if (cleaned > 0) {
-      console.log(`[EdgeCache] Cleaned ${cleaned} expired entries`);
-    }
-  }
-
-  // Destroy cache and cleanup
-  destroy(): void {
-    if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-    }
-    this.cache.clear();
+    console.log(`[Cache] Hit: ${key}`);
+    return { data: cacheData.cache_value, hit: true };
+  } catch {
+    return { data: null, hit: false };
   }
 }
 
-// Singleton instance
-export const edgeCache = new EdgeCache();
+// Set cache value in database
+export async function setCache<T>(
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  value: T,
+  ttlSeconds: number = 60
+): Promise<void> {
+  const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
 
-// Helper function to create cache key from request
+  try {
+    await supabase
+      .from('api_cache')
+      .upsert({
+        cache_key: key,
+        cache_value: value,
+        expires_at: expiresAt,
+        hits: 0,
+      }, { 
+        onConflict: 'cache_key' 
+      });
+
+    console.log(`[Cache] Set: ${key} (TTL: ${ttlSeconds}s)`);
+  } catch (error) {
+    console.error('[Cache] Set error:', error);
+  }
+}
+
+// Get or set pattern
+export async function getOrSetCache<T>(
+  supabase: ReturnType<typeof createClient>,
+  key: string,
+  fn: () => Promise<T>,
+  ttlSeconds: number = 60
+): Promise<T> {
+  const cached = await getCache<T>(supabase, key);
+  
+  if (cached.hit && cached.data !== null) {
+    return cached.data;
+  }
+
+  console.log(`[Cache] Miss: ${key}`);
+  const result = await fn();
+  await setCache(supabase, key, result, ttlSeconds);
+  return result;
+}
+
+// Delete cache by key
+export async function deleteCache(
+  supabase: ReturnType<typeof createClient>,
+  key: string
+): Promise<void> {
+  await supabase
+    .from('api_cache')
+    .delete()
+    .eq('cache_key', key);
+}
+
+// Delete cache by prefix
+export async function deleteCacheByPrefix(
+  supabase: ReturnType<typeof createClient>,
+  prefix: string
+): Promise<number> {
+  const { data } = await supabase
+    .from('api_cache')
+    .delete()
+    .like('cache_key', `${prefix}%`)
+    .select('id');
+
+  const result = data as { id: string }[] | null;
+  return result?.length || 0;
+}
+
+// Cleanup expired entries (call periodically)
+export async function cleanupExpiredCache(
+  supabase: ReturnType<typeof createClient>
+): Promise<number> {
+  const { data } = await supabase.rpc('cleanup_expired_cache');
+  return (data as number) || 0;
+}
+
+// Create cache key from parameters
 export function createCacheKey(
   prefix: string,
   params: Record<string, any>
 ): string {
   const sortedParams = Object.keys(params)
     .sort()
+    .filter(k => params[k] !== undefined && params[k] !== null)
     .map(k => `${k}=${JSON.stringify(params[k])}`)
     .join('&');
   return `${prefix}:${sortedParams}`;
 }
 
-// Response caching headers helper
+// HTTP cache headers for CDN caching
 export function getCacheHeaders(maxAge: number = 60): Record<string, string> {
   return {
     'Cache-Control': `public, max-age=${maxAge}, s-maxage=${maxAge * 2}`,
