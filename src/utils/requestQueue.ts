@@ -1,4 +1,4 @@
-// Request Queue with Rate Limiting, Caching, and Retry Logic
+// Request Queue with Rate Limiting, Caching, Deduplication, and Retry Logic
 // Designed to handle high-volume requests efficiently
 
 interface QueuedRequest {
@@ -16,6 +16,11 @@ interface CacheEntry {
   ttl: number;
 }
 
+interface InFlightRequest {
+  promise: Promise<any>;
+  timestamp: number;
+}
+
 class RequestQueue {
   private queue: QueuedRequest[] = [];
   private processing = false;
@@ -24,6 +29,7 @@ class RequestQueue {
   private requestsPerSecond = 50;
   private requestTimestamps: number[] = [];
   private cache: Map<string, CacheEntry> = new Map();
+  private inFlightRequests: Map<string, InFlightRequest> = new Map();
   private circuitBreaker = {
     failures: 0,
     lastFailure: 0,
@@ -32,7 +38,7 @@ class RequestQueue {
     resetTimeout: 30000,
   };
 
-  // Add request to queue with priority
+  // Add request to queue with priority and deduplication
   async enqueue<T>(
     key: string,
     execute: () => Promise<T>,
@@ -41,9 +47,10 @@ class RequestQueue {
       maxRetries?: number;
       cacheTTL?: number;
       skipCache?: boolean;
+      deduplicate?: boolean;
     } = {}
   ): Promise<T> {
-    const { priority = 1, maxRetries = 3, cacheTTL = 60000, skipCache = false } = options;
+    const { priority = 1, maxRetries = 3, cacheTTL = 60000, skipCache = false, deduplicate = true } = options;
 
     // Check cache first
     if (!skipCache) {
@@ -54,12 +61,21 @@ class RequestQueue {
       }
     }
 
+    // Check for in-flight duplicate request (deduplication)
+    if (deduplicate) {
+      const inFlight = this.inFlightRequests.get(key);
+      if (inFlight && Date.now() - inFlight.timestamp < 30000) {
+        console.log(`[RequestQueue] Deduplicating request: ${key}`);
+        return inFlight.promise as Promise<T>;
+      }
+    }
+
     // Check circuit breaker
     if (this.isCircuitOpen()) {
       throw new Error('Service temporarily unavailable. Please try again later.');
     }
 
-    return new Promise((resolve, reject) => {
+    const requestPromise = new Promise<T>((resolve, reject) => {
       const request: QueuedRequest = {
         id: key,
         execute: async () => {
@@ -69,8 +85,14 @@ class RequestQueue {
           }
           return result;
         },
-        resolve,
-        reject,
+        resolve: (value) => {
+          this.inFlightRequests.delete(key);
+          resolve(value);
+        },
+        reject: (error) => {
+          this.inFlightRequests.delete(key);
+          reject(error);
+        },
         retries: maxRetries,
         priority,
       };
@@ -85,6 +107,16 @@ class RequestQueue {
 
       this.processQueue();
     });
+
+    // Track in-flight request for deduplication
+    if (deduplicate) {
+      this.inFlightRequests.set(key, {
+        promise: requestPromise,
+        timestamp: Date.now(),
+      });
+    }
+
+    return requestPromise;
   }
 
   private async processQueue() {
