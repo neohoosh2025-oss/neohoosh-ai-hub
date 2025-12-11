@@ -444,8 +444,37 @@ export const AiPanel = ({ onClose }: AiPanelProps) => {
                   <span className="text-[#71717a] text-xs">Building your project...</span>
                 </div>
               ) : (
-                <>
-                  <div className="whitespace-pre-wrap leading-relaxed text-[13px]">{msg.content}</div>
+              <>
+                  <div className="whitespace-pre-wrap leading-relaxed text-[13px]">
+                    {msg.content.split('```').map((part, partIdx) => {
+                      if (partIdx % 2 === 1) {
+                        // Code block
+                        const lines = part.split('\n');
+                        const language = lines[0] || 'code';
+                        const code = lines.slice(1).join('\n');
+                        return (
+                          <div key={partIdx} className="my-3 rounded-xl overflow-hidden bg-[#0d0d10] border border-[rgba(255,255,255,0.08)]">
+                            <div className="flex items-center justify-between px-4 py-2 bg-[rgba(255,255,255,0.03)] border-b border-[rgba(255,255,255,0.06)]">
+                              <span className="text-[10px] font-mono text-[#8b5cf6] uppercase tracking-wider">{language}</span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(code);
+                                  toast.success('Code copied!');
+                                }}
+                                className="text-[#52525b] hover:text-[#fafafa] transition-colors"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            <pre className="p-4 overflow-x-auto text-[12px] leading-relaxed" dir="ltr">
+                              <code className="text-[#e4e4e7] font-mono">{code}</code>
+                            </pre>
+                          </div>
+                        );
+                      }
+                      return <span key={partIdx}>{part}</span>;
+                    })}
+                  </div>
                   
                   {msg.operations && msg.operations.length > 0 && renderOperationsList(msg.operations, msg.applied)}
                   
