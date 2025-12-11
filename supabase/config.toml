@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.neoforge-ai]
 verify_jwt = false
+
+[functions.cache-cleanup]
+verify_jwt = false
+
+[functions.cache-warming]
+verify_jwt = false
