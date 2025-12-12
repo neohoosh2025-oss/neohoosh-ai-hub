@@ -5,9 +5,11 @@ import {
   Bot, 
   Wand2, 
   BookOpen, 
-  Settings
+  Settings,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/neohoosh-logo-new.png";
 
 interface PWALayoutProps {
   children: ReactNode;
@@ -20,6 +22,7 @@ interface PWALayoutProps {
 
 const navItems = [
   { icon: Bot, label: "چت", href: "/chat", path: "/chat" },
+  { icon: Users, label: "نئوهای", href: "/neohi", path: "/neohi" },
   { icon: Wand2, label: "ابزارها", href: "/tools", path: "/tools" },
   { icon: BookOpen, label: "مقالات", href: "/articles", path: "/articles" },
   { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
@@ -42,7 +45,11 @@ export function PWALayout({
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-3">
-              {headerLeft}
+              {headerLeft || (
+                <Link to="/" className="flex items-center gap-2">
+                  <img src={logo} alt="نئوهوش" className="w-8 h-8" />
+                </Link>
+              )}
             </div>
             {headerTitle && (
               <h1 className="font-semibold text-lg absolute left-1/2 -translate-x-1/2">
@@ -67,9 +74,10 @@ export function PWALayout({
       {/* Telegram-style Bottom Navigation */}
       {showBottomNav && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
-          <div className="flex items-center justify-around h-16 px-4 max-w-lg mx-auto">
+          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path || 
+                (item.path === "/neohi" && location.pathname.startsWith("/neohi"));
               const Icon = item.icon;
               
               return (
@@ -77,7 +85,7 @@ export function PWALayout({
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[64px] relative"
+                    "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[56px] relative"
                   )}
                 >
                   <motion.div
@@ -88,9 +96,15 @@ export function PWALayout({
                       "w-6 h-6 transition-colors",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )} />
+                    {isActive && (
+                      <motion.div
+                        layoutId="nav-indicator"
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                      />
+                    )}
                   </motion.div>
                   <span className={cn(
-                    "text-[11px] mt-1 font-medium transition-colors",
+                    "text-[10px] mt-1 font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}>
                     {item.label}

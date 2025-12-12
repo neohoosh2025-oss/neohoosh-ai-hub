@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Clock, Calendar, Search, Grid3x3, List, Sparkles, BookOpen } from "lucide-react";
+import { Clock, Calendar, Search, Grid3x3, List, BookOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
+import { PWALayout } from "@/components/layouts/PWALayout";
 
 interface ArticleTranslation {
   language: string;
@@ -93,7 +94,7 @@ const Articles = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <PWALayout>
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
         <div className="px-4 py-4">
@@ -236,7 +237,7 @@ const Articles = () => {
           </div>
         )}
       </div>
-    </div>
+    </PWALayout>
   );
 };
 
