@@ -621,6 +621,52 @@ All colors MUST be HSL.
     }
   }
 
+  /* ===== SONNER TOAST CUSTOM STYLES ===== */
+  [data-sonner-toaster] {
+    --normal-bg: hsl(var(--background));
+    --normal-border: hsl(var(--border));
+    --normal-text: hsl(var(--foreground));
+    --success-bg: hsl(142 76% 36%);
+    --success-border: hsl(142 76% 30%);
+    --success-text: white;
+    --error-bg: hsl(0 84% 60%);
+    --error-border: hsl(0 84% 50%);
+    --error-text: white;
+    --warning-bg: hsl(38 92% 50%);
+    --warning-border: hsl(38 92% 40%);
+    --warning-text: hsl(0 0% 0%);
+    font-family: 'Vazirmatn', sans-serif !important;
+  }
+
+  [data-sonner-toast] {
+    @apply !rounded-2xl !border !border-border/50 !shadow-xl backdrop-blur-xl;
+    font-family: 'Vazirmatn', sans-serif !important;
+  }
+
+  [data-sonner-toast][data-type="success"] {
+    @apply !bg-green-500/90 !text-white !border-green-600/50;
+  }
+
+  [data-sonner-toast][data-type="error"] {
+    @apply !bg-red-500/90 !text-white !border-red-600/50;
+  }
+
+  [data-sonner-toast][data-type="warning"] {
+    @apply !bg-amber-500/90 !text-black !border-amber-600/50;
+  }
+
+  [data-sonner-toast] [data-title] {
+    @apply !font-semibold !text-sm;
+  }
+
+  [data-sonner-toast] [data-description] {
+    @apply !text-sm !opacity-90;
+  }
+
+  [data-sonner-toast] [data-button] {
+    @apply !bg-white/20 !text-current !rounded-xl !font-medium hover:!bg-white/30 !transition-colors;
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     *,

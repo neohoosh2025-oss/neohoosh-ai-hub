@@ -118,28 +118,30 @@ const Index = () => {
       e.preventDefault();
       setDeferredPrompt(e);
       
-      toast(
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-            <Download className="w-5 h-5 text-primary" />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-sm">نصب نئوهوش</p>
-            <p className="text-xs text-muted-foreground">برای دسترسی سریع‌تر نصب کنید</p>
-          </div>
-        </div>,
-        {
-          action: {
-            label: "نصب",
-            onClick: async () => {
-              if (e) {
+      toast.custom(
+        (t) => (
+          <div className="bg-background border border-border/50 rounded-2xl shadow-xl p-4 max-w-sm w-full flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg">
+              <img src={logo} alt="نئوهوش" className="w-8 h-8" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground">نصب نئوهوش</p>
+              <p className="text-sm text-muted-foreground truncate">برای دسترسی سریع‌تر نصب کنید</p>
+            </div>
+            <Button 
+              size="sm" 
+              className="rounded-xl px-4 h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md"
+              onClick={async () => {
+                toast.dismiss(t);
                 await (e as any).prompt();
                 setDeferredPrompt(null);
-              }
-            }
-          },
-          duration: 10000,
-        }
+              }}
+            >
+              نصب
+            </Button>
+          </div>
+        ),
+        { duration: 15000 }
       );
     };
     window.addEventListener('beforeinstallprompt', handler);
