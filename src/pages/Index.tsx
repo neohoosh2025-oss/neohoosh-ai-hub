@@ -16,16 +16,16 @@ import {
   BookOpen,
   Users,
   Volume2,
-  User,
-  Bell,
+  Settings,
   WifiOff,
   Download
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/neohoosh-logo-new.png";
 
 const Index = () => {
+  const location = useLocation();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
@@ -170,6 +170,14 @@ const Index = () => {
     }
   ];
 
+  // Telegram-style navigation items
+  const navItems = [
+    { icon: Bot, label: "چت", href: "/chat", path: "/chat" },
+    { icon: Wand2, label: "ابزارها", href: "/tools", path: "/tools" },
+    { icon: BookOpen, label: "مقالات", href: "/articles", path: "/articles" },
+    { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
+  ];
+
   return (
     <div className="min-h-screen bg-background pb-24 safe-area-inset">
       {/* Offline Indicator */}
@@ -287,9 +295,9 @@ const Index = () => {
         )}
       </AnimatePresence>
 
-      {/* App Header */}
+      {/* App Header - Clean without profile/notification buttons */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-center px-4 py-3">
           <div className="flex items-center gap-3">
             <motion.img 
               src={logo} 
@@ -302,17 +310,6 @@ const Index = () => {
               <h1 className="font-bold text-lg">نئوهوش</h1>
               <p className="text-xs text-muted-foreground">سوپراپلیکیشن AI</p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-            </Button>
-            <Link to="/profile">
-              <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
-              </Button>
-            </Link>
           </div>
         </div>
       </header>
@@ -414,24 +411,35 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Telegram-style Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
-        <div className="flex items-center justify-around h-16 px-2">
-          {[
-            { icon: Bot, label: "هوش", href: "/chat", active: false },
-            { icon: Wand2, label: "ابزارها", href: "/tools", active: false },
-            { icon: BookOpen, label: "مقالات", href: "/articles", active: false },
-            { icon: User, label: "پروفایل", href: "/profile", active: false },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              to={item.href}
-              className="flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[60px] text-muted-foreground hover:text-primary hover:bg-primary/5"
-            >
-              <item.icon className="w-5 h-5" />
-              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
-            </Link>
-          ))}
+        <div className="flex items-center justify-around h-16 px-4 max-w-lg mx-auto">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.href}
+                to={item.href}
+                className="flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[64px] relative"
+              >
+                <motion.div
+                  whileTap={{ scale: 0.9 }}
+                  className="relative"
+                >
+                  <Icon className={`w-6 h-6 transition-colors ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
+                </motion.div>
+                <span className={`text-[11px] mt-1 font-medium transition-colors ${
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                }`}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       </nav>
     </div>
