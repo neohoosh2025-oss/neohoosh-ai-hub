@@ -9,8 +9,6 @@ import {
   Mic,
   Code,
   Sparkles,
-  X,
-  Download,
   ChevronLeft,
   ChevronRight,
   Bot,
@@ -18,23 +16,19 @@ import {
   BookOpen,
   Users,
   Volume2,
-  Zap,
   User,
   Bell,
-  Home,
-  Compass,
   WifiOff,
-  BellRing
+  Download
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import logo from "@/assets/neohoosh-logo-new.png";
 
 const Index = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
-  const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
-  const [canInstall, setCanInstall] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
   // Check if first visit
@@ -46,33 +40,54 @@ const Index = () => {
     }
   }, []);
 
-  // Check if first visit
-  useEffect(() => {
-    const hasVisited = localStorage.getItem('neohoosh_visited');
-    if (!hasVisited) {
-      setShowOnboarding(true);
-      localStorage.setItem('neohoosh_visited', 'true');
-    }
-  }, []);
-
-  // Listen for install prompt
+  // Listen for install prompt and show as toast notification
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setCanInstall(true);
+      
+      // Show install toast notification
+      toast(
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <Download className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-sm">نصب نئوهوش</p>
+            <p className="text-xs text-muted-foreground">برای دسترسی سریع‌تر نصب کنید</p>
+          </div>
+        </div>,
+        {
+          action: {
+            label: "نصب",
+            onClick: async () => {
+              if (e) {
+                await (e as any).prompt();
+                setDeferredPrompt(null);
+              }
+            }
+          },
+          duration: 10000,
+        }
+      );
     };
     window.addEventListener('beforeinstallprompt', handler);
     
     const installedHandler = () => {
-      setCanInstall(false);
       setDeferredPrompt(null);
+      toast.success("نئوهوش با موفقیت نصب شد!");
     };
     window.addEventListener('appinstalled', installedHandler);
 
     // Network status
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("اتصال به اینترنت برقرار شد");
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.warning("شما آفلاین هستید");
+    };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
     setIsOnline(navigator.onLine);
@@ -84,22 +99,6 @@ const Index = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
-  // Show install banner when install is available
-  useEffect(() => {
-    if (canInstall) {
-      setShowInstallBanner(true);
-    }
-  }, [canInstall]);
-
-  const handleInstall = async () => {
-    if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      setDeferredPrompt(null);
-      setCanInstall(false);
-      setShowInstallBanner(false);
-    }
-  };
 
   // Onboarding slides
   const onboardingSlides = [
@@ -143,24 +142,31 @@ const Index = () => {
 
   // Quick Actions for Super App style
   const quickActions = [
-    { icon: MessageCircle, label: "چت با AI", href: "/chat", color: "bg-blue-500", description: "گفتگوی هوشمند" },
-    { icon: ImageIcon, label: "تولید تصویر", href: "/tools/image-generator", color: "bg-purple-500", description: "ساخت تصویر با AI" },
-    { icon: Mic, label: "صدا به متن", href: "/tools/voice-to-text", color: "bg-green-500", description: "تبدیل ویس به متن" },
-    { icon: Volume2, label: "متن به صدا", href: "/tools/text-to-voice", color: "bg-teal-500", description: "تبدیل متن به صوت" },
-    { icon: Code, label: "تولید کد", href: "/tools/code-generator", color: "bg-orange-500", description: "کدنویسی با AI" },
-    { icon: Users, label: "NEOHI", href: "/neohi", color: "bg-pink-500", description: "شبکه اجتماعی" },
-    { icon: BookOpen, label: "مقالات", href: "/articles", color: "bg-indigo-500", description: "آموزش و دانش" },
-    { icon: Wand2, label: "ابزارها", href: "/tools", color: "bg-amber-500", description: "همه ابزارها" },
+    { icon: MessageCircle, label: "چت با AI", href: "/chat", gradient: "from-blue-500 to-cyan-500", description: "گفتگوی هوشمند" },
+    { icon: ImageIcon, label: "تولید تصویر", href: "/tools/image-generator", gradient: "from-purple-500 to-pink-500", description: "ساخت تصویر با AI" },
+    { icon: Mic, label: "صدا به متن", href: "/tools/voice-to-text", gradient: "from-green-500 to-emerald-500", description: "تبدیل ویس به متن" },
+    { icon: Volume2, label: "متن به صدا", href: "/tools/text-to-voice", gradient: "from-teal-500 to-cyan-500", description: "تبدیل متن به صوت" },
+    { icon: Code, label: "تولید کد", href: "/tools/code-generator", gradient: "from-orange-500 to-amber-500", description: "کدنویسی با AI" },
+    { icon: Users, label: "NEOHI", href: "/neohi", gradient: "from-pink-500 to-rose-500", description: "شبکه اجتماعی" },
+    { icon: BookOpen, label: "مقالات", href: "/articles", gradient: "from-indigo-500 to-blue-500", description: "آموزش و دانش" },
+    { icon: Wand2, label: "ابزارها", href: "/tools", gradient: "from-amber-500 to-yellow-500", description: "همه ابزارها" },
   ];
 
-  // Featured services (without NeoForge and VoiceCall)
+  // Featured services
   const featuredServices = [
     {
       title: "NEOHI",
       description: "شبکه اجتماعی هوشمند",
       icon: Users,
       href: "/neohi",
-      gradient: "from-blue-600 to-cyan-600"
+      gradient: "from-pink-600 via-rose-500 to-red-500"
+    },
+    {
+      title: "چت‌بات",
+      description: "گفتگو با هوش مصنوعی",
+      icon: MessageCircle,
+      href: "/chat",
+      gradient: "from-blue-600 via-cyan-500 to-teal-500"
     }
   ];
 
@@ -173,48 +179,11 @@ const Index = () => {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-amber-500 p-3 safe-area-top"
+            className="fixed top-0 left-0 right-0 z-[60] bg-warning p-3 safe-area-top"
           >
-            <div className="flex items-center justify-center gap-2 text-white text-sm">
+            <div className="flex items-center justify-center gap-2 text-warning-foreground text-sm">
               <WifiOff className="w-4 h-4" />
               <span>شما آفلاین هستید - برخی امکانات محدود است</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* PWA Install Banner */}
-      <AnimatePresence>
-        {showInstallBanner && isOnline && (
-          <motion.div
-            initial={{ y: -100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -100, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary to-secondary p-4 safe-area-top"
-          >
-            <div className="flex items-center justify-between max-w-lg mx-auto">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                  <Download className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="text-white font-medium text-sm">نصب نئوهوش</p>
-                  <p className="text-white/80 text-xs">دسترسی سریع‌تر از صفحه اصلی</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="bg-white text-primary hover:bg-white/90"
-                  onClick={handleInstall}
-                >
-                  نصب
-                </Button>
-                <button onClick={() => setShowInstallBanner(false)} className="p-2 text-white/80 hover:text-white">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
             </div>
           </motion.div>
         )}
@@ -237,24 +206,34 @@ const Index = () => {
                 exit={{ opacity: 0, x: -50 }}
                 className="text-center max-w-sm"
               >
-                <div className={`w-24 h-24 mx-auto mb-8 rounded-3xl bg-gradient-to-br ${onboardingSlides[onboardingStep].color} flex items-center justify-center shadow-2xl`}>
+                <motion.div 
+                  className={`w-28 h-28 mx-auto mb-8 rounded-3xl bg-gradient-to-br ${onboardingSlides[onboardingStep].color} flex items-center justify-center shadow-2xl`}
+                  animate={{ 
+                    boxShadow: [
+                      "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                      "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+                      "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
                   {(() => {
                     const IconComponent = onboardingSlides[onboardingStep].icon;
-                    return <IconComponent className="w-12 h-12 text-white" />;
+                    return <IconComponent className="w-14 h-14 text-white" />;
                   })()}
-                </div>
-                <h2 className="text-2xl font-bold mb-4">{onboardingSlides[onboardingStep].title}</h2>
-                <p className="text-muted-foreground leading-relaxed">{onboardingSlides[onboardingStep].description}</p>
+                </motion.div>
+                <h2 className="text-3xl font-bold mb-4">{onboardingSlides[onboardingStep].title}</h2>
+                <p className="text-muted-foreground leading-relaxed text-lg">{onboardingSlides[onboardingStep].description}</p>
               </motion.div>
 
               {/* Progress Dots */}
-              <div className="flex gap-2 mt-10">
+              <div className="flex gap-2 mt-12">
                 {onboardingSlides.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => setOnboardingStep(i)}
-                    className={`w-2 h-2 rounded-full transition-all ${
-                      i === onboardingStep ? 'w-6 bg-primary' : 'bg-muted-foreground/30'
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      i === onboardingStep ? 'w-8 bg-primary' : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
                     }`}
                   />
                 ))}
@@ -267,7 +246,7 @@ const Index = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg"
                   onClick={() => setOnboardingStep(s => s - 1)}
                 >
                   <ChevronRight className="w-5 h-5 ml-2" />
@@ -277,7 +256,7 @@ const Index = () => {
               {onboardingStep < onboardingSlides.length - 1 ? (
                 <Button
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg"
                   onClick={() => setOnboardingStep(s => s + 1)}
                 >
                   بعدی
@@ -286,7 +265,7 @@ const Index = () => {
               ) : (
                 <Button
                   size="lg"
-                  className="flex-1"
+                  className="flex-1 h-14 text-lg bg-gradient-to-r from-primary to-secondary hover:opacity-90"
                   onClick={() => setShowOnboarding(false)}
                 >
                   <Sparkles className="w-5 h-5 ml-2" />
@@ -299,7 +278,7 @@ const Index = () => {
             {onboardingStep < onboardingSlides.length - 1 && (
               <button
                 onClick={() => setShowOnboarding(false)}
-                className="absolute top-6 left-6 text-muted-foreground hover:text-foreground text-sm"
+                className="absolute top-6 left-6 text-muted-foreground hover:text-foreground text-sm transition-colors"
               >
                 رد شدن
               </button>
@@ -312,7 +291,13 @@ const Index = () => {
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <img src={logo} alt="NeoHoosh" className="w-10 h-10" />
+            <motion.img 
+              src={logo} 
+              alt="NeoHoosh" 
+              className="w-11 h-11"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            />
             <div>
               <h1 className="font-bold text-lg">نئوهوش</h1>
               <p className="text-xs text-muted-foreground">سوپراپلیکیشن AI</p>
@@ -321,7 +306,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
             </Button>
             <Link to="/profile">
               <Button variant="ghost" size="icon">
@@ -338,27 +323,29 @@ const Index = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Card className="bg-gradient-to-br from-primary via-secondary to-accent text-white overflow-hidden relative">
+          <Card className="bg-gradient-to-br from-primary via-secondary to-accent text-white overflow-hidden relative border-0 shadow-xl">
             <CardContent className="p-6 relative z-10">
-              <Badge className="bg-white/20 text-white border-none mb-4">
+              <Badge className="bg-white/20 text-white border-none mb-4 backdrop-blur-sm">
                 <Sparkles className="w-3 h-3 ml-1" />
                 جدید
               </Badge>
               <h2 className="text-2xl font-bold mb-2">با AI گفتگو کن</h2>
-              <p className="text-white/80 text-sm mb-4">
+              <p className="text-white/80 text-sm mb-5">
                 دستیار هوشمند ۲۴ ساعته در خدمت شماست
               </p>
               <Link to="/chat">
-                <Button className="bg-white text-primary hover:bg-white/90">
+                <Button className="bg-white text-primary hover:bg-white/90 shadow-lg">
                   <MessageCircle className="w-4 h-4 ml-2" />
                   شروع گفتگو
                 </Button>
               </Link>
             </CardContent>
             {/* Decorative circles */}
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full" />
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-xl" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-white/5 rounded-full" />
           </Card>
         </motion.div>
 
@@ -366,12 +353,12 @@ const Index = () => {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-lg">ابزارهای سریع</h3>
-            <Link to="/tools" className="text-primary text-sm flex items-center gap-1">
+            <Link to="/tools" className="text-primary text-sm flex items-center gap-1 hover:underline">
               همه
               <ChevronLeft className="w-4 h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             {quickActions.map((action, i) => (
               <motion.div
                 key={action.label}
@@ -380,11 +367,15 @@ const Index = () => {
                 transition={{ delay: i * 0.05 }}
               >
                 <Link to={action.href}>
-                  <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-colors">
-                    <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center shadow-lg`}>
+                  <div className="flex flex-col items-center gap-2 p-3 rounded-2xl hover:bg-muted/50 transition-all duration-300 group">
+                    <motion.div 
+                      className={`w-14 h-14 bg-gradient-to-br ${action.gradient} rounded-2xl flex items-center justify-center shadow-lg`}
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
                       <action.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <span className="text-xs font-medium text-center">{action.label}</span>
+                    </motion.div>
+                    <span className="text-xs font-medium text-center group-hover:text-primary transition-colors">{action.label}</span>
                   </div>
                 </Link>
               </motion.div>
@@ -404,11 +395,14 @@ const Index = () => {
                 transition={{ delay: 0.2 + i * 0.1 }}
               >
                 <Link to={service.href}>
-                  <Card className={`bg-gradient-to-br ${service.gradient} text-white border-none overflow-hidden group`}>
+                  <Card className={`bg-gradient-to-br ${service.gradient} text-white border-none overflow-hidden group shadow-lg hover:shadow-xl transition-all duration-300`}>
                     <CardContent className="p-5">
-                      <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                      <motion.div 
+                        className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center mb-3"
+                        whileHover={{ scale: 1.1, rotate: -5 }}
+                      >
                         <service.icon className="w-6 h-6" />
-                      </div>
+                      </motion.div>
                       <h4 className="font-bold text-lg">{service.title}</h4>
                       <p className="text-white/80 text-sm">{service.description}</p>
                     </CardContent>
@@ -418,97 +412,24 @@ const Index = () => {
             ))}
           </div>
         </section>
-
-        {/* Install App Section (for manual install) */}
-        {!showInstallBanner && (
-          <section>
-            <Card className="border-2 border-dashed border-primary/30 bg-primary/5">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-2xl flex items-center justify-center">
-                  <Download className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="font-bold text-lg mb-2">نصب اپلیکیشن</h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  برای دسترسی سریع‌تر، نئوهوش رو روی صفحه اصلی گوشیت نصب کن
-                </p>
-                <div className="text-xs text-muted-foreground space-y-2">
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="font-bold">iOS:</span>
-                    از منوی Share گزینه Add to Home Screen
-                  </p>
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="font-bold">Android:</span>
-                    از منوی مرورگر گزینه Install App
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-        )}
-
-        {/* Quick Tips */}
-        <section>
-          <h3 className="font-bold text-lg mb-4">نکات کاربردی</h3>
-          <div className="space-y-3">
-            {[
-              { icon: Zap, text: "برای نتیجه بهتر، سوالات واضح و دقیق بپرسید" },
-              { icon: MessageCircle, text: "هم فارسی و هم انگلیسی پشتیبانی می‌شه" },
-              { icon: Sparkles, text: "از پرامپت‌های خلاقانه استفاده کنید" }
-            ].map((tip, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className="flex items-center gap-3 p-4 bg-muted/50 rounded-xl"
-              >
-                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <tip.icon className="w-5 h-5 text-primary" />
-                </div>
-                <p className="text-sm">{tip.text}</p>
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        {/* Reset Onboarding Button (for testing) */}
-        <div className="text-center">
-          <button
-            onClick={() => {
-              localStorage.removeItem('neohoosh_visited');
-              setShowOnboarding(true);
-              setOnboardingStep(0);
-            }}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            مشاهده مجدد راهنما
-          </button>
-        </div>
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom z-40">
-        <div className="flex items-center justify-around py-2">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
+        <div className="flex items-center justify-around h-16 px-2">
           {[
-            { icon: Home, label: "خانه", href: "/", active: true },
-            { icon: Compass, label: "کاوش", href: "/tools" },
-            { icon: MessageCircle, label: "چت", href: "/chat", primary: true },
-            { icon: BookOpen, label: "مقالات", href: "/articles" },
-            { icon: User, label: "پروفایل", href: "/profile" }
+            { icon: Bot, label: "هوش", href: "/chat", active: false },
+            { icon: Wand2, label: "ابزارها", href: "/tools", active: false },
+            { icon: BookOpen, label: "مقالات", href: "/articles", active: false },
+            { icon: User, label: "پروفایل", href: "/profile", active: false },
           ].map((item) => (
             <Link
               key={item.label}
               to={item.href}
-              className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
-                item.primary 
-                  ? 'bg-primary text-white -mt-4 shadow-lg' 
-                  : item.active 
-                    ? 'text-primary' 
-                    : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className="flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[60px] text-muted-foreground hover:text-primary hover:bg-primary/5"
             >
-              <item.icon className={`${item.primary ? 'w-6 h-6' : 'w-5 h-5'}`} />
-              <span className={`text-xs ${item.primary ? 'font-medium' : ''}`}>{item.label}</span>
+              <item.icon className="w-5 h-5" />
+              <span className="text-[10px] mt-1 font-medium">{item.label}</span>
             </Link>
           ))}
         </div>

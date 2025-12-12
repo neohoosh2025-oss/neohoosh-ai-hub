@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Phone, Cpu, Orbit, Sparkles, Eye, EyeOff } from "lucide-react";
+import { Cpu, Eye, EyeOff, Loader2 } from "lucide-react";
 import type { Session, User } from "@supabase/supabase-js";
 
 const Auth = () => {
@@ -108,170 +109,167 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Quantum Processor Background Animation */}
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden bg-background">
+      {/* Modern Background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neohoosh-blue/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-        
-        {/* Quantum Circuit Lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="circuit-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="hsl(var(--primary))" />
-              <stop offset="100%" stopColor="hsl(var(--neohoosh-blue))" />
-            </linearGradient>
-          </defs>
-          <g className="animate-pulse">
-            <line x1="0" y1="200" x2="400" y2="200" stroke="url(#circuit-gradient)" strokeWidth="2" strokeDasharray="5,5" className="animate-dash" />
-            <circle cx="200" cy="200" r="30" stroke="url(#circuit-gradient)" strokeWidth="2" fill="none" className="animate-spin-slow" />
-            <line x1="600" y1="400" x2="1000" y2="400" stroke="url(#circuit-gradient)" strokeWidth="2" strokeDasharray="5,5" className="animate-dash" />
-            <circle cx="800" cy="400" r="40" stroke="url(#circuit-gradient)" strokeWidth="2" fill="none" className="animate-spin-slow" />
-          </g>
-        </svg>
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(var(--primary)/0.05),transparent_50%)]" />
       </div>
 
-      <div className="w-full max-w-md relative">
-        {/* Quantum Processor Icon */}
-        <div className="flex justify-center mb-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative"
+      >
+        {/* Logo */}
+        <motion.div 
+          className="flex justify-center mb-8"
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+        >
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-primary to-neohoosh-blue p-6 rounded-2xl">
-              <Cpu className="h-12 w-12 text-white animate-pulse" />
-              <Orbit className="h-6 w-6 text-white absolute top-2 right-2 animate-spin-slow" />
-              <Sparkles className="h-4 w-4 text-white absolute bottom-2 left-2 animate-pulse" />
+            <motion.div 
+              className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+            <div className="relative bg-gradient-to-br from-primary to-secondary p-5 rounded-2xl shadow-xl">
+              <Cpu className="h-10 w-10 text-white" />
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-background/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-8 shadow-2xl">
-          <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary to-neohoosh-blue bg-clip-text text-transparent">
-            {isForgotPassword ? "بازیابی رمز عبور" : (t("auth.title") || "ورود به سیستم")}
-          </h1>
-          <p className="text-center text-muted-foreground mb-8">
-            {isForgotPassword 
-              ? "ایمیل خود را وارد کنید تا لینک بازیابی برایتان ارسال شود"
-              : (t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید")
-            }
-          </p>
-
-          <form onSubmit={handleAuth} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">ایمیل</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                disabled={loading}
-                className="bg-background/50"
-                dir="ltr"
-              />
-            </div>
-            
-            {!isForgotPassword && (
+        <Card className="border-border/50 shadow-2xl backdrop-blur-sm bg-card/80">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-2xl font-bold">
+              {isForgotPassword ? "بازیابی رمز عبور" : (t("auth.title") || "ورود به نئوهوش")}
+            </CardTitle>
+            <CardDescription>
+              {isForgotPassword 
+                ? "ایمیل خود را وارد کنید"
+                : (t("auth.subtitle") || "به دنیای هوش مصنوعی خوش آمدید")
+              }
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleAuth} className="space-y-4">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password">رمز عبور</Label>
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="h-auto p-0 text-xs text-primary"
-                    onClick={() => setIsForgotPassword(true)}
-                  >
-                    فراموشی رمز عبور؟
-                  </Button>
-                </div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    disabled={loading}
-                    className="bg-background/50 pl-10"
-                    dir="ltr"
-                    minLength={6}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                    disabled={loading}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
+                <Label htmlFor="email">ایمیل</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  disabled={loading}
+                  className="h-12"
+                  dir="ltr"
+                />
               </div>
-            )}
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "در حال پردازش..." : (
-                isForgotPassword ? "ارسال لینک بازیابی" : 
-                isSignUp ? "ثبت نام" : "ورود"
+              
+              {!isForgotPassword && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">رمز عبور</Label>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="h-auto p-0 text-xs text-primary"
+                      onClick={() => setIsForgotPassword(true)}
+                    >
+                      فراموشی رمز عبور؟
+                    </Button>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      disabled={loading}
+                      className="h-12 pl-10"
+                      dir="ltr"
+                      minLength={6}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
               )}
-            </Button>
-            
-            {!isForgotPassword && (
-              <Button 
-                type="button" 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => setIsSignUp(!isSignUp)}
-                disabled={loading}
-              >
-                {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
-              </Button>
-            )}
-            
-            {isForgotPassword && (
-              <Button 
-                type="button" 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => {
-                  setIsForgotPassword(false);
-                  setEmail("");
-                }}
-                disabled={loading}
-              >
-                بازگشت به صفحه ورود
-              </Button>
-            )}
-          </form>
-        </div>
-      </div>
 
-      <style>{`
-        @keyframes dash {
-          to {
-            stroke-dashoffset: -100;
-          }
-        }
-        .animate-dash {
-          animation: dash 10s linear infinite;
-        }
-        .animate-spin-slow {
-          animation: spin 20s linear infinite;
-        }
-        .bg-grid-pattern {
-          background-image: 
-            linear-gradient(to right, hsl(var(--primary) / 0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, hsl(var(--primary) / 0.1) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-      `}</style>
+              <Button 
+                type="submit" 
+                className="w-full h-12 text-base bg-gradient-to-r from-primary to-secondary hover:opacity-90" 
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  isForgotPassword ? "ارسال لینک بازیابی" : 
+                  isSignUp ? "ثبت نام" : "ورود"
+                )}
+              </Button>
+              
+              {!isForgotPassword && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  disabled={loading}
+                >
+                  {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
+                </Button>
+              )}
+              
+              {isForgotPassword && (
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setEmail("");
+                  }}
+                  disabled={loading}
+                >
+                  بازگشت به صفحه ورود
+                </Button>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+        
+        {/* Back to home */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-center mt-6"
+        >
+          <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            بازگشت به صفحه اصلی
+          </Link>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
