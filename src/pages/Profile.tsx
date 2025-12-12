@@ -12,7 +12,7 @@ import {
   Calendar, Activity, TrendingUp, Zap, ChevronRight,
   Smartphone, Clock, CheckCircle2, AlertCircle, Edit2,
   Crown, BarChart3, MessageSquare, Sparkles,
-  Wifi, WifiOff, Download, Camera, Save
+  Wifi, WifiOff, Download, Camera, Save, Bell, BellOff
 } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
 import { PWALayout } from "@/components/layouts/PWALayout";
@@ -27,7 +27,8 @@ interface UserStats {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { isInstalled, canInstall, installPrompt, isOnline } = usePWA();
+  const { isInstalled, canInstall, installPrompt, isOnline, isPushSupported, isNotificationsEnabled, toggleNotifications, notificationPermission } = usePWA();
+  const [notifLoading, setNotifLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(true);
@@ -484,6 +485,59 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Push Notifications */}
+              {isPushSupported && (
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isNotificationsEnabled ? 'bg-primary/10' : 'bg-muted'}`}>
+                      {isNotificationsEnabled ? <Bell className="w-5 h-5 text-primary" /> : <BellOff className="w-5 h-5 text-muted-foreground" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">اعلان‌ها</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notificationPermission === 'granted' ? 'فعال' : notificationPermission === 'denied' ? 'مسدود شده' : 'غیرفعال'}
+                      </p>
+                    </div>
+                  </div>
+                  {notificationPermission !== 'denied' && (
+                    <Button 
+                      size="sm" 
+                      variant={isNotificationsEnabled ? "outline" : "default"}
+                      onClick={async () => {
+                        setNotifLoading(true);
+                        try {
+                          const enabled = await toggleNotifications();
+                          toast.success(enabled ? 'اعلان‌ها فعال شد' : 'اعلان‌ها غیرفعال شد');
+                        } catch {
+                          toast.error('خطا در تنظیم اعلان‌ها');
+                        } finally {
+                          setNotifLoading(false);
+                        }
+                      }}
+                      disabled={notifLoading}
+                      className="gap-1"
+                    >
+                      {notifLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : isNotificationsEnabled ? (
+                        <>
+                          <BellOff className="w-4 h-4" />
+                          غیرفعال
+                        </>
+                      ) : (
+                        <>
+                          <Bell className="w-4 h-4" />
+                          فعال‌سازی
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  {notificationPermission === 'denied' && (
+                    <Badge variant="destructive" className="text-xs">مسدود</Badge>
+                  )}
+                </div>
+              )}
 
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">

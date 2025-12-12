@@ -19,9 +19,11 @@ export interface UsePWAReturn {
   // Notifications
   notificationPermission: NotificationPermission;
   isPushSupported: boolean;
+  isNotificationsEnabled: boolean;
   requestPermission: () => Promise<NotificationPermission>;
   subscribe: () => Promise<boolean>;
   unsubscribe: () => Promise<boolean>;
+  toggleNotifications: () => Promise<boolean>;
   
   // Network
   isOnline: boolean;
@@ -124,15 +126,38 @@ export const usePWA = (): UsePWAReturn => {
     return await unsubscribeFromPush();
   }, []);
 
+  // Toggle notifications on/off
+  const toggleNotifications = useCallback(async () => {
+    if (notificationPermission === 'granted') {
+      // Already granted, try to unsubscribe
+      const success = await unsubscribeFromPush();
+      return !success; // Return false if successfully unsubscribed (notifications now off)
+    } else if (notificationPermission === 'default') {
+      // Not yet asked, request permission
+      const permission = await requestNotificationPermission();
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        await subscribeToPush();
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }, [notificationPermission]);
+
+  const isNotificationsEnabled = notificationPermission === 'granted';
+
   return {
     isInstalled,
     canInstall,
     installPrompt: canInstall ? installPrompt : null,
     notificationPermission,
     isPushSupported: pushSupported,
+    isNotificationsEnabled,
     requestPermission,
     subscribe,
     unsubscribe,
+    toggleNotifications,
     isOnline: online
   };
 };
