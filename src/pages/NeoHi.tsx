@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { ChatView } from "@/components/neohi/ChatView";
@@ -9,6 +9,13 @@ import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
 import { Sidebar } from "@/components/neohi/Sidebar";
 import StoriesPage from "@/pages/StoriesPage";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Plus, MessageCircle, Users, Camera, Settings, Search } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import BottomNavigation from "@/components/neohi/BottomNavigation";
+import { Link } from "react-router-dom";
 
 interface Chat {
   id: string;
@@ -34,6 +41,7 @@ export default function NeoHi() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     checkUser();
@@ -51,8 +59,8 @@ export default function NeoHi() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
-          title: "Login Required",
-          description: "Please login to use NeoHi",
+          title: "ورود لازم است",
+          description: "برای استفاده از NeoHi وارد شوید",
           variant: "destructive",
         });
         navigate("/auth");
@@ -70,7 +78,7 @@ export default function NeoHi() {
         await supabase.from("neohi_users").insert({
           id: user.id,
           username: user.email?.split("@")[0] || "user",
-          display_name: user.email?.split("@")[0] || "User",
+          display_name: user.email?.split("@")[0] || "کاربر",
         });
       }
     } catch (error) {
@@ -89,13 +97,7 @@ export default function NeoHi() {
         chat_id,
         is_muted,
         last_read_at,
-        chats:neohi_chats(
-          id,
-          type,
-          name,
-          avatar_url,
-          last_message_at
-        )
+        chats:neohi_chats(id, type, name, avatar_url, last_message_at)
       `)
       .eq("user_id", user.id)
       .order("last_read_at", { ascending: false });
@@ -108,7 +110,6 @@ export default function NeoHi() {
           .map(async (chat: any) => {
             let chatData = { ...chat };
 
-            // For DMs, get the other user's info
             if (chat.type === "dm") {
               const { data: members } = await supabase
                 .from("neohi_chat_members")
@@ -131,7 +132,6 @@ export default function NeoHi() {
               }
             }
 
-            // Get last message
             const { data: lastMessage } = await supabase
               .from("neohi_messages")
               .select("content, sender_id, message_type")
@@ -141,7 +141,6 @@ export default function NeoHi() {
               .limit(1)
               .maybeSingle();
 
-            // Get unread count - messages after last_read_at
             const chatMember = chatMembers.find((cm: any) => cm.chat_id === chat.id);
             const lastReadAt = chatMember?.last_read_at;
             
@@ -155,15 +154,6 @@ export default function NeoHi() {
                 .eq("is_deleted", false)
                 .gt("created_at", lastReadAt);
               unreadCount = count || 0;
-            } else {
-              // If no last_read_at, count all messages from others
-              const { count } = await supabase
-                .from("neohi_messages")
-                .select("*", { count: "exact", head: true })
-                .eq("chat_id", chat.id)
-                .neq("sender_id", user.id)
-                .eq("is_deleted", false);
-              unreadCount = count || 0;
             }
 
             return {
@@ -172,7 +162,7 @@ export default function NeoHi() {
                 ? {
                     content: lastMessage.message_type && lastMessage.message_type !== "text"
                       ? getMediaTypeLabel(lastMessage.message_type)
-                      : (lastMessage.content || "No message yet"),
+                      : (lastMessage.content || "پیامی نیست"),
                     is_read: lastMessage.sender_id === user.id,
                   }
                 : null,
@@ -195,39 +185,9 @@ export default function NeoHi() {
   const subscribeToChats = () => {
     const channel = supabase
       .channel("chat-updates")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "neohi_messages",
-        },
-        () => {
-          loadChats();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "neohi_chat_members",
-        },
-        () => {
-          loadChats();
-        }
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "neohi_chats",
-        },
-        () => {
-          loadChats();
-        }
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "neohi_messages" }, () => loadChats())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "neohi_chat_members" }, () => loadChats())
+      .on("postgres_changes", { event: "*", schema: "public", table: "neohi_chats" }, () => loadChats())
       .subscribe();
 
     return () => {
@@ -237,27 +197,12 @@ export default function NeoHi() {
 
   const getMediaTypeLabel = (messageType: string): string => {
     switch (messageType) {
-      case "image":
-        return "Photo";
-      case "voice":
-        return "Voice";
-      case "video":
-        return "Video";
-      case "file":
-        return "File";
-      case "audio":
-        return "Audio";
-      default:
-        return "Media";
+      case "image": return "📷 عکس";
+      case "voice": return "🎤 ویس";
+      case "video": return "🎬 ویدیو";
+      case "file": return "📎 فایل";
+      default: return "📎 فایل";
     }
-  };
-
-  const getChatName = (chat: Chat) => {
-    if (chat.name) return chat.name;
-    if (chat.type === "dm") return "Private Chat";
-    if (chat.type === "group") return "Group";
-    if (chat.type === "channel") return "Channel";
-    return "Chat";
   };
 
   const getTimeDisplay = (timestamp: string | null) => {
@@ -267,23 +212,23 @@ export default function NeoHi() {
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
 
     if (diffInHours < 24) {
-      return date.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
+      return date.toLocaleTimeString("fa-IR", { hour: "2-digit", minute: "2-digit" });
     } else {
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return date.toLocaleDateString("fa-IR", { month: "short", day: "numeric" });
     }
   };
 
+  const filteredChats = chats.filter(chat => 
+    chat.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
+      <div className="h-screen w-full bg-background flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 border-4 border-[hsl(var(--neohi-accent))] border-t-transparent rounded-full"
+          className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full"
         />
       </div>
     );
@@ -293,90 +238,134 @@ export default function NeoHi() {
   if (activeTab === "contacts") {
     return <ContactsPage onBack={() => navigate("/neohi")} />;
   }
-
   if (activeTab === "stories") {
     return <StoriesPage onBack={() => navigate("/neohi")} />;
   }
-
   if (activeTab === "settings") {
     return <ProfileSettings onBack={() => navigate("/neohi")} />;
   }
 
-  // If a chat is selected in mobile, show full screen chat view
+  // If a chat is selected on mobile
   if (selectedChatId && window.innerWidth < 768) {
     return (
       <ChatView
         chatId={selectedChatId}
         onBack={() => {
           setSelectedChatId(null);
-          loadChats(); // Reload to update unread counts
+          loadChats();
         }}
       />
     );
   }
 
-  // Main View - Sidebar + Chat/Welcome Screen
+  // Main Chat List View
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-row-reverse overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar
-        chats={chats}
-        selectedChatId={selectedChatId}
-        onChatSelect={(chatId) => {
-          setSelectedChatId(chatId);
-          // Clear unread count immediately
-          setChats(prev => prev.map(c => 
-            c.id === chatId ? { ...c, unread_count: 0 } : c
-          ));
-        }}
-        onNewChat={() => setShowNewChat(true)}
-      />
+    <div className="h-screen w-full bg-background flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
+        <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center gap-3">
+            <Link to="/">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="font-bold text-lg">NEOHI</h1>
+              <p className="text-[10px] text-muted-foreground">شبکه اجتماعی هوشمند</p>
+            </div>
+          </div>
+          
+          <Button
+            size="icon"
+            className="rounded-full bg-primary"
+            onClick={() => setShowNewChat(true)}
+          >
+            <Plus className="w-5 h-5" />
+          </Button>
+        </div>
+        
+        {/* Search */}
+        <div className="px-4 pb-3">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="جستجو در چت‌ها..."
+              className="pr-10 h-10 rounded-xl bg-muted/50 border-0"
+            />
+          </div>
+        </div>
+      </header>
 
-      {/* Chat Area or Welcome Screen */}
-      <div className="flex-1 overflow-hidden">
-        {selectedChatId ? (
-          <ChatView
-            chatId={selectedChatId}
-            onBack={() => setSelectedChatId(null)}
-          />
+      {/* Chat List */}
+      <div className="flex-1 overflow-y-auto pb-20">
+        {filteredChats.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+              <MessageCircle className="w-10 h-10 text-primary" />
+            </div>
+            <h3 className="font-bold text-lg mb-2">هنوز چتی نداری</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              یه چت جدید شروع کن و با دوستات در ارتباط باش
+            </p>
+            <Button onClick={() => setShowNewChat(true)}>
+              <Plus className="w-4 h-4 ml-2" />
+              چت جدید
+            </Button>
+          </div>
         ) : (
-          <div className="h-full flex items-center justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center"
-            >
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.05, 1],
-                  rotate: [0, 5, -5, 0]
+          <div className="divide-y divide-border/50">
+            {filteredChats.map((chat, i) => (
+              <motion.button
+                key={chat.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.03 }}
+                onClick={() => {
+                  setSelectedChatId(chat.id);
+                  setChats(prev => prev.map(c => 
+                    c.id === chat.id ? { ...c, unread_count: 0 } : c
+                  ));
                 }}
-                transition={{ 
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className="w-32 h-32 mx-auto mb-6 rounded-full bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary flex items-center justify-center"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-right"
               >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                >
-                  <svg className="w-16 h-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </motion.div>
-              </motion.div>
-              <h2 className="text-2xl font-bold text-[hsl(var(--neohi-text-primary))] mb-2">
-                Welcome to NeoHi
-              </h2>
-              <p className="text-[hsl(var(--neohi-text-secondary))] max-w-md">
-                Select a chat to start messaging, or create a new conversation
-              </p>
-            </motion.div>
+                <Avatar className="w-12 h-12 flex-shrink-0">
+                  <AvatarImage src={chat.avatar_url || undefined} />
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
+                    {chat.name?.charAt(0) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="font-semibold text-sm truncate">
+                      {chat.name || "چت"}
+                    </h3>
+                    <span className="text-[10px] text-muted-foreground">
+                      {getTimeDisplay(chat.last_message_at)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground truncate flex-1">
+                      {chat.last_message?.content || "پیامی نیست"}
+                    </p>
+                    {(chat.unread_count || 0) > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
+                        {chat.unread_count}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.button>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      <BottomNavigation />
 
       {/* New Chat Dialog */}
       <NewChatDialog
