@@ -1,12 +1,11 @@
 import { ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
 import { 
-  MessageCircle, 
+  Bot, 
   Wand2, 
   BookOpen, 
-  User,
-  Home
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,11 +19,10 @@ interface PWALayoutProps {
 }
 
 const navItems = [
-  { icon: Home, label: "خانه", href: "/", path: "/" },
-  { icon: MessageCircle, label: "چت", href: "/chat", path: "/chat" },
-  { icon: Wand2, label: "ابزار", href: "/tools", path: "/tools" },
+  { icon: Bot, label: "چت", href: "/chat", path: "/chat" },
+  { icon: Wand2, label: "ابزارها", href: "/tools", path: "/tools" },
   { icon: BookOpen, label: "مقالات", href: "/articles", path: "/articles" },
-  { icon: User, label: "پروفایل", href: "/profile", path: "/profile" },
+  { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
 ];
 
 export function PWALayout({ 
@@ -66,10 +64,10 @@ export function PWALayout({
         {children}
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Telegram-style Bottom Navigation */}
       {showBottomNav && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
-          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+          <div className="flex items-center justify-around h-16 px-4 max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
               const Icon = item.icon;
@@ -79,10 +77,7 @@ export function PWALayout({
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[60px] relative",
-                    isActive 
-                      ? "text-primary" 
-                      : "text-muted-foreground hover:text-foreground"
+                    "flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[64px] relative"
                   )}
                 >
                   <motion.div
@@ -90,19 +85,13 @@ export function PWALayout({
                     className="relative"
                   >
                     <Icon className={cn(
-                      "w-5 h-5 transition-all",
-                      isActive && "scale-110"
+                      "w-6 h-6 transition-colors",
+                      isActive ? "text-primary" : "text-muted-foreground"
                     )} />
-                    {isActive && (
-                      <motion.div
-                        layoutId="nav-indicator"
-                        className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full"
-                      />
-                    )}
                   </motion.div>
                   <span className={cn(
-                    "text-[10px] mt-1 font-medium transition-all",
-                    isActive ? "opacity-100" : "opacity-70"
+                    "text-[11px] mt-1 font-medium transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground"
                   )}>
                     {item.label}
                   </span>
