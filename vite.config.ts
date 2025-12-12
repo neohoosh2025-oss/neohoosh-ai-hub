@@ -76,10 +76,15 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,jpg,jpeg,webp}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,jpg,jpeg,webp,json}"],
         // Offline fallback
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api/],
+        navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
+        // Skip waiting and claim clients immediately
+        skipWaiting: true,
+        clientsClaim: true,
+        // Clean old caches
+        cleanupOutdatedCaches: true,
         // Runtime caching strategies
         runtimeCaching: [
           // Google Fonts - Cache First (long-term)
@@ -89,7 +94,7 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "google-fonts-cache",
               expiration: {
-                maxEntries: 10,
+                maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
               },
               cacheableResponse: {
@@ -103,8 +108,23 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "gstatic-fonts-cache",
               expiration: {
-                maxEntries: 10,
+                maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // CDN assets - Cache First
+          {
+            urlPattern: /^https:\/\/cdn\..*\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "cdn-cache",
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -113,12 +133,12 @@ export default defineConfig(({ mode }) => ({
           },
           // Images - Cache First with network fallback
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/i,
             handler: "CacheFirst",
             options: {
               cacheName: "images-cache",
               expiration: {
-                maxEntries: 100,
+                maxEntries: 200,
                 maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
               },
               cacheableResponse: {
@@ -126,17 +146,53 @@ export default defineConfig(({ mode }) => ({
               }
             }
           },
-          // API calls - Network First with cache fallback
+          // API calls - Network First with cache fallback (for offline support)
           {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "api-cache",
+              cacheName: "supabase-api-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 // 1 hour
+              },
+              networkTimeoutSeconds: 10,
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Auth endpoints - Network Only (no caching for security)
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/auth\/.*/i,
+            handler: "NetworkOnly"
+          },
+          // Storage/Assets from Supabase - Cache First
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "supabase-storage-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Edge Functions - Network First
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/functions\/.*/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "edge-functions-cache",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 5 // 5 minutes
               },
-              networkTimeoutSeconds: 10,
+              networkTimeoutSeconds: 15,
               cacheableResponse: {
                 statuses: [0, 200]
               }
@@ -149,9 +205,22 @@ export default defineConfig(({ mode }) => ({
             options: {
               cacheName: "static-resources",
               expiration: {
-                maxEntries: 50,
+                maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
               }
+            }
+          },
+          // HTML pages - Network First for fresh content
+          {
+            urlPattern: /\.html$/i,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "html-cache",
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              },
+              networkTimeoutSeconds: 5
             }
           }
         ]

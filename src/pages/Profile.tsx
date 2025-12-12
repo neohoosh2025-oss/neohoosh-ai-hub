@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { 
@@ -15,11 +13,13 @@ import {
   Calendar, Activity, TrendingUp, Zap, ChevronRight,
   Smartphone, Clock, CheckCircle2, AlertCircle, Edit2,
   CreditCard, Crown, BarChart3, MessageSquare, Sparkles,
-  Globe, Moon, Sun
+  Globe, Moon, Sun, Bell, Wifi, WifiOff, Download,
+  ChevronLeft, X, Save
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTheme } from "next-themes";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { usePWA } from "@/hooks/usePWA";
+import { PWALayout } from "@/components/layouts/PWALayout";
 
 interface UserStats {
   totalMessages: number;
@@ -33,6 +33,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { t, language, setLanguage } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { isInstalled, canInstall, installPrompt, isOnline, notificationPermission, requestPermission } = usePWA();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -47,7 +49,6 @@ const Profile = () => {
     lastActivity: ""
   });
   const [weeklyActivity, setWeeklyActivity] = useState<Array<{ day: string; messages: number }>>([]);
-  const [usageData, setUsageData] = useState<Array<{ month: string; usage: number }>>([]);
   const [todayMessages, setTodayMessages] = useState(0);
   const [weeklyGrowth, setWeeklyGrowth] = useState(0);
 
@@ -57,7 +58,6 @@ const Profile = () => {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         
         if (userError || !user) {
-          console.log('No user found, redirecting to auth');
           navigate("/auth");
           return;
         }
@@ -66,51 +66,39 @@ const Profile = () => {
         setEmail(user.email || "");
         setDisplayName(user.user_metadata?.display_name || "");
         
-        // Load user statistics with error handling
         try {
-          const { data: conversations, error: convError } = await supabase
+          const { data: conversations } = await supabase
             .from("conversations")
             .select("id, created_at, updated_at")
             .eq("user_id", user.id)
             .order('updated_at', { ascending: false });
-          
-          if (convError) {
-            console.error('Error loading conversations:', convError);
-          }
 
           let messageCount = 0;
           let allMessages: any[] = [];
           let latestActivity = user.created_at;
           
-          // Only fetch messages if we have conversations
           if (conversations && conversations.length > 0) {
-            const { data: messages, count, error: msgError } = await supabase
+            const { data: messages, count } = await supabase
               .from("messages")
               .select("id, created_at, conversation_id", { count: 'exact' })
               .in("conversation_id", conversations.map(c => c.id))
               .order('created_at', { ascending: false });
             
-            if (msgError) {
-              console.error('Error loading messages:', msgError);
-            } else {
-              messageCount = count || 0;
-              allMessages = messages || [];
-              // Get the latest activity from the most recent message
-              if (messages && messages.length > 0) {
-                latestActivity = messages[0].created_at;
-              }
+            messageCount = count || 0;
+            allMessages = messages || [];
+            if (messages && messages.length > 0) {
+              latestActivity = messages[0].created_at;
             }
           }
 
-          // Calculate weekly activity (last 7 days)
-          const weekDays = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'];
+          const weekDays = ['ی', 'د', 'س', 'چ', 'پ', 'ج', 'ش'];
           const last7Days = Array.from({ length: 7 }, (_, i) => {
             const date = new Date();
             date.setDate(date.getDate() - (6 - i));
             return date;
           });
 
-          const weeklyData = last7Days.map((date, index) => {
+          const weeklyData = last7Days.map((date) => {
             const dayStart = new Date(date.setHours(0, 0, 0, 0));
             const dayEnd = new Date(date.setHours(23, 59, 59, 999));
             
@@ -126,7 +114,6 @@ const Profile = () => {
           });
           setWeeklyActivity(weeklyData);
 
-          // Calculate today's messages
           const today = new Date();
           const todayStart = new Date(today.setHours(0, 0, 0, 0));
           const todayEnd = new Date(today.setHours(23, 59, 59, 999));
@@ -136,51 +123,18 @@ const Profile = () => {
           }).length;
           setTodayMessages(todayCount);
 
-          // Calculate weekly growth
           const thisWeekStart = new Date();
           thisWeekStart.setDate(thisWeekStart.getDate() - 7);
           const lastWeekStart = new Date();
           lastWeekStart.setDate(lastWeekStart.getDate() - 14);
           
-          const thisWeekCount = allMessages.filter(msg => {
-            const msgDate = new Date(msg.created_at);
-            return msgDate >= thisWeekStart;
-          }).length;
-          
+          const thisWeekCount = allMessages.filter(msg => new Date(msg.created_at) >= thisWeekStart).length;
           const lastWeekCount = allMessages.filter(msg => {
-            const msgDate = new Date(msg.created_at);
-            return msgDate >= lastWeekStart && msgDate < thisWeekStart;
+            const d = new Date(msg.created_at);
+            return d >= lastWeekStart && d < thisWeekStart;
           }).length;
           
-          const growth = lastWeekCount > 0 
-            ? Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100)
-            : 0;
-          setWeeklyGrowth(growth);
-
-          // Calculate monthly usage (last 3 months)
-          const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 
-                                 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
-          const last3Months = Array.from({ length: 3 }, (_, i) => {
-            const date = new Date();
-            date.setMonth(date.getMonth() - (2 - i));
-            return date;
-          });
-
-          const monthlyData = last3Months.map(date => {
-            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            
-            const messagesCount = allMessages.filter(msg => {
-              const msgDate = new Date(msg.created_at);
-              return msgDate >= monthStart && msgDate <= monthEnd;
-            }).length;
-
-            return {
-              month: persianMonths[date.getMonth()],
-              usage: messagesCount
-            };
-          });
-          setUsageData(monthlyData);
+          setWeeklyGrowth(lastWeekCount > 0 ? Math.round(((thisWeekCount - lastWeekCount) / lastWeekCount) * 100) : 0);
 
           setStats({
             totalMessages: messageCount,
@@ -189,9 +143,7 @@ const Profile = () => {
             memberSince: user.created_at,
             lastActivity: latestActivity
           });
-        } catch (statsError) {
-          console.error('Error loading stats:', statsError);
-          // Set default stats even if there's an error
+        } catch {
           setStats({
             totalMessages: 0,
             conversationsCount: 0,
@@ -199,77 +151,29 @@ const Profile = () => {
             memberSince: user.created_at,
             lastActivity: user.created_at
           });
-          setWeeklyActivity([]);
-          setUsageData([]);
         }
-      } catch (error) {
-        console.error('Error in checkUser:', error);
+      } catch {
         navigate("/auth");
       } finally {
-        // Always set loading to false
         setLoading(false);
       }
     };
 
     checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        navigate("/auth");
-      }
-    });
-
-    // Set up Realtime subscription for new messages
-    const messagesChannel = supabase
-      .channel('profile-messages-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages'
-        },
-        async (payload) => {
-          console.log('New message received:', payload);
-          
-          // Check if this message belongs to the current user's conversations
-          if (user) {
-            const { data: conversation } = await supabase
-              .from('conversations')
-              .select('user_id')
-              .eq('id', payload.new.conversation_id)
-              .single();
-            
-            if (conversation?.user_id === user.id) {
-              // Refresh stats when user's message is added
-              checkUser();
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-      supabase.removeChannel(messagesChannel);
-    };
   }, [navigate]);
 
   const handleUpdateProfile = async () => {
     if (!user) return;
-
     setSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({
         data: { display_name: displayName }
       });
-
       if (error) throw error;
-
-      toast.success("پروفایل با موفقیت به‌روز شد");
+      toast.success("پروفایل به‌روز شد");
       setIsEditing(false);
     } catch (error: any) {
-      toast.error(error.message || "خطا در به‌روزرسانی پروفایل");
+      toast.error(error.message || "خطا در به‌روزرسانی");
     } finally {
       setSaving(false);
     }
@@ -280,448 +184,473 @@ const Profile = () => {
     navigate("/");
   };
 
-  const calculateProfileCompletion = () => {
-    let completion = 0;
-    if (email) completion += 40;
-    if (displayName) completion += 30;
-    if (user?.email_confirmed_at) completion += 30;
-    return completion;
+  const profileCompletion = () => {
+    let c = 0;
+    if (email) c += 40;
+    if (displayName) c += 30;
+    if (user?.email_confirmed_at) c += 30;
+    return c;
   };
+
+  const maxMessages = Math.max(...weeklyActivity.map(d => d.messages), 1);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">در حال بارگذاری...</p>
+      <PWALayout>
+        <div className="flex-1 flex items-center justify-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center gap-4"
+          >
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          </motion.div>
         </div>
-      </div>
+      </PWALayout>
     );
   }
 
-  const profileCompletion = calculateProfileCompletion();
-
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-6xl">
-        {/* Hero Section */}
-        <div className="mb-8">
-          <Card className="border-border/60 shadow-lg overflow-hidden">
-            <div className="h-32 bg-gradient-to-r from-primary-400 via-primary-500 to-primary-600 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            </div>
-            <CardContent className="relative -mt-16 pb-6">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-                <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
-                  {/* Avatar */}
-                  <div className="relative group">
-                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-3xl font-bold shadow-xl ring-4 ring-background">
-                      {displayName?.charAt(0)?.toUpperCase() || email?.charAt(0)?.toUpperCase() || 'U'}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 bg-success w-6 h-6 rounded-full border-4 border-background flex items-center justify-center">
-                      <CheckCircle2 className="w-3 h-3 text-white" />
-                    </div>
-                  </div>
-
-                  {/* User Info */}
-                  <div className="text-center md:text-right space-y-2">
-                    <div className="flex items-center gap-2 justify-center md:justify-start flex-wrap">
-                      <h1 className="text-2xl font-bold">{displayName || "کاربر نئوهوش"}</h1>
-                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0">
-                        <Crown className="w-3 h-3 ml-1" />
-                        Free Plan
-                      </Badge>
-                    </div>
-                    <p className="text-muted-foreground flex items-center gap-2 justify-center md:justify-start">
-                      <Mail className="w-4 h-4" />
-                      {email}
-                    </p>
-                    
-                    {/* Completion Progress */}
-                    <div className="space-y-1.5 max-w-xs">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">تکمیل پروفایل</span>
-                        <span className="font-semibold text-primary-600">{profileCompletion}%</span>
-                      </div>
-                      <Progress value={profileCompletion} className="h-2" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-muted/50 p-3 rounded-xl text-center">
-                    <div className="text-2xl font-bold text-primary-600">{stats.conversationsCount}</div>
-                    <div className="text-xs text-muted-foreground">گفتگوها</div>
-                  </div>
-                  <div className="bg-muted/50 p-3 rounded-xl text-center">
-                    <div className="text-2xl font-bold text-primary-600">{stats.totalMessages}</div>
-                    <div className="text-xs text-muted-foreground">پیام‌ها</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Member Info */}
-              <div className="mt-6 pt-6 border-t border-border/60 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span>عضو از: {new Date(stats.memberSince).toLocaleDateString("fa-IR")}</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  <span>آخرین فعالیت: {new Date(stats.lastActivity).toLocaleDateString("fa-IR")}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-success" />
-                  <span className="text-success font-medium">فعال امروز</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Account Info Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <User className="w-5 h-5 text-primary-500" />
-                    اطلاعات حساب
-                  </div>
-                  {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsEditing(true)}
-                      className="gap-2"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      ویرایش
-                    </Button>
-                  )}
-                </CardTitle>
-                <CardDescription>
-                  مدیریت اطلاعات شخصی و تنظیمات حساب کاربری
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="displayName">نام نمایشی</Label>
-                    <Input
-                      id="displayName"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      disabled={!isEditing}
-                      placeholder="نام خود را وارد کنید"
-                      className="text-base"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">ایمیل</Label>
-                    <Input
-                      id="email"
-                      value={email}
-                      disabled
-                      className="bg-muted/50"
-                    />
-                  </div>
-                </div>
-
-                {isEditing && (
-                  <div className="flex gap-3 pt-2">
-                    <Button
-                      onClick={handleUpdateProfile}
-                      disabled={saving}
-                      className="bg-primary-500 hover:bg-primary-600"
-                    >
-                      {saving && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
-                      ذخیره تغییرات
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setDisplayName(user?.user_metadata?.display_name || "");
-                      }}
-                    >
-                      انصراف
-                    </Button>
-                  </div>
-                )}
-
-                <Separator />
-
-                {/* Email Verification Status */}
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  {user?.email_confirmed_at ? (
-                    <>
-                      <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">ایمیل تایید شده</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          حساب شما در {new Date(user.email_confirmed_at).toLocaleDateString("fa-IR")} تایید شد
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <AlertCircle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-medium text-sm">ایمیل تایید نشده</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          لطفاً ایمیل خود را تایید کنید
-                        </p>
-                      </div>
-                      <Button size="sm" variant="outline">ارسال مجدد</Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Activity Overview Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary-500" />
-                  فعالیت هفتگی
-                </CardTitle>
-                <CardDescription>
-                  نمودار پیام‌های ارسالی در هفته اخیر
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={weeklyActivity}>
-                    <XAxis 
-                      dataKey="day" 
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                    />
-                    <YAxis 
-                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                      axisLine={{ stroke: 'hsl(var(--border))' }}
-                    />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'hsl(var(--background))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Bar dataKey="messages" fill="hsl(var(--primary-500))" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-
-                <div className="grid grid-cols-3 gap-4 mt-6">
-                  <div className="text-center p-3 rounded-lg bg-primary-50 dark:bg-primary-900/20">
-                    <MessageSquare className="w-5 h-5 text-primary-600 mx-auto mb-1" />
-                    <div className="text-lg font-bold">{stats.totalMessages}</div>
-                    <div className="text-xs text-muted-foreground">کل پیام‌ها</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-accent-50 dark:bg-accent-900/20">
-                    <Activity className="w-5 h-5 text-accent-600 mx-auto mb-1" />
-                    <div className="text-lg font-bold">{todayMessages}</div>
-                    <div className="text-xs text-muted-foreground">امروز</div>
-                  </div>
-                  <div className="text-center p-3 rounded-lg bg-secondary-50 dark:bg-secondary-900/20">
-                    <TrendingUp className="w-5 h-5 text-secondary-600 mx-auto mb-1" />
-                    <div className="text-lg font-bold">{weeklyGrowth > 0 ? '+' : ''}{weeklyGrowth}%</div>
-                    <div className="text-xs text-muted-foreground">رشد هفتگی</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Subscription Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-primary-500" />
-                  اشتراک و پرداخت
-                </CardTitle>
-                <CardDescription>
-                  مدیریت اشتراک و صورتحساب‌های شما
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Crown className="w-5 h-5 text-amber-600" />
-                        <h4 className="font-semibold">پلن رایگان</h4>
-                      </div>
-                      <p className="text-sm text-muted-foreground">استفاده محدود از امکانات</p>
-                    </div>
-                    <Badge variant="outline" className="border-amber-300">فعال</Badge>
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    ارتقا به Pro
-                  </Button>
-                </div>
-
-                {/* Usage Chart */}
-                <div>
-                  <h4 className="text-sm font-medium mb-3">مصرف ماهانه</h4>
-                  <ResponsiveContainer width="100%" height={120}>
-                    <LineChart data={usageData}>
-                      <XAxis 
-                        dataKey="month" 
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                        axisLine={{ stroke: 'hsl(var(--border))' }}
-                      />
-                      <YAxis 
-                        tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                        axisLine={{ stroke: 'hsl(var(--border))' }}
-                      />
-                      <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="usage" 
-                        stroke="hsl(var(--primary-500))" 
-                        strokeWidth={2}
-                        dot={{ fill: 'hsl(var(--primary-500))' }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+    <PWALayout>
+      <div className="flex-1 overflow-y-auto">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50"
+        >
+          <div className="flex items-center justify-between px-4 h-14">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="rounded-full"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <h1 className="font-semibold">پروفایل</h1>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsEditing(!isEditing)}
+              className="rounded-full"
+            >
+              {isEditing ? <X className="w-5 h-5" /> : <Edit2 className="w-5 h-5" />}
+            </Button>
           </div>
+        </motion.div>
 
-          {/* Right Column */}
-          <div className="space-y-6">
-            {/* Settings Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-primary-500" />
-                  تنظیمات
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-                    <div>
-                      <p className="font-medium text-sm">حالت تاریک</p>
-                      <p className="text-xs text-muted-foreground">تغییر تم رنگی</p>
-                    </div>
-                  </div>
-                  <Switch 
-                    checked={theme === 'dark'}
-                    onCheckedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        <div className="p-4 space-y-6 pb-8">
+          {/* Profile Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6"
+          >
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent/10 rounded-full blur-3xl" />
+            
+            <div className="relative flex flex-col items-center text-center space-y-4">
+              {/* Avatar */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="relative"
+              >
+                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                  {displayName?.charAt(0)?.toUpperCase() || email?.charAt(0)?.toUpperCase() || 'U'}
+                </div>
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-4 border-background flex items-center justify-center"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                </motion.div>
+              </motion.div>
+
+              {/* Name & Email */}
+              <div className="space-y-1">
+                <AnimatePresence mode="wait">
+                  {isEditing ? (
+                    <motion.div
+                      key="editing"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="space-y-3"
+                    >
+                      <Input
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="نام نمایشی"
+                        className="text-center bg-background/50 border-border/50"
+                      />
+                      <Button
+                        onClick={handleUpdateProfile}
+                        disabled={saving}
+                        size="sm"
+                        className="gap-2"
+                      >
+                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        ذخیره
+                      </Button>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="display"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                    >
+                      <h2 className="text-xl font-bold">{displayName || "کاربر نئوهوش"}</h2>
+                      <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+                        <Mail className="w-3.5 h-3.5" />
+                        {email}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Badge */}
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg">
+                <Crown className="w-3 h-3 ml-1" />
+                پلن رایگان
+              </Badge>
+
+              {/* Completion */}
+              <div className="w-full max-w-xs space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">تکمیل پروفایل</span>
+                  <span className="font-semibold text-primary">{profileCompletion()}%</span>
+                </div>
+                <Progress value={profileCompletion()} className="h-1.5" />
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-3 gap-3"
+          >
+            {[
+              { icon: MessageSquare, value: stats.totalMessages, label: 'پیام', color: 'from-blue-500/10 to-blue-500/5' },
+              { icon: Activity, value: stats.conversationsCount, label: 'گفتگو', color: 'from-purple-500/10 to-purple-500/5' },
+              { icon: TrendingUp, value: `${weeklyGrowth > 0 ? '+' : ''}${weeklyGrowth}%`, label: 'رشد', color: 'from-green-500/10 to-green-500/5' },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.05 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`p-4 rounded-2xl bg-gradient-to-br ${stat.color} border border-border/30`}
+              >
+                <stat.icon className="w-5 h-5 text-muted-foreground mb-2" />
+                <div className="text-xl font-bold">{stat.value}</div>
+                <div className="text-xs text-muted-foreground">{stat.label}</div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Activity Chart */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-4 rounded-2xl bg-card border border-border/50"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                <span className="font-medium">فعالیت هفتگی</span>
+              </div>
+              <Badge variant="secondary" className="text-xs">
+                {todayMessages} امروز
+              </Badge>
+            </div>
+            
+            <div className="flex items-end justify-between gap-1 h-24">
+              {weeklyActivity.map((day, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ height: 0 }}
+                  animate={{ height: `${(day.messages / maxMessages) * 100}%` }}
+                  transition={{ delay: 0.4 + i * 0.05, duration: 0.5, ease: "easeOut" }}
+                  className="flex-1 flex flex-col items-center gap-1"
+                >
+                  <div 
+                    className={`w-full rounded-t-lg transition-colors ${
+                      day.messages > 0 
+                        ? 'bg-gradient-to-t from-primary to-primary/70' 
+                        : 'bg-muted/30'
+                    }`}
+                    style={{ minHeight: day.messages > 0 ? '8px' : '4px', height: '100%' }}
                   />
-                </div>
+                </motion.div>
+              ))}
+            </div>
+            <div className="flex justify-between mt-2">
+              {weeklyActivity.map((day, i) => (
+                <span key={i} className="text-[10px] text-muted-foreground flex-1 text-center">
+                  {day.day}
+                </span>
+              ))}
+            </div>
+          </motion.div>
 
-                <Separator />
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Globe className="w-4 h-4" />
-                    <div>
-                      <p className="font-medium text-sm">زبان</p>
-                      <p className="text-xs text-muted-foreground">فارسی / English</p>
-                    </div>
+          {/* Settings Sections */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-3"
+          >
+            <h3 className="text-sm font-medium text-muted-foreground px-1">تنظیمات</h3>
+            
+            <div className="rounded-2xl bg-card border border-border/50 overflow-hidden divide-y divide-border/50">
+              {/* Theme Toggle */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    {theme === 'dark' ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
-                  >
-                    {language === 'fa' ? 'EN' : 'FA'}
-                  </Button>
+                  <div>
+                    <p className="font-medium text-sm">حالت تاریک</p>
+                    <p className="text-xs text-muted-foreground">تغییر تم رنگی</p>
+                  </div>
                 </div>
+                <Switch 
+                  checked={theme === 'dark'}
+                  onCheckedChange={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                />
+              </div>
 
-                <Separator />
-
+              {/* Language */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center">
+                    <Globe className="w-5 h-5 text-secondary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">زبان</p>
+                    <p className="text-xs text-muted-foreground">{language === 'fa' ? 'فارسی' : 'English'}</p>
+                  </div>
+                </div>
                 <Button 
                   variant="outline" 
-                  className="w-full gap-2 text-destructive hover:bg-destructive/10"
-                  onClick={handleSignOut}
+                  size="sm"
+                  onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')}
+                  className="rounded-full"
                 >
-                  <LogOut className="w-4 h-4" />
-                  خروج از حساب
+                  {language === 'fa' ? 'EN' : 'FA'}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Security Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-primary-500" />
-                  امنیت
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                    <Smartphone className="w-5 h-5 text-primary-500" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">دستگاه فعلی</p>
-                      <p className="text-xs text-muted-foreground">آخرین ورود: همین الان</p>
-                    </div>
-                    <CheckCircle2 className="w-4 h-4 text-success" />
+              {/* Notifications */}
+              <button 
+                onClick={async () => {
+                  if (notificationPermission !== 'granted') {
+                    await requestPermission();
+                    toast.success('اعلان‌ها فعال شد');
+                  }
+                }}
+                className="flex items-center justify-between p-4 w-full hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-accent" />
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-sm">اعلان‌ها</p>
+                    <p className="text-xs text-muted-foreground">
+                      {notificationPermission === 'granted' ? 'فعال' : 'غیرفعال'}
+                    </p>
                   </div>
                 </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+          </motion.div>
 
-                <Button variant="outline" className="w-full justify-between">
-                  <span>ورودهای اخیر</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-
-                <Button variant="outline" className="w-full justify-between">
-                  <span>فعال‌سازی احراز دو مرحله‌ای</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Achievements Card */}
-            <Card className="border-border/60 shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary-500" />
-                  دستاوردها
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 text-center">
-                    <Sparkles className="w-6 h-6 text-primary-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium">Early Member</p>
+          {/* PWA Status */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="space-y-3"
+          >
+            <h3 className="text-sm font-medium text-muted-foreground px-1">وضعیت اپلیکیشن</h3>
+            
+            <div className="rounded-2xl bg-card border border-border/50 overflow-hidden divide-y divide-border/50">
+              {/* Network Status */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isOnline ? 'bg-green-500/10' : 'bg-red-500/10'
+                  }`}>
+                    {isOnline ? <Wifi className="w-5 h-5 text-green-500" /> : <WifiOff className="w-5 h-5 text-red-500" />}
                   </div>
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-900/20 dark:to-accent-800/20 text-center opacity-50">
-                    <Crown className="w-6 h-6 text-accent-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium">Power User</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-secondary-50 to-secondary-100 dark:from-secondary-900/20 dark:to-secondary-800/20 text-center opacity-50">
-                    <Award className="w-6 h-6 text-secondary-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium">Creator</p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 text-center opacity-50">
-                    <Zap className="w-6 h-6 text-amber-600 mx-auto mb-1" />
-                    <p className="text-xs font-medium">Super Active</p>
+                  <div>
+                    <p className="font-medium text-sm">وضعیت اتصال</p>
+                    <p className="text-xs text-muted-foreground">{isOnline ? 'آنلاین' : 'آفلاین'}</p>
                   </div>
                 </div>
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-muted-foreground">1 از 4 دستاورد کسب شده</p>
-                  <Progress value={25} className="h-2 mt-2" />
+                <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'} animate-pulse`} />
+              </div>
+
+              {/* Install Status */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    isInstalled ? 'bg-green-500/10' : 'bg-primary/10'
+                  }`}>
+                    <Download className={`w-5 h-5 ${isInstalled ? 'text-green-500' : 'text-primary'}`} />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">نصب اپلیکیشن</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isInstalled ? 'نصب شده' : 'نصب نشده'}
+                    </p>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                {canInstall && (
+                  <Button size="sm" onClick={installPrompt || undefined} className="rounded-full">
+                    نصب
+                  </Button>
+                )}
+                {isInstalled && (
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                )}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Security & Account */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="space-y-3"
+          >
+            <h3 className="text-sm font-medium text-muted-foreground px-1">امنیت</h3>
+            
+            <div className="rounded-2xl bg-card border border-border/50 overflow-hidden divide-y divide-border/50">
+              {/* Device */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <Smartphone className="w-5 h-5 text-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">دستگاه فعلی</p>
+                    <p className="text-xs text-muted-foreground">همین الان</p>
+                  </div>
+                </div>
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              </div>
+
+              {/* Member Since */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">عضویت</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(stats.memberSince).toLocaleDateString("fa-IR")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Email Status */}
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    user?.email_confirmed_at ? 'bg-green-500/10' : 'bg-amber-500/10'
+                  }`}>
+                    {user?.email_confirmed_at ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <AlertCircle className="w-5 h-5 text-amber-500" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-medium text-sm">تایید ایمیل</p>
+                    <p className="text-xs text-muted-foreground">
+                      {user?.email_confirmed_at ? 'تایید شده' : 'تایید نشده'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Sign Out */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+          >
+            <Button 
+              variant="outline" 
+              className="w-full gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 rounded-xl h-12"
+              onClick={handleSignOut}
+            >
+              <LogOut className="w-5 h-5" />
+              خروج از حساب
+            </Button>
+          </motion.div>
+
+          {/* Achievements */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+            className="space-y-3"
+          >
+            <h3 className="text-sm font-medium text-muted-foreground px-1">دستاوردها</h3>
+            
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { icon: Sparkles, label: 'تازه‌وارد', active: true, color: 'from-blue-500' },
+                { icon: Crown, label: 'حرفه‌ای', active: false, color: 'from-amber-500' },
+                { icon: Award, label: 'خالق', active: false, color: 'from-purple-500' },
+                { icon: Zap, label: 'فعال', active: false, color: 'from-green-500' },
+              ].map((badge, i) => (
+                <motion.div
+                  key={badge.label}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.8 + i * 0.05 }}
+                  className={`p-3 rounded-2xl text-center transition-all ${
+                    badge.active 
+                      ? `bg-gradient-to-br ${badge.color}/10 to-transparent border border-${badge.color.replace('from-', '')}/30` 
+                      : 'bg-muted/30 opacity-50'
+                  }`}
+                >
+                  <badge.icon className={`w-6 h-6 mx-auto mb-1 ${
+                    badge.active ? 'text-primary' : 'text-muted-foreground'
+                  }`} />
+                  <p className="text-[10px] font-medium">{badge.label}</p>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </PWALayout>
   );
 };
 
