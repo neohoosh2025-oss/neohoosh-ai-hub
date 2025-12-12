@@ -1,75 +1,71 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   MessageCircle, 
-  Image as ImageIcon,
-  Mic,
-  Code,
   Sparkles,
-  ChevronLeft,
-  ChevronRight,
   Bot,
   Wand2,
   BookOpen,
   Users,
-  Volume2,
   Settings,
-  WifiOff,
-  Download,
-  Heart,
-  MessageSquare,
-  Share2,
-  Plus,
-  Camera,
-  Search
+  ArrowLeft,
+  Brain,
+  Rocket,
+  Check,
+  Send
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/neohoosh-logo-new.png";
 import { cn } from "@/lib/utils";
 import { SplashScreen } from "@/components/SplashScreen";
+import { OfflinePage } from "@/components/OfflinePage";
+import { usePWA } from "@/hooks/usePWA";
+
+interface Article {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+interface Stat {
+  stat_key: string;
+  stat_value: string;
+  stat_label: string;
+}
+
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  icon_name: string;
+  gradient: string;
+  features_list: any;
+}
 
 const Index = () => {
   const location = useLocation();
+  const { isOnline } = usePWA();
   const [showSplash, setShowSplash] = useState(() => {
     const hasSeenSplash = sessionStorage.getItem('neohoosh_splash_seen');
     return !hasSeenSplash;
   });
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingStep, setOnboardingStep] = useState(0);
-  const [isOnline, setIsOnline] = useState(true);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [stats, setStats] = useState<Stat[]>([]);
+  const [features, setFeatures] = useState<Feature[]>([]);
   const [user, setUser] = useState<any>(null);
-  const [stories, setStories] = useState<any[]>([]);
-  const [posts, setPosts] = useState<any[]>([]);
-  
-  // Check if first visit for onboarding
-  useEffect(() => {
-    const hasVisited = localStorage.getItem('neohoosh_visited');
-    if (!hasVisited && !showSplash) {
-      setShowOnboarding(true);
-      localStorage.setItem('neohoosh_visited', 'true');
-    }
-  }, [showSplash]);
 
-  // Mark splash as seen when complete
   const handleSplashComplete = () => {
     sessionStorage.setItem('neohoosh_splash_seen', 'true');
     setShowSplash(false);
-    // Check for onboarding after splash
-    const hasVisited = localStorage.getItem('neohoosh_visited');
-    if (!hasVisited) {
-      setShowOnboarding(true);
-      localStorage.setItem('neohoosh_visited', 'true');
-    }
   };
 
-  // Get current user
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -78,109 +74,21 @@ const Index = () => {
     getUser();
   }, []);
 
-  // Fetch featured content
   useEffect(() => {
-    const fetchContent = async () => {
-      // Get latest articles as posts
-      const { data: articles } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (articles) {
-        setPosts(articles.map(a => ({
-          id: a.id,
-          user: { name: 'نئوهوش', avatar: logo },
-          image: a.image_url,
-          caption: a.title,
-          likes: Math.floor(Math.random() * 500),
-          comments: Math.floor(Math.random() * 50),
-          timeAgo: 'اخیراً'
-        })));
-      }
-      
-      // Mock stories for quick actions
-      setStories([
-        { id: 'chat', name: 'چت AI', image: null, icon: MessageCircle, gradient: 'from-blue-500 to-cyan-500', href: '/chat' },
-        { id: 'image', name: 'تصویر', image: null, icon: ImageIcon, gradient: 'from-purple-500 to-pink-500', href: '/tools/image-generator' },
-        { id: 'voice', name: 'صدا', image: null, icon: Mic, gradient: 'from-green-500 to-emerald-500', href: '/tools/voice-to-text' },
-        { id: 'code', name: 'کد', image: null, icon: Code, gradient: 'from-orange-500 to-amber-500', href: '/tools/code-generator' },
-        { id: 'neohi', name: 'نئوهای', image: null, icon: Users, gradient: 'from-pink-500 to-rose-500', href: '/neohi' },
+    const fetchData = async () => {
+      const [articlesData, statsData, featuresData] = await Promise.all([
+        supabase.from("articles").select("*").order("created_at", { ascending: false }).limit(3),
+        supabase.from("homepage_stats").select("*").eq("is_active", true).order("display_order"),
+        supabase.from("homepage_features").select("*").eq("is_active", true).order("display_order")
       ]);
-    };
-    fetchContent();
-  }, []);
-
-  // Listen for install prompt and show as toast notification
-  useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
       
-      toast.custom(
-        (t) => (
-          <div className="bg-background border border-border/50 rounded-2xl shadow-xl p-4 max-w-sm w-full flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg">
-              <img src={logo} alt="نئوهوش" className="w-8 h-8" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground">نصب نئوهوش</p>
-              <p className="text-sm text-muted-foreground truncate">برای دسترسی سریع‌تر نصب کنید</p>
-            </div>
-            <Button 
-              size="sm" 
-              className="rounded-xl px-4 h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-md"
-              onClick={async () => {
-                toast.dismiss(t);
-                await (e as any).prompt();
-                setDeferredPrompt(null);
-              }}
-            >
-              نصب
-            </Button>
-          </div>
-        ),
-        { duration: 15000 }
-      );
+      setArticles(articlesData.data || []);
+      setStats(statsData.data || []);
+      setFeatures(featuresData.data || []);
     };
-    window.addEventListener('beforeinstallprompt', handler);
-    
-    const installedHandler = () => {
-      setDeferredPrompt(null);
-      toast.success("نئوهوش با موفقیت نصب شد!");
-    };
-    window.addEventListener('appinstalled', installedHandler);
-
-    const handleOnline = () => {
-      setIsOnline(true);
-      toast.success("اتصال به اینترنت برقرار شد");
-    };
-    const handleOffline = () => {
-      setIsOnline(false);
-      toast.warning("شما آفلاین هستید");
-    };
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    setIsOnline(navigator.onLine);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-      window.removeEventListener('appinstalled', installedHandler);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+    fetchData();
   }, []);
 
-  // Onboarding slides
-  const onboardingSlides = [
-    { icon: Bot, title: "به نئوهوش خوش آمدید", description: "سوپراپلیکیشن هوش مصنوعی برای همه!", color: "from-primary to-secondary" },
-    { icon: MessageCircle, title: "چت‌بات هوشمند", description: "با دستیار هوشمند ما گفتگو کن.", color: "from-blue-500 to-cyan-500" },
-    { icon: ImageIcon, title: "تولید تصویر با AI", description: "با چند کلمه توضیح، تصاویر خلاقانه بساز.", color: "from-purple-500 to-pink-500" },
-    { icon: Sparkles, title: "آماده شروع؟", description: "حالا می‌تونی از همه امکانات استفاده کنی.", color: "from-primary to-accent" }
-  ];
-
-  // Navigation items for bottom nav
   const navItems = [
     { icon: Bot, label: "چت", href: "/chat", path: "/chat" },
     { icon: Users, label: "نئوهای", href: "/neohi", path: "/neohi" },
@@ -189,270 +97,250 @@ const Index = () => {
     { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
   ];
 
+  const fadeInUp = {
+    initial: { opacity: 0, y: 30 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.6 },
+  };
+
+  // Show offline page
+  if (!isOnline) {
+    return <OfflinePage />;
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-14 safe-area-inset">
+    <div className="min-h-screen bg-background">
       {/* Splash Screen */}
       <AnimatePresence>
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       </AnimatePresence>
 
-      {/* Offline Indicator */}
-      <AnimatePresence>
-        {!isOnline && (
-          <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-warning p-2 safe-area-top"
-          >
-            <div className="flex items-center justify-center gap-2 text-warning-foreground text-sm">
-              <WifiOff className="w-4 h-4" />
-              <span>شما آفلاین هستید</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Onboarding Modal */}
-      <AnimatePresence>
-        {showOnboarding && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-background flex flex-col"
-          >
-            <div className="flex-1 flex flex-col items-center justify-center p-6">
-              <motion.div
-                key={onboardingStep}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 }}
-                className="text-center max-w-sm"
-              >
-                <motion.div 
-                  className={`w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br ${onboardingSlides[onboardingStep].color} flex items-center justify-center shadow-2xl`}
-                >
-                  {(() => {
-                    const IconComponent = onboardingSlides[onboardingStep].icon;
-                    return <IconComponent className="w-12 h-12 text-white" />;
-                  })()}
-                </motion.div>
-                <h2 className="text-2xl font-bold mb-3">{onboardingSlides[onboardingStep].title}</h2>
-                <p className="text-muted-foreground">{onboardingSlides[onboardingStep].description}</p>
-              </motion.div>
-
-              <div className="flex gap-2 mt-10">
-                {onboardingSlides.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setOnboardingStep(i)}
-                    className={cn(
-                      "h-2 rounded-full transition-all duration-300",
-                      i === onboardingStep ? 'w-6 bg-primary' : 'w-2 bg-muted-foreground/30'
-                    )}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="p-6 flex gap-4">
-              {onboardingStep > 0 && (
-                <Button variant="outline" size="lg" className="flex-1 h-12" onClick={() => setOnboardingStep(s => s - 1)}>
-                  <ChevronRight className="w-5 h-5 ml-1" />
-                  قبلی
-                </Button>
-              )}
-              {onboardingStep < onboardingSlides.length - 1 ? (
-                <Button size="lg" className="flex-1 h-12" onClick={() => setOnboardingStep(s => s + 1)}>
-                  بعدی
-                  <ChevronLeft className="w-5 h-5 mr-1" />
-                </Button>
-              ) : (
-                <Button size="lg" className="flex-1 h-12 bg-gradient-to-r from-primary to-secondary" onClick={() => setShowOnboarding(false)}>
-                  <Sparkles className="w-5 h-5 ml-2" />
-                  شروع کنید
-                </Button>
-              )}
-            </div>
-
-            {onboardingStep < onboardingSlides.length - 1 && (
-              <button onClick={() => setShowOnboarding(false)} className="absolute top-6 left-6 text-muted-foreground text-sm">
-                رد شدن
-              </button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Instagram-style Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="flex items-center justify-between px-4 h-12">
           <div className="flex items-center gap-2">
-            <motion.img 
-              src={logo} 
-              alt="NeoHoosh" 
-              className="w-7 h-7"
-              whileTap={{ scale: 0.95 }}
-            />
+            <img src={logo} alt="NeoHoosh" className="w-7 h-7" />
             <span className="font-bold text-base">نئوهوش</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/chat">
-              <Button variant="ghost" size="icon" className="rounded-full relative h-9 w-9">
-                <MessageCircle className="w-5 h-5" />
-              </Button>
-            </Link>
+            {user ? (
+              <Link to="/profile">
+                <Button variant="ghost" size="sm" className="rounded-full h-8 px-3 text-xs">
+                  پروفایل
+                </Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button size="sm" className="rounded-full h-8 px-4 text-xs">
+                  ورود
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Stories / Quick Actions - Instagram Style */}
-      <div className="px-4 py-4 border-b border-border/30">
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-          {/* Your Story / Add Story */}
-          <Link to="/chat" className="flex flex-col items-center gap-1 flex-shrink-0">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <Plus className="w-6 h-6 text-primary" />
-              </div>
-            </div>
-            <span className="text-xs text-muted-foreground">شروع</span>
-          </Link>
+      {/* Main Content */}
+      <main className="pb-16">
+        {/* Hero Section */}
+        <section className="relative pt-8 pb-12 overflow-hidden">
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+          </div>
+          
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial="initial"
+              animate="animate"
+              className="max-w-2xl mx-auto text-center space-y-6"
+            >
+              <motion.div {...fadeInUp} className="flex justify-center">
+                <Badge className="px-4 py-2 text-sm shadow-lg bg-primary/10 border-primary/30 text-primary">
+                  <Sparkles className="w-3.5 h-3.5 ml-2" />
+                  نسل جدید هوش مصنوعی
+                </Badge>
+              </motion.div>
 
-          {/* Quick Action Stories */}
-          {stories.map((story) => {
-            const Icon = story.icon;
-            return (
-              <Link key={story.id} to={story.href} className="flex flex-col items-center gap-1 flex-shrink-0">
+              <motion.h1 
+                {...fadeInUp}
+                className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight"
+              >
+                <span className="bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent">
+                  دنیای هوش مصنوعی
+                </span>
+                <br />
+                <span className="text-foreground">همیشه کنار تو</span>
+              </motion.h1>
+
+              <motion.p 
+                {...fadeInUp}
+                className="text-sm sm:text-base text-muted-foreground leading-relaxed"
+              >
+                ابزارها، چت‌بات و کامیونیتی قدرتمند برای خلق، یادگیری و رشد
+              </motion.p>
+
+              <motion.div 
+                {...fadeInUp}
+                className="flex flex-col sm:flex-row gap-3 justify-center pt-4"
+              >
+                <Link to="/chat">
+                  <Button size="lg" className="w-full sm:w-auto h-12 px-6 rounded-xl shadow-lg">
+                    <MessageCircle className="ml-2 w-5 h-5" />
+                    شروع گفتگو با AI
+                  </Button>
+                </Link>
+                <Link to="/tools">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-6 rounded-xl">
+                    <Wand2 className="ml-2 w-5 h-5" />
+                    ابزارهای AI
+                  </Button>
+                </Link>
+              </motion.div>
+
+              {/* Stats */}
+              {stats.length > 0 && (
                 <motion.div 
-                  whileTap={{ scale: 0.95 }}
-                  className={cn(
-                    "w-16 h-16 rounded-full p-[2px] bg-gradient-to-br",
-                    story.gradient
-                  )}
+                  {...fadeInUp}
+                  className="grid grid-cols-3 gap-4 pt-8"
                 >
-                  <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-foreground" />
-                  </div>
+                  {stats.slice(0, 3).map((stat, i) => (
+                    <div key={stat.stat_key} className="text-center p-3 rounded-xl bg-muted/30">
+                      <div className={`text-xl font-bold ${i === 0 ? 'text-primary' : i === 1 ? 'text-secondary' : 'text-accent'}`}>
+                        {stat.stat_value}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground">{stat.stat_label}</div>
+                    </div>
+                  ))}
                 </motion.div>
-                <span className="text-xs text-muted-foreground">{story.name}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
 
-      {/* Feed / Content */}
-      <main className="divide-y divide-border/30">
-        {/* Hero Card */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="p-4"
-        >
-          <Card className="bg-gradient-to-br from-primary via-secondary to-accent text-white overflow-hidden relative border-0 shadow-lg">
-            <CardContent className="p-5 relative z-10">
-              <Badge className="bg-white/20 text-white border-none mb-3 text-xs">
-                <Sparkles className="w-3 h-3 ml-1" />
-                جدید
-              </Badge>
-              <h2 className="text-xl font-bold mb-1">با AI گفتگو کن</h2>
-              <p className="text-white/80 text-sm mb-4">دستیار هوشمند ۲۴ ساعته</p>
-              <Link to="/chat">
-                <Button className="bg-white text-primary hover:bg-white/90 shadow-md h-10">
-                  <MessageCircle className="w-4 h-4 ml-2" />
-                  شروع گفتگو
-                </Button>
-              </Link>
-            </CardContent>
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-xl" />
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-          </Card>
-        </motion.div>
-
-        {/* Instagram-style Posts / Articles */}
-        {posts.map((post, idx) => (
-          <motion.article
-            key={post.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="bg-background"
-          >
-            {/* Post Header */}
-            <div className="flex items-center justify-between p-3">
-              <Link to={`/articles/${post.id}`} className="flex items-center gap-3">
-                <Avatar className="w-9 h-9">
-                  <AvatarImage src={post.user.avatar} />
-                  <AvatarFallback>ن</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-sm font-medium">{post.user.name}</p>
-                  <p className="text-xs text-muted-foreground">{post.timeAgo}</p>
-                </div>
-              </Link>
-            </div>
-
-            {/* Post Image */}
-            {post.image && (
-              <Link to={`/articles/${post.id}`}>
-                <div className="relative aspect-square bg-muted">
-                  <img 
-                    src={post.image} 
-                    alt={post.caption}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </Link>
-            )}
-
-            {/* Post Actions */}
-            <div className="p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <motion.button whileTap={{ scale: 0.9 }}>
-                    <Heart className="w-6 h-6" />
-                  </motion.button>
-                  <Link to={`/articles/${post.id}`}>
-                    <MessageSquare className="w-6 h-6" />
-                  </Link>
-                  <motion.button whileTap={{ scale: 0.9 }}>
-                    <Share2 className="w-6 h-6" />
-                  </motion.button>
-                </div>
+        {/* Features Section */}
+        {features.length > 0 && (
+          <section className="py-8 px-4">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-xl font-bold text-center mb-6">امکانات نئوهوش</h2>
+              <div className="grid gap-4">
+                {features.map((item, i) => {
+                  const iconMap: { [key: string]: any } = {
+                    'MessageCircle': MessageCircle,
+                    'Wand2': Wand2,
+                    'BookOpen': BookOpen,
+                    'Sparkles': Sparkles,
+                    'Brain': Brain
+                  };
+                  const Icon = iconMap[item.icon_name] || MessageCircle;
+                  
+                  return (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      <Card className="border border-border/50 hover:border-primary/30 transition-colors">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center`}>
+                              <Icon className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-base">{item.title}</CardTitle>
+                              <CardDescription className="text-xs">{item.description}</CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        {item.features_list && (
+                          <CardContent className="pt-0">
+                            <div className="flex flex-wrap gap-2">
+                              {item.features_list.slice(0, 3).map((feature: string, idx: number) => (
+                                <Badge key={idx} variant="secondary" className="text-[10px]">
+                                  <Check className="w-2.5 h-2.5 ml-1" />
+                                  {feature}
+                                </Badge>
+                              ))}
+                            </div>
+                          </CardContent>
+                        )}
+                      </Card>
+                    </motion.div>
+                  );
+                })}
               </div>
+            </div>
+          </section>
+        )}
 
-              <div className="space-y-1">
-                <p className="text-sm font-medium">{post.likes} پسندیدند</p>
-                <p className="text-sm">
-                  <span className="font-medium">{post.user.name}</span>{' '}
-                  <span className="text-muted-foreground">{post.caption}</span>
+        {/* NEOHI CTA */}
+        <section className="py-8 px-4">
+          <div className="max-w-lg mx-auto">
+            <Card className="bg-gradient-to-br from-primary/10 via-secondary/5 to-background border-primary/20 overflow-hidden">
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                  <Users className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-lg font-bold mb-2">NEOHI</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  کامیونیتی اختصاصی نئوهوش برای گفتگو و شبکه‌سازی
                 </p>
-                <Link to={`/articles/${post.id}`} className="text-xs text-muted-foreground">
-                  مشاهده {post.comments} نظر
+                <Link to="/neohi">
+                  <Button className="w-full h-10 rounded-xl">
+                    <Send className="ml-2 w-4 h-4" />
+                    عضویت در NEOHI
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Latest Articles */}
+        {articles.length > 0 && (
+          <section className="py-8 px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">آخرین مقالات</h2>
+                <Link to="/articles">
+                  <Button variant="ghost" size="sm" className="text-xs">
+                    مشاهده همه
+                    <ArrowLeft className="w-3.5 h-3.5 mr-1" />
+                  </Button>
                 </Link>
               </div>
+              <div className="grid gap-3">
+                {articles.map((article) => (
+                  <Link key={article.id} to={`/articles/${article.id}`}>
+                    <Card className="hover:bg-muted/50 transition-colors">
+                      <CardContent className="p-4 flex gap-4">
+                        {article.image_url && (
+                          <img 
+                            src={article.image_url} 
+                            alt={article.title}
+                            className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm mb-1 line-clamp-1">{article.title}</h3>
+                          <p className="text-xs text-muted-foreground line-clamp-2">{article.excerpt}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </motion.article>
-        ))}
-
-        {/* Empty State */}
-        {posts.length === 0 && (
-          <div className="p-8 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
-              <Camera className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <p className="text-muted-foreground">هنوز محتوایی منتشر نشده</p>
-          </div>
+          </section>
         )}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50">
         <div className="flex items-center justify-around h-14 px-2 max-w-lg mx-auto">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname === "/" && item.path === "/chat";
+            const isActive = location.pathname === "/" && item.path === "/chat";
             const Icon = item.icon;
             
             return (
