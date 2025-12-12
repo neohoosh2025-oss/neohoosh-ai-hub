@@ -15,6 +15,7 @@ import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CodeBlock, InlineCode } from "@/components/CodeBlock";
+import { showNotification, getNotificationPermission } from "@/utils/pushNotifications";
 import {
   Sheet,
   SheetContent,
@@ -331,6 +332,17 @@ const Chat = () => {
           role: 'assistant',
           content: accumulatedContent
         });
+
+        // Send push notification if permission granted and document is hidden
+        if (document.hidden && getNotificationPermission() === 'granted') {
+          const previewContent = accumulatedContent.length > 100 
+            ? accumulatedContent.substring(0, 100) + '...' 
+            : accumulatedContent;
+          showNotification('پاسخ جدید از نئوهوش', {
+            body: previewContent,
+            tag: 'chat-response'
+          });
+        }
 
         // Extract and save memories asynchronously (don't wait for it)
         supabase.functions.invoke('extract-memory', {

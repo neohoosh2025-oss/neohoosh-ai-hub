@@ -17,6 +17,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.png", "robots.txt"],
       manifest: {
+        id: "neohoosh-pwa",
         name: "نئوهوش - پلتفرم هوش مصنوعی",
         short_name: "نئوهوش",
         description: "آموزش، محتوا و کاربردهای هوش مصنوعی برای کاربران فارسی‌زبان",
@@ -29,12 +30,38 @@ export default defineConfig(({ mode }) => ({
         dir: "rtl",
         lang: "fa",
         categories: ["productivity", "utilities", "education"],
+        prefer_related_applications: false,
         icons: [
+          {
+            src: "/favicon.png",
+            sizes: "48x48",
+            type: "image/png"
+          },
+          {
+            src: "/favicon.png",
+            sizes: "72x72",
+            type: "image/png"
+          },
+          {
+            src: "/favicon.png",
+            sizes: "96x96",
+            type: "image/png"
+          },
+          {
+            src: "/favicon.png",
+            sizes: "128x128",
+            type: "image/png"
+          },
           {
             src: "/favicon.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any maskable"
+            purpose: "any"
+          },
+          {
+            src: "/favicon.png",
+            sizes: "384x384",
+            type: "image/png"
           },
           {
             src: "/favicon.png",
