@@ -43,16 +43,16 @@ export function PWALayout({
       {/* Optional Header */}
       {showHeader && (
         <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
-          <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center justify-between px-4 h-12">
             <div className="flex items-center gap-3">
               {headerLeft || (
                 <Link to="/" className="flex items-center gap-2">
-                  <img src={logo} alt="نئوهوش" className="w-8 h-8" />
+                  <img src={logo} alt="نئوهوش" className="w-7 h-7" />
                 </Link>
               )}
             </div>
             {headerTitle && (
-              <h1 className="font-semibold text-lg absolute left-1/2 -translate-x-1/2">
+              <h1 className="font-semibold text-base absolute left-1/2 -translate-x-1/2">
                 {headerTitle}
               </h1>
             )}
@@ -66,7 +66,7 @@ export function PWALayout({
       {/* Main Content */}
       <main className={cn(
         "flex-1",
-        showBottomNav && "pb-20"
+        showBottomNav && "pb-14"
       )}>
         {children}
       </main>
@@ -74,7 +74,7 @@ export function PWALayout({
       {/* Telegram-style Bottom Navigation */}
       {showBottomNav && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
-          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+          <div className="flex items-center justify-around h-14 px-2 max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path || 
                 (item.path === "/neohi" && location.pathname.startsWith("/neohi"));
@@ -93,18 +93,18 @@ export function PWALayout({
                     className="relative"
                   >
                     <Icon className={cn(
-                      "w-6 h-6 transition-colors",
+                      "w-5 h-5 transition-colors",
                       isActive ? "text-primary" : "text-muted-foreground"
                     )} />
                     {isActive && (
                       <motion.div
                         layoutId="nav-indicator"
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
+                        className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary"
                       />
                     )}
                   </motion.div>
                   <span className={cn(
-                    "text-[10px] mt-1 font-medium transition-colors",
+                    "text-[10px] mt-0.5 font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}>
                     {item.label}

@@ -32,9 +32,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/neohoosh-logo-new.png";
 import { cn } from "@/lib/utils";
+import { SplashScreen } from "@/components/SplashScreen";
 
 const Index = () => {
   const location = useLocation();
+  const [showSplash, setShowSplash] = useState(() => {
+    const hasSeenSplash = sessionStorage.getItem('neohoosh_splash_seen');
+    return !hasSeenSplash;
+  });
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [isOnline, setIsOnline] = useState(true);
@@ -43,14 +48,26 @@ const Index = () => {
   const [stories, setStories] = useState<any[]>([]);
   const [posts, setPosts] = useState<any[]>([]);
   
-  // Check if first visit
+  // Check if first visit for onboarding
   useEffect(() => {
+    const hasVisited = localStorage.getItem('neohoosh_visited');
+    if (!hasVisited && !showSplash) {
+      setShowOnboarding(true);
+      localStorage.setItem('neohoosh_visited', 'true');
+    }
+  }, [showSplash]);
+
+  // Mark splash as seen when complete
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('neohoosh_splash_seen', 'true');
+    setShowSplash(false);
+    // Check for onboarding after splash
     const hasVisited = localStorage.getItem('neohoosh_visited');
     if (!hasVisited) {
       setShowOnboarding(true);
       localStorage.setItem('neohoosh_visited', 'true');
     }
-  }, []);
+  };
 
   // Get current user
   useEffect(() => {
@@ -171,7 +188,12 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20 safe-area-inset">
+    <div className="min-h-screen bg-background pb-14 safe-area-inset">
+      {/* Splash Screen */}
+      <AnimatePresence>
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </AnimatePresence>
+
       {/* Offline Indicator */}
       <AnimatePresence>
         {!isOnline && (
@@ -179,7 +201,7 @@ const Index = () => {
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-warning p-3 safe-area-top"
+            className="fixed top-0 left-0 right-0 z-[60] bg-warning p-2 safe-area-top"
           >
             <div className="flex items-center justify-center gap-2 text-warning-foreground text-sm">
               <WifiOff className="w-4 h-4" />
@@ -263,19 +285,19 @@ const Index = () => {
 
       {/* Instagram-style Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
-        <div className="flex items-center justify-between px-4 h-14">
+        <div className="flex items-center justify-between px-4 h-12">
           <div className="flex items-center gap-2">
             <motion.img 
               src={logo} 
               alt="NeoHoosh" 
-              className="w-8 h-8"
+              className="w-7 h-7"
               whileTap={{ scale: 0.95 }}
             />
-            <span className="font-bold text-lg">نئوهوش</span>
+            <span className="font-bold text-base">نئوهوش</span>
           </div>
           <div className="flex items-center gap-2">
             <Link to="/chat">
-              <Button variant="ghost" size="icon" className="rounded-full relative">
+              <Button variant="ghost" size="icon" className="rounded-full relative h-9 w-9">
                 <MessageCircle className="w-5 h-5" />
               </Button>
             </Link>
@@ -426,7 +448,7 @@ const Index = () => {
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/50 safe-area-bottom">
-        <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+        <div className="flex items-center justify-around h-14 px-2 max-w-lg mx-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path || location.pathname === "/" && item.path === "/chat";
             const Icon = item.icon;
@@ -435,16 +457,16 @@ const Index = () => {
               <Link
                 key={item.href}
                 to={item.href}
-                className="flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[56px]"
+                className="flex flex-col items-center justify-center p-1.5 rounded-xl transition-all duration-200 min-w-[52px]"
               >
                 <motion.div whileTap={{ scale: 0.9 }} className="relative">
                   <Icon className={cn(
-                    "w-6 h-6 transition-colors",
+                    "w-5 h-5 transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )} />
                 </motion.div>
                 <span className={cn(
-                  "text-[10px] mt-1 font-medium transition-colors",
+                  "text-[10px] mt-0.5 font-medium transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground"
                 )}>
                   {item.label}
