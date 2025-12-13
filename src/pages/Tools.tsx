@@ -96,16 +96,11 @@ const tools: Tool[] = [
   }
 ];
 
-const categories = ["همه", "گفتگو", "تولید محتوا", "صوتی", "توسعه", "اجتماعی"];
-
 const Tools = () => {
-  const [selectedCategory, setSelectedCategory] = useState("همه");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTools = tools.filter(tool => {
-    const matchesCategory = selectedCategory === "همه" || tool.category === selectedCategory;
-    const matchesSearch = tool.title.includes(searchQuery) || tool.description.includes(searchQuery);
-    return matchesCategory && matchesSearch;
+    return tool.title.includes(searchQuery) || tool.description.includes(searchQuery);
   });
 
   return (
@@ -154,33 +149,6 @@ const Tools = () => {
           </motion.div>
         </div>
 
-        {/* Category Pills */}
-        <div className="px-4 mb-5">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className="flex gap-2 overflow-x-auto scrollbar-hide pb-1"
-          >
-            {categories.map((category, i) => (
-              <motion.button
-                key={category}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.1 + i * 0.03 }}
-                onClick={() => setSelectedCategory(category)}
-                className={cn(
-                  "px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all",
-                  selectedCategory === category
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "bg-muted/60 text-muted-foreground hover:bg-muted"
-                )}
-              >
-                {category}
-              </motion.button>
-            ))}
-          </motion.div>
-        </div>
 
         {/* Tools List - Super App Style */}
         <div className="px-4 space-y-3">
