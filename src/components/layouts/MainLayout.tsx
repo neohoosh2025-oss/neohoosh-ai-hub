@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home,
@@ -7,13 +7,10 @@ import {
   Settings,
   MessageCircle,
   Users,
-  ChevronLeft,
-  LogIn
+  ChevronLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -42,80 +39,35 @@ export function MainLayout({
 }: MainLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Modern Header */}
       {showHeader && (
         <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/30">
-          <div className="flex items-center justify-between px-4 h-14">
-            {/* Left Side */}
-            <div className="w-12 flex items-center">
-              {showBackButton ? (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => backPath ? navigate(backPath) : navigate(-1)}
-                  className="rounded-full h-9 w-9"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </Button>
-              ) : user ? (
-                <Link to="/settings">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm cursor-pointer"
-                  >
-                    {user.user_metadata?.display_name?.charAt(0)?.toUpperCase() || 
-                     user.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </motion.div>
-                </Link>
-              ) : null}
-            </div>
+          <div className="flex items-center justify-center px-4 h-14 relative">
+            {/* Left Side - Back Button */}
+            {showBackButton && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => backPath ? navigate(backPath) : navigate(-1)}
+                className="rounded-full h-9 w-9 absolute left-4"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+            )}
 
             {/* Center - Brand Name */}
-            <div className="flex-1 flex items-center justify-center">
-              <Link to="/" className="flex items-center gap-2">
-                <motion.span 
-                  className="text-xl font-pacifico bg-gradient-to-l from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  NeoHoosh
-                </motion.span>
-              </Link>
-            </div>
-
-            {/* Right Side */}
-            <div className="w-12 flex items-center justify-end">
-              {!user && (
-                <Link to="/auth">
-                  <Button 
-                    size="icon" 
-                    variant="ghost"
-                    className="rounded-full h-9 w-9"
-                  >
-                    <LogIn className="w-5 h-5" />
-                  </Button>
-                </Link>
-              )}
-            </div>
+            <Link to="/" className="flex items-center gap-2">
+              <motion.span 
+                className="text-xl font-pacifico bg-gradient-to-l from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                NeoHoosh
+              </motion.span>
+            </Link>
           </div>
         </header>
       )}
@@ -128,13 +80,13 @@ export function MainLayout({
         {children}
       </main>
 
-      {/* Bottom Navigation - 5 Items - Fixed to viewport bottom */}
+      {/* Bottom Navigation - Telegram Style with Better Animations */}
       {showNav && (
         <nav 
-          className="fixed left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/30"
+          className="fixed left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-t border-border/40"
           style={{ bottom: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+          <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = item.path === "/" 
                 ? location.pathname === "/" 
@@ -145,30 +97,58 @@ export function MainLayout({
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-200 min-w-[56px]"
+                  className="relative flex flex-col items-center justify-center py-2 px-3 min-w-[60px] group"
                 >
                   <motion.div
-                    whileTap={{ scale: 0.85 }}
                     className="relative"
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
-                      isActive 
-                        ? "bg-primary/10" 
-                        : "bg-transparent"
-                    )}>
-                      <Icon className={cn(
-                        "w-5 h-5 transition-colors",
-                        isActive ? "text-primary" : "text-muted-foreground"
-                      )} />
-                    </div>
+                    {/* Active Background Pill */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          layoutId="nav-pill"
+                          className="absolute inset-0 bg-primary/15 rounded-2xl -m-1.5"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      )}
+                    </AnimatePresence>
+                    
+                    {/* Icon with Bounce Animation */}
+                    <motion.div
+                      className="relative z-10 w-10 h-10 flex items-center justify-center"
+                      animate={isActive ? { y: [0, -3, 0] } : {}}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                    >
+                      <Icon 
+                        className={cn(
+                          "w-[22px] h-[22px] transition-all duration-200",
+                          isActive 
+                            ? "text-primary" 
+                            : "text-muted-foreground group-hover:text-foreground"
+                        )} 
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                    </motion.div>
                   </motion.div>
-                  <span className={cn(
-                    "text-[10px] mt-0.5 font-medium transition-colors",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}>
+                  
+                  {/* Label with Fade Animation */}
+                  <motion.span 
+                    className={cn(
+                      "text-[11px] mt-0.5 font-medium transition-colors duration-200",
+                      isActive 
+                        ? "text-primary" 
+                        : "text-muted-foreground group-hover:text-foreground"
+                    )}
+                    animate={isActive ? { scale: 1.05 } : { scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  >
                     {item.label}
-                  </span>
+                  </motion.span>
                 </Link>
               );
             })}
