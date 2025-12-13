@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "نام باید حداقل 2 کاراکتر باشد").max(100),
@@ -46,59 +47,152 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      <section className="relative overflow-hidden py-20 md:py-32">
-        <div className="absolute inset-0 bg-[image:var(--gradient-mesh)] opacity-40"></div>
-        <div className="container mx-auto px-4 relative">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="max-w-4xl mx-auto text-center space-y-6">
-            <Badge className="shadow-glow"><Sparkles className="w-4 h-4 ml-2" />تماس با ما</Badge>
-            <h1 className="text-4xl md:text-6xl font-bold font-display">با <span className="bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">تیم نئوهوش</span><br />در ارتباط باشید</h1>
-          </motion.div>
-        </div>
-      </section>
-
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            <Card className="border-2 border-primary/20 shadow-xl">
-              <CardHeader>
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                  <MessageCircle className="w-7 h-7 text-primary" />
-                </div>
-                <CardTitle className="text-3xl font-display">فرم تماس</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label>نام *</Label>
-                    <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className={errors.name ? "border-destructive" : ""} />
-                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>ایمیل *</Label>
-                    <Input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className={errors.email ? "border-destructive" : ""} />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
-                  </div>
-                  <div className="space-y-2">
-                    <Label>پیام *</Label>
-                    <Textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} rows={6} className={errors.message ? "border-destructive" : ""} />
-                    {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
-                  </div>
-                  <Button type="submit" size="lg" className="w-full shadow-glow" disabled={isSubmitting}>
-                    {isSubmitting ? "در حال ارسال..." : <><Send className="ml-2" />ارسال پیام</>}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <div className="space-y-6">
-              <Card><CardContent className="p-6 flex items-center gap-4"><Mail className="w-6 h-6 text-primary" /><div><h3 className="font-semibold">ایمیل</h3><a href="mailto:neohoosh.2025@gmail.com" className="text-muted-foreground hover:text-primary">neohoosh.2025@gmail.com</a></div></CardContent></Card>
-              <Card><CardContent className="p-6 flex items-center gap-4"><Instagram className="w-6 h-6 text-primary" /><div><h3 className="font-semibold">اینستاگرام</h3><a href="https://instagram.com/neohoosh.ai" target="_blank" rel="noopener" className="text-muted-foreground hover:text-primary">@neohoosh.ai</a></div></CardContent></Card>
-            </div>
+    <MainLayout>
+      <div className="pb-6">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden py-12 md:py-16">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent"></div>
+          <div className="container mx-auto px-4 relative">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              className="max-w-2xl mx-auto text-center space-y-4"
+            >
+              <Badge variant="secondary" className="gap-1">
+                <Sparkles className="w-3 h-3" />
+                تماس با ما
+              </Badge>
+              <h1 className="text-2xl md:text-3xl font-bold">
+                با{" "}
+                <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                  تیم نئوهوش
+                </span>
+                {" "}در ارتباط باشید
+              </h1>
+            </motion.div>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+
+        {/* Contact Section */}
+        <section className="px-4">
+          <div className="max-w-lg mx-auto space-y-4">
+            {/* Contact Form */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="border-border/50">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <MessageCircle className="w-5 h-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-lg">فرم تماس</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm">نام *</Label>
+                      <Input 
+                        value={formData.name} 
+                        onChange={(e) => setFormData({...formData, name: e.target.value})} 
+                        className={errors.name ? "border-destructive" : ""} 
+                        placeholder="نام خود را وارد کنید"
+                      />
+                      {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">ایمیل *</Label>
+                      <Input 
+                        type="email" 
+                        value={formData.email} 
+                        onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                        className={errors.email ? "border-destructive" : ""} 
+                        placeholder="example@email.com"
+                        dir="ltr"
+                      />
+                      {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm">پیام *</Label>
+                      <Textarea 
+                        value={formData.message} 
+                        onChange={(e) => setFormData({...formData, message: e.target.value})} 
+                        rows={4} 
+                        className={errors.message ? "border-destructive" : ""} 
+                        placeholder="پیام خود را بنویسید..."
+                      />
+                      {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
+                    </div>
+                    <Button type="submit" className="w-full gap-2" disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          در حال ارسال...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" />
+                          ارسال پیام
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Contact Info Cards */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
+            >
+              <Card className="border-border/50">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-5 h-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-sm">ایمیل</h3>
+                    <a 
+                      href="mailto:neohoosh.2025@gmail.com" 
+                      className="text-sm text-muted-foreground hover:text-primary transition-colors truncate block"
+                      dir="ltr"
+                    >
+                      neohoosh.2025@gmail.com
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-border/50">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0">
+                    <Instagram className="w-5 h-5 text-pink-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-medium text-sm">اینستاگرام</h3>
+                    <a 
+                      href="https://instagram.com/neohoosh.ai" 
+                      target="_blank" 
+                      rel="noopener" 
+                      className="text-sm text-muted-foreground hover:text-pink-500 transition-colors"
+                      dir="ltr"
+                    >
+                      @neohoosh.ai
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </section>
+      </div>
+    </MainLayout>
   );
 };
 
