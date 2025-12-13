@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { IncomingCallListener } from "@/components/neohi/IncomingCallDialog";
 import { StoryBar } from "@/components/neohi/StoryBar";
 import { showMessageNotification, isAppInBackground, ensureNotificationPermission } from "@/utils/neohiNotifications";
+import { GlobalAudioProvider } from "@/components/neohi/GlobalAudioPlayer";
 
 interface Chat {
   id: string;
@@ -289,6 +290,7 @@ export default function NeoHi() {
 
   // Main Chat List View - MINIMAL DESIGN
   return (
+    <GlobalAudioProvider>
     <div className="h-screen w-full bg-white dark:bg-neutral-950 flex flex-col">
       {/* Incoming Call Listener */}
       <IncomingCallListener />
@@ -443,5 +445,6 @@ export default function NeoHi() {
         }}
       />
     </div>
+    </GlobalAudioProvider>
   );
 }
