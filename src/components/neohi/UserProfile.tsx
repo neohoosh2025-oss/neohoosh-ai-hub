@@ -140,40 +140,48 @@ export function UserProfile({ userId, onClose, onSendMessage }: UserProfileProps
               className="overflow-y-auto max-h-[90vh]"
             >
               {/* Header Section */}
-              <div className="relative pt-8 pb-6 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
-                <button
-                  onClick={onClose}
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground transition-all hover:scale-110"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-
-                {/* Profile Photo */}
-                <div className="relative inline-block mb-4">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="cursor-pointer"
-                    onClick={() => user.avatar_url && setShowAvatarDialog(true)}
+              <div className="relative pt-8 pb-6 px-6 bg-gradient-to-br from-primary/5 via-background to-background">
+                {/* Top Row: Close button left, Username right */}
+                <div className="flex items-center justify-between mb-6">
+                  <button
+                    onClick={onClose}
+                    className="w-8 h-8 rounded-full bg-background/50 hover:bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground transition-all hover:scale-110"
                   >
-                    <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl">
-                      <AvatarImage src={user.avatar_url || undefined} />
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground text-3xl font-bold">
-                        {user.display_name?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </motion.div>
-                  {user.is_online && (
-                    <div className="absolute -bottom-1 right-0 w-6 h-6 rounded-full bg-green-500 ring-4 ring-background" />
-                  )}
+                    <X className="h-4 w-4" />
+                  </button>
+                  
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-foreground">@{user.username}</p>
+                    <p className="text-xs text-muted-foreground">{getStatusText()}</p>
+                  </div>
                 </div>
 
-                {/* User Name & Status */}
-                <h2 className="text-xl font-bold text-foreground mb-1 flex items-center justify-center gap-2">
-                  {user.display_name || "کاربر"}
-                  <CheckCircle2 className="h-5 w-5 text-primary" />
-                </h2>
-                <p className="text-muted-foreground text-sm">{getStatusText()}</p>
-                <p className="text-muted-foreground text-xs mt-1">@{user.username}</p>
+                {/* Profile Photo - Centered */}
+                <div className="flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      className="cursor-pointer"
+                      onClick={() => user.avatar_url && setShowAvatarDialog(true)}
+                    >
+                      <Avatar className="h-28 w-28 ring-4 ring-background shadow-xl">
+                        <AvatarImage src={user.avatar_url || undefined} />
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-primary-foreground text-3xl font-bold">
+                          {user.display_name?.charAt(0)?.toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </motion.div>
+                    {user.is_online && (
+                      <div className="absolute -bottom-1 right-0 w-6 h-6 rounded-full bg-green-500 ring-4 ring-background" />
+                    )}
+                  </div>
+
+                  {/* User Name */}
+                  <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    {user.display_name || "کاربر"}
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                  </h2>
+                </div>
               </div>
 
               {/* Action Buttons Row */}
