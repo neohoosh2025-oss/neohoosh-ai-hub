@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CheckCheck, MoreVertical, Trash2, Trash, Reply, Forward, Pencil, Smile } from "lucide-react";
-import { AudioPlayer } from "./AudioPlayer";
+import { VoiceMessage } from "./VoiceMessage";
+import { MusicMessage } from "./MusicMessage";
 import { VideoPlayer } from "./VideoPlayer";
 import { FileMessage } from "./FileMessage";
 import {
@@ -445,12 +446,22 @@ export function MessageList({ messages, loading, onMessageDeleted, onReply }: Me
 
                         {/* Voice Messages */}
                         {message.message_type === "voice" && (
-                          <AudioPlayer src={message.media_url} isOwn={isOwn} />
+                          <VoiceMessage 
+                            src={message.media_url} 
+                            messageId={message.id}
+                            isOwn={isOwn} 
+                            senderName={message.sender?.display_name}
+                          />
                         )}
 
-                        {/* Audio Files */}
+                        {/* Audio/Music Files */}
                         {message.message_type === "audio" && (
-                          <AudioPlayer src={message.media_url} isOwn={isOwn} />
+                          <MusicMessage 
+                            src={message.media_url} 
+                            messageId={message.id}
+                            fileName={message.content?.replace("🎵 ", "")}
+                            isOwn={isOwn} 
+                          />
                         )}
 
                         {/* Documents */}
