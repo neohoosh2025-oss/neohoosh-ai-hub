@@ -10,7 +10,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
 import { OptimizedImage } from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
-import { PWALayout } from "@/components/layouts/PWALayout";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 interface ArticleTranslation {
   language: string;
@@ -94,9 +94,9 @@ const Articles = () => {
   };
 
   return (
-    <PWALayout>
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
+    <MainLayout>
+      {/* Page Header */}
+      <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -237,7 +237,7 @@ const Articles = () => {
           </div>
         )}
       </div>
-    </PWALayout>
+    </MainLayout>
   );
 };
 

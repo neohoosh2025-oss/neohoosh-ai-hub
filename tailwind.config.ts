@@ -127,6 +127,8 @@ export default {
         vazir: ['Vazirmatn', 'sans-serif'],
         display: ['Space Grotesk', 'Vazirmatn', 'sans-serif'],
         body: ['Inter', 'Vazirmatn', 'sans-serif'],
+        fancy: ['Caveat', 'cursive'],
+        pacifico: ['Pacifico', 'cursive'],
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1.5' }],

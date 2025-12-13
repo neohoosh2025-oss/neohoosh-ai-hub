@@ -15,7 +15,7 @@ import {
   Wifi, WifiOff, Download, Camera, Save, Bell, BellOff
 } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
-import { PWALayout } from "@/components/layouts/PWALayout";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 interface UserStats {
   totalMessages: number;
@@ -271,7 +271,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <PWALayout>
+      <MainLayout>
         <div className="min-h-screen flex items-center justify-center">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
@@ -279,22 +279,22 @@ const Profile = () => {
             </div>
           </motion.div>
         </div>
-      </PWALayout>
+      </MainLayout>
     );
   }
 
   return (
-    <PWALayout>
+    <MainLayout>
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
 
       <div className="flex-1 overflow-y-auto">
-        {/* Header */}
+        {/* Page Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50"
+          className="sticky top-14 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50"
         >
-          <div className="flex items-center justify-between px-4 h-14">
+          <div className="flex items-center justify-between px-4 h-12">
             <div />
             <h1 className="font-semibold">تنظیمات</h1>
             <Button variant="ghost" size="icon" onClick={() => setIsEditing(!isEditing)} className="rounded-full">
@@ -568,7 +568,7 @@ const Profile = () => {
           </motion.div>
         </div>
       </div>
-    </PWALayout>
+    </MainLayout>
   );
 };
 
