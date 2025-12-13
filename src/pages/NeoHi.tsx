@@ -16,6 +16,7 @@ import BottomNavigation from "@/components/neohi/BottomNavigation";
 import { Link } from "react-router-dom";
 import { IncomingCallListener } from "@/components/neohi/IncomingCallDialog";
 import { StoryBar } from "@/components/neohi/StoryBar";
+import { showMessageNotification, isAppInBackground, ensureNotificationPermission } from "@/utils/neohiNotifications";
 
 interface Chat {
   id: string;
@@ -52,6 +53,9 @@ export default function NeoHi() {
     if (user) {
       loadChats();
       subscribeToChats();
+      
+      // Request notification permission
+      ensureNotificationPermission();
     }
   }, [user]);
 
@@ -186,7 +190,34 @@ export default function NeoHi() {
   const subscribeToChats = () => {
     const channel = supabase
       .channel("chat-updates")
-      .on("postgres_changes", { event: "*", schema: "public", table: "neohi_messages" }, () => loadChats())
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "neohi_messages" }, async (payload: any) => {
+        // Reload chats
+        loadChats();
+        
+        // Show notification for new message if app is in background
+        if (isAppInBackground() && payload.new && payload.new.sender_id !== user?.id) {
+          // Get sender info
+          const { data: sender } = await supabase
+            .from("neohi_users")
+            .select("display_name, avatar_url")
+            .eq("id", payload.new.sender_id)
+            .single();
+          
+          if (sender) {
+            const messagePreview = payload.new.message_type === "text" 
+              ? (payload.new.content || "پیام جدید").substring(0, 50)
+              : getMediaTypeLabel(payload.new.message_type);
+            
+            showMessageNotification(
+              sender.display_name || "کاربر",
+              messagePreview,
+              sender.avatar_url || undefined,
+              payload.new.chat_id
+            );
+          }
+        }
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "neohi_messages" }, () => loadChats())
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "neohi_chat_members" }, () => loadChats())
       .on("postgres_changes", { event: "*", schema: "public", table: "neohi_chats" }, () => loadChats())
       .subscribe();

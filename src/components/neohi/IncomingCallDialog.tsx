@@ -4,6 +4,8 @@ import { Phone, PhoneOff, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { CallScreen } from "./CallScreen";
+import { callRingtone } from "@/utils/callRingtone";
+import { showCallNotification, isAppInBackground } from "@/utils/neohiNotifications";
 
 interface IncomingCall {
   id: string;
@@ -18,6 +20,30 @@ interface IncomingCall {
 export function IncomingCallListener() {
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [activeCall, setActiveCall] = useState<IncomingCall | null>(null);
+
+  // Start/stop ringtone based on incoming call state
+  useEffect(() => {
+    if (incomingCall) {
+      // Start ringtone
+      callRingtone.start();
+      
+      // Show notification if app is in background
+      if (isAppInBackground()) {
+        showCallNotification(
+          incomingCall.caller.display_name || "کاربر",
+          incomingCall.call_type,
+          incomingCall.caller.avatar_url || undefined
+        );
+      }
+    } else {
+      // Stop ringtone when call is answered/declined
+      callRingtone.stop();
+    }
+
+    return () => {
+      callRingtone.stop();
+    };
+  }, [incomingCall]);
 
   // Check for pending incoming calls on mount
   const checkPendingCalls = useCallback(async (userId: string) => {
@@ -135,6 +161,9 @@ export function IncomingCallListener() {
     if (incomingCall) {
       console.log("Accepting call:", incomingCall.id);
       
+      // Stop ringtone
+      callRingtone.stop();
+      
       // Update call status to connected
       await supabase
         .from("neohi_calls")
@@ -149,6 +178,10 @@ export function IncomingCallListener() {
   const handleDecline = async () => {
     if (incomingCall) {
       console.log("Declining call:", incomingCall.id);
+      
+      // Stop ringtone
+      callRingtone.stop();
+      
       await supabase
         .from("neohi_calls")
         .update({ status: "declined", ended_at: new Date().toISOString() })
