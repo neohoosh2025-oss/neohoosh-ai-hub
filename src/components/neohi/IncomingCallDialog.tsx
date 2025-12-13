@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Phone, PhoneOff, Video } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,54 +19,128 @@ export function IncomingCallListener() {
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [activeCall, setActiveCall] = useState<IncomingCall | null>(null);
 
+  // Check for pending incoming calls on mount
+  const checkPendingCalls = useCallback(async (userId: string) => {
+    console.log("Checking pending calls for user:", userId);
+    
+    const { data: pendingCalls, error } = await supabase
+      .from("neohi_calls")
+      .select("*")
+      .eq("callee_id", userId)
+      .eq("status", "ringing")
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.error("Error checking pending calls:", error);
+      return;
+    }
+
+    if (pendingCalls && pendingCalls.length > 0) {
+      const call = pendingCalls[0];
+      console.log("Found pending call:", call);
+      
+      // Get caller info
+      const { data: caller } = await supabase
+        .from("neohi_users")
+        .select("id, display_name, avatar_url")
+        .eq("id", call.caller_id)
+        .single();
+
+      if (caller) {
+        setIncomingCall({
+          id: call.id,
+          call_type: call.call_type as "voice" | "video",
+          caller,
+        });
+      }
+    }
+  }, []);
+
   useEffect(() => {
-    let channel: any;
+    let callChannel: ReturnType<typeof supabase.channel> | null = null;
+    let mounted = true;
 
     const setupListener = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || !mounted) return;
 
-      channel = supabase
-        .channel("incoming-calls")
+      console.log("Setting up incoming call listener for user:", user.id);
+
+      // Check for any pending calls first
+      await checkPendingCalls(user.id);
+
+      // Subscribe to ALL call changes and filter client-side
+      callChannel = supabase
+        .channel(`incoming-calls-${user.id}`)
         .on(
           "postgres_changes",
           {
-            event: "INSERT",
+            event: "*",
             schema: "public",
             table: "neohi_calls",
-            filter: `callee_id=eq.${user.id}`,
           },
           async (payload: any) => {
-            if (payload.new.status === "ringing") {
+            console.log("Call event received:", payload);
+            
+            const callData = payload.new;
+            if (!callData) return;
+            
+            // Handle new incoming call
+            if (payload.eventType === "INSERT" && callData.callee_id === user.id && callData.status === "ringing") {
+              console.log("New incoming call:", callData);
+              
               // Get caller info
               const { data: caller } = await supabase
                 .from("neohi_users")
                 .select("id, display_name, avatar_url")
-                .eq("id", payload.new.caller_id)
+                .eq("id", callData.caller_id)
                 .single();
 
               if (caller) {
                 setIncomingCall({
-                  id: payload.new.id,
-                  call_type: payload.new.call_type,
+                  id: callData.id,
+                  call_type: callData.call_type,
                   caller,
                 });
               }
             }
+            
+            // Handle call status updates (declined/ended)
+            if (payload.eventType === "UPDATE") {
+              if (callData.status === "declined" || callData.status === "ended" || callData.status === "missed") {
+                setIncomingCall(prev => prev?.id === callData.id ? null : prev);
+                setActiveCall(prev => prev?.id === callData.id ? null : prev);
+              }
+            }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log("Call channel subscription status:", status);
+        });
     };
 
     setupListener();
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      mounted = false;
+      if (callChannel) {
+        console.log("Removing call channel");
+        supabase.removeChannel(callChannel);
+      }
     };
-  }, []);
+  }, [checkPendingCalls]);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
     if (incomingCall) {
+      console.log("Accepting call:", incomingCall.id);
+      
+      // Update call status to connected
+      await supabase
+        .from("neohi_calls")
+        .update({ status: "connected", started_at: new Date().toISOString() })
+        .eq("id", incomingCall.id);
+      
       setActiveCall(incomingCall);
       setIncomingCall(null);
     }
@@ -74,9 +148,10 @@ export function IncomingCallListener() {
 
   const handleDecline = async () => {
     if (incomingCall) {
+      console.log("Declining call:", incomingCall.id);
       await supabase
-        .from("neohi_calls" as any)
-        .update({ status: "declined", ended_at: new Date().toISOString() } as any)
+        .from("neohi_calls")
+        .update({ status: "declined", ended_at: new Date().toISOString() })
         .eq("id", incomingCall.id);
       setIncomingCall(null);
     }
