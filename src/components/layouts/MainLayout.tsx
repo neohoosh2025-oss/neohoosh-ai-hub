@@ -44,7 +44,7 @@ export function MainLayout({
     <div className="min-h-screen bg-background flex flex-col">
       {/* Modern Header */}
       {showHeader && (
-        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/30">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/30">
           <div className="flex items-center justify-center px-4 h-14 relative">
             {/* Left Side - Back Button */}
             {showBackButton && (
@@ -75,6 +75,7 @@ export function MainLayout({
       {/* Main Content */}
       <main className={cn(
         "flex-1",
+        showHeader && "pt-14",
         showNav && "pb-20"
       )}>
         {children}
