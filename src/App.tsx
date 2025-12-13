@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import Navigation from "./components/Navigation";
 import { PageTransition } from "./components/PageTransition";
 import { SystemMonitor } from "./components/SystemMonitor";
 import { lazy, Suspense } from "react";
@@ -66,48 +65,34 @@ const App = () => (
         <SystemMonitor />
         <BrowserRouter>
           <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              {/* Full-screen routes without Navigation/Footer */}
-              <Route path="/" element={<Home />} />
-              <Route path="/neohi" element={<NeoHi />} />
-              <Route path="/ai-settings" element={<AISettings />} />
-              <Route path="/design-system" element={<DesignSystem />} />
-              <Route path="/chat" element={<Chat />} />
-              
-              {/* Regular routes with Navigation/Footer */}
-              <Route path="*" element={
-                <div className="min-h-screen flex flex-col">
-                  <Navigation />
-                  <main className="flex-1">
-                    <PageTransition>
-                      <Routes>
-                        <Route path="/articles" element={<Articles />} />
-                        <Route path="/articles/:id" element={<ArticleDetail />} />
-                        <Route path="/products" element={<Products />} />
-                        <Route path="/products/:id" element={<ProductDetail />} />
-                        <Route path="/services" element={<Services />} />
-                        <Route path="/pricing" element={<Pricing />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/contact" element={<Contact />} />
-                        <Route path="/tools" element={<Tools />} />
-                        <Route path="/tools/image-generator" element={<ImageGenerator />} />
-                        <Route path="/tools/voice-to-text" element={<VoiceToText />} />
-                        <Route path="/tools/text-to-voice" element={<TextToVoice />} />
-                        <Route path="/tools/code-generator" element={<CodeGenerator />} />
-                        <Route path="/memory" element={<MemoryManagement />} />
-                        <Route path="/admin" element={<Admin />} />
-                        <Route path="/admin/translate" element={<AdminTranslate />} />
-                        <Route path="/auth" element={<Auth />} />
-                        <Route path="/settings" element={<Settings />} />
-                        
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </PageTransition>
-                  </main>
-                  
-                </div>
-              } />
-            </Routes>
+            <PageTransition>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/neohi" element={<NeoHi />} />
+                <Route path="/ai-settings" element={<AISettings />} />
+                <Route path="/design-system" element={<DesignSystem />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/articles" element={<Articles />} />
+                <Route path="/articles/:id" element={<ArticleDetail />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/tools" element={<Tools />} />
+                <Route path="/tools/image-generator" element={<ImageGenerator />} />
+                <Route path="/tools/voice-to-text" element={<VoiceToText />} />
+                <Route path="/tools/text-to-voice" element={<TextToVoice />} />
+                <Route path="/tools/code-generator" element={<CodeGenerator />} />
+                <Route path="/memory" element={<MemoryManagement />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/translate" element={<AdminTranslate />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PageTransition>
           </Suspense>
         </BrowserRouter>
       </TooltipProvider>
