@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Sparkles, Mail, Lock, User } from "lucide-react";
-import { MainLayout } from "@/components/layouts/MainLayout";
+import { Eye, EyeOff, Loader2, Sparkles, Home, BookOpen, Settings } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 
 const Auth = () => {
@@ -20,13 +20,11 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const navigate = useNavigate();
 
   const navItems = [
-    { icon: Bot, label: "چت", href: "/chat", path: "/chat" },
-    { icon: Users, label: "نئوهای", href: "/neohi", path: "/neohi" },
-    { icon: Wand2, label: "ابزارها", href: "/tools", path: "/tools" },
+    { icon: Home, label: "خانه", href: "/", path: "/" },
     { icon: BookOpen, label: "مقالات", href: "/articles", path: "/articles" },
     { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
   ];
@@ -101,11 +99,8 @@ const Auth = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="flex items-center justify-between px-4 h-12">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="نئوهوش" className="w-7 h-7" />
-            <span className="font-bold text-base">نئوهوش</span>
-          </Link>
+        <div className="flex items-center justify-center px-4 h-14">
+          <span className="font-fancy text-2xl text-primary">NeoHoosh</span>
         </div>
       </header>
 
@@ -129,8 +124,8 @@ const Auth = () => {
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
-              <div className="relative bg-gradient-to-br from-primary to-secondary p-4 rounded-2xl shadow-xl">
-                <img src={logo} alt="نئوهوش" className="w-10 h-10" />
+              <div className="relative bg-gradient-to-br from-primary to-secondary p-5 rounded-2xl shadow-xl">
+                <Sparkles className="w-10 h-10 text-primary-foreground" />
               </div>
             </div>
           </motion.div>
