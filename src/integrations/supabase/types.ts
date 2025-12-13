@@ -368,6 +368,112 @@ export type Database = {
           },
         ]
       }
+      neohi_call_signals: {
+        Row: {
+          call_id: string
+          created_at: string | null
+          id: string
+          sender_id: string
+          signal_data: Json
+          signal_type: string
+        }
+        Insert: {
+          call_id: string
+          created_at?: string | null
+          id?: string
+          sender_id: string
+          signal_data: Json
+          signal_type: string
+        }
+        Update: {
+          call_id?: string
+          created_at?: string | null
+          id?: string
+          sender_id?: string
+          signal_data?: Json
+          signal_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_call_signals_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_call_signals_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      neohi_calls: {
+        Row: {
+          call_type: string
+          callee_id: string
+          caller_id: string
+          chat_id: string | null
+          created_at: string | null
+          duration: number | null
+          ended_at: string | null
+          id: string
+          started_at: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          call_type?: string
+          callee_id: string
+          caller_id: string
+          chat_id?: string | null
+          created_at?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          call_type?: string
+          callee_id?: string
+          caller_id?: string
+          chat_id?: string | null
+          created_at?: string | null
+          duration?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neohi_calls_callee_id_fkey"
+            columns: ["callee_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_calls_caller_id_fkey"
+            columns: ["caller_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neohi_calls_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "neohi_chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neohi_chat_members: {
         Row: {
           chat_id: string
