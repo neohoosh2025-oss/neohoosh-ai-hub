@@ -5,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import Navigation from "./components/Navigation";
-import Footer from "./components/Footer";
 import { PageTransition } from "./components/PageTransition";
 import { SystemMonitor } from "./components/SystemMonitor";
 import { lazy, Suspense } from "react";
@@ -105,7 +104,7 @@ const App = () => (
                       </Routes>
                     </PageTransition>
                   </main>
-                  <Footer />
+                  
                 </div>
               } />
             </Routes>

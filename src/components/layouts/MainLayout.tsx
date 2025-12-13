@@ -128,9 +128,12 @@ export function MainLayout({
         {children}
       </main>
 
-      {/* Bottom Navigation - 5 Items */}
+      {/* Bottom Navigation - 5 Items - Fixed to viewport bottom */}
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/30 safe-area-bottom">
+        <nav 
+          className="fixed left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/30"
+          style={{ bottom: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
           <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = item.path === "/" 
