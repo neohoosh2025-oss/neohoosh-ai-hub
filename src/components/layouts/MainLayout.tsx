@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   Home,
@@ -80,13 +80,13 @@ export function MainLayout({
         {children}
       </main>
 
-      {/* Bottom Navigation - Telegram Style with Better Animations */}
+      {/* Bottom Navigation - Clean Minimal Style */}
       {showNav && (
         <nav 
-          className="fixed left-0 right-0 z-50 bg-background/98 backdrop-blur-xl border-t border-border/40"
+          className="fixed left-0 right-0 z-50 bg-background border-t border-border/50"
           style={{ bottom: 0, paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
         >
-          <div className="flex items-center justify-around h-16 px-1 max-w-lg mx-auto">
+          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
             {navItems.map((item) => {
               const isActive = item.path === "/" 
                 ? location.pathname === "/" 
@@ -97,58 +97,39 @@ export function MainLayout({
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="relative flex flex-col items-center justify-center py-2 px-3 min-w-[60px] group"
+                  className="relative flex flex-col items-center justify-center py-2 px-4 min-w-[56px]"
                 >
                   <motion.div
-                    className="relative"
+                    className="relative flex flex-col items-center"
                     whileTap={{ scale: 0.9 }}
                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                   >
-                    {/* Active Background Pill */}
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div
-                          layoutId="nav-pill"
-                          className="absolute inset-0 bg-primary/15 rounded-2xl -m-1.5"
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.8 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                        />
-                      )}
-                    </AnimatePresence>
-                    
-                    {/* Icon with Bounce Animation */}
-                    <motion.div
-                      className="relative z-10 w-10 h-10 flex items-center justify-center"
-                      animate={isActive ? { y: [0, -3, 0] } : {}}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                    >
+                    {/* Icon Container */}
+                    <div className={cn(
+                      "w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300",
+                      isActive && "bg-primary/10"
+                    )}>
                       <Icon 
                         className={cn(
                           "w-[22px] h-[22px] transition-all duration-200",
                           isActive 
                             ? "text-primary" 
-                            : "text-muted-foreground group-hover:text-foreground"
+                            : "text-muted-foreground"
                         )} 
-                        strokeWidth={isActive ? 2.5 : 2}
+                        strokeWidth={isActive ? 2.5 : 1.8}
                       />
-                    </motion.div>
-                  </motion.div>
-                  
-                  {/* Label with Fade Animation */}
-                  <motion.span 
-                    className={cn(
-                      "text-[11px] mt-0.5 font-medium transition-colors duration-200",
+                    </div>
+                    
+                    {/* Label */}
+                    <span className={cn(
+                      "text-[10px] mt-0.5 font-medium transition-colors duration-200",
                       isActive 
                         ? "text-primary" 
-                        : "text-muted-foreground group-hover:text-foreground"
-                    )}
-                    animate={isActive ? { scale: 1.05 } : { scale: 1 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  >
-                    {item.label}
-                  </motion.span>
+                        : "text-muted-foreground"
+                    )}>
+                      {item.label}
+                    </span>
+                  </motion.div>
                 </Link>
               );
             })}

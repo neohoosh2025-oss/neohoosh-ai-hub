@@ -11,8 +11,9 @@ import {
   ArrowLeft,
   Zap,
   TrendingUp,
-  BookOpen,
-  ChevronRight
+  Star,
+  Award,
+  Target
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,23 +23,14 @@ import { usePWA } from "@/hooks/usePWA";
 import { MainLayout } from "@/components/layouts/MainLayout";
 import { cn } from "@/lib/utils";
 
-interface Article {
-  id: string;
-  title: string;
-  excerpt: string;
-  category: string;
-  image_url: string | null;
-  created_at: string;
-}
-
 const Index = () => {
   const { isOnline } = usePWA();
   const [showSplash, setShowSplash] = useState(() => {
     const hasSeenSplash = sessionStorage.getItem('neohoosh_splash_seen');
     return !hasSeenSplash;
   });
-  const [articles, setArticles] = useState<Article[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [stats, setStats] = useState({ messages: 0, conversations: 0 });
 
   const handleSplashComplete = () => {
     sessionStorage.setItem('neohoosh_splash_seen', 'true');
@@ -47,24 +39,44 @@ const Index = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [articlesData, userData] = await Promise.all([
-        supabase.from("articles").select("*").order("created_at", { ascending: false }).limit(3),
-        supabase.auth.getUser()
-      ]);
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
       
-      setArticles(articlesData.data || []);
-      setUser(userData.data.user);
+      if (user) {
+        const { data: conversations } = await supabase
+          .from("conversations")
+          .select("id")
+          .eq("user_id", user.id);
+
+        if (conversations && conversations.length > 0) {
+          const { count } = await supabase
+            .from("messages")
+            .select("id", { count: 'exact', head: true })
+            .in("conversation_id", conversations.map(c => c.id));
+          
+          setStats({
+            messages: count || 0,
+            conversations: conversations.length,
+          });
+        }
+      }
     };
     fetchData();
   }, []);
 
-  const quickActions = [
-    { icon: MessageCircle, title: "دستیار AI", desc: "گفتگو با هوش مصنوعی", path: "/chat", gradient: "from-blue-500 to-cyan-500" },
-    { icon: Image, title: "تولید تصویر", desc: "خلق تصاویر با AI", path: "/tools/image-generator", gradient: "from-purple-500 to-pink-500" },
-    { icon: Mic, title: "صدا به متن", desc: "تبدیل گفتار به نوشتار", path: "/tools/voice-to-text", gradient: "from-green-500 to-emerald-500" },
-    { icon: Volume2, title: "متن به صدا", desc: "تبدیل متن به گفتار", path: "/tools/text-to-voice", gradient: "from-teal-500 to-cyan-500" },
-    { icon: Code, title: "تولید کد", desc: "برنامه‌نویسی با AI", path: "/tools/code-generator", gradient: "from-orange-500 to-amber-500" },
-    { icon: Users, title: "NEOHI", desc: "شبکه اجتماعی", path: "/neohi", gradient: "from-pink-500 to-rose-500" },
+  const tools = [
+    { icon: MessageCircle, title: "دستیار AI", desc: "گفتگو با هوش مصنوعی", path: "/chat", color: "bg-blue-500" },
+    { icon: Image, title: "تولید تصویر", desc: "خلق تصاویر با AI", path: "/tools/image-generator", color: "bg-purple-500" },
+    { icon: Mic, title: "صدا به متن", desc: "تبدیل گفتار", path: "/tools/voice-to-text", color: "bg-emerald-500" },
+    { icon: Volume2, title: "متن به صدا", desc: "تبدیل متن", path: "/tools/text-to-voice", color: "bg-cyan-500" },
+    { icon: Code, title: "تولید کد", desc: "برنامه‌نویسی", path: "/tools/code-generator", color: "bg-orange-500" },
+    { icon: Users, title: "NEOHI", desc: "شبکه اجتماعی", path: "/neohi", color: "bg-pink-500" },
+  ];
+
+  const features = [
+    { icon: Zap, title: "سریع و قدرتمند", desc: "پاسخ‌های فوری با بهترین مدل‌ها" },
+    { icon: Target, title: "دقت بالا", desc: "نتایج حرفه‌ای و دقیق" },
+    { icon: Award, title: "کیفیت برتر", desc: "خروجی‌های با کیفیت بالا" },
   ];
 
   if (!isOnline) {
@@ -77,14 +89,13 @@ const Index = () => {
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       </AnimatePresence>
 
-      <div className="px-4 py-6 space-y-8 pb-24">
+      <div className="px-4 py-6 space-y-6 pb-24">
         {/* Welcome Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-2"
         >
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm mb-1">
             {new Date().toLocaleDateString('fa-IR', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
           <h1 className="text-2xl font-bold">
@@ -101,7 +112,6 @@ const Index = () => {
           <Link to="/chat">
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-6 text-primary-foreground">
               <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
               
               <div className="relative space-y-4">
                 <div className="flex items-center gap-2">
@@ -113,10 +123,10 @@ const Index = () => {
                   </span>
                 </div>
                 
-                <div className="space-y-1">
-                  <h2 className="text-xl font-bold">شروع گفتگو با هوش مصنوعی</h2>
+                <div>
+                  <h2 className="text-xl font-bold mb-1">شروع گفتگو با هوش مصنوعی</h2>
                   <p className="text-sm text-primary-foreground/80">
-                    سوالات خود را بپرسید، کدنویسی کنید، محتوا تولید کنید
+                    سوالات خود را بپرسید و پاسخ دریافت کنید
                   </p>
                 </div>
                 
@@ -129,7 +139,26 @@ const Index = () => {
           </Link>
         </motion.section>
 
-        {/* Quick Actions Grid */}
+        {/* User Stats - Only if logged in */}
+        {user && (stats.messages > 0 || stats.conversations > 0) && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="grid grid-cols-2 gap-3"
+          >
+            <div className="p-4 rounded-2xl bg-card border border-border/50 text-center">
+              <div className="text-2xl font-bold text-primary">{stats.messages}</div>
+              <div className="text-xs text-muted-foreground mt-1">پیام ارسال شده</div>
+            </div>
+            <div className="p-4 rounded-2xl bg-card border border-border/50 text-center">
+              <div className="text-2xl font-bold text-primary">{stats.conversations}</div>
+              <div className="text-xs text-muted-foreground mt-1">گفتگو</div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* Tools Grid */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,35 +167,32 @@ const Index = () => {
         >
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold">ابزارها</h2>
-            <Link to="/tools" className="text-sm text-primary flex items-center gap-1">
-              همه
-              <ChevronRight className="w-4 h-4 rotate-180" />
-            </Link>
+            <Link to="/tools" className="text-sm text-primary">مشاهده همه</Link>
           </div>
           
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action, i) => {
-              const Icon = action.icon;
+          <div className="grid grid-cols-3 gap-3">
+            {tools.map((tool, i) => {
+              const Icon = tool.icon;
               return (
                 <motion.div
-                  key={action.title}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  key={tool.title}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25 + i * 0.05 }}
                 >
-                  <Link to={action.path}>
-                    <div className="p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all group">
+                  <Link to={tool.path}>
+                    <div className="p-4 rounded-2xl bg-card border border-border/50 text-center hover:border-primary/30 hover:shadow-md transition-all group">
                       <div className={cn(
-                        "w-11 h-11 rounded-xl mb-3 flex items-center justify-center bg-gradient-to-br",
-                        action.gradient
+                        "w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center",
+                        tool.color
                       )}>
-                        <Icon className="w-5 h-5 text-white" />
+                        <Icon className="w-6 h-6 text-white" />
                       </div>
-                      <h3 className="font-semibold text-sm group-hover:text-primary transition-colors">
-                        {action.title}
+                      <h3 className="font-semibold text-sm mb-0.5 group-hover:text-primary transition-colors">
+                        {tool.title}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {action.desc}
+                      <p className="text-[10px] text-muted-foreground">
+                        {tool.desc}
                       </p>
                     </div>
                   </Link>
@@ -176,18 +202,51 @@ const Index = () => {
           </div>
         </motion.section>
 
-        {/* Stats Row */}
+        {/* Features Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          <h2 className="text-lg font-bold">چرا نئوهوش؟</h2>
+          
+          <div className="space-y-3">
+            {features.map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={feature.title}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.35 + i * 0.05 }}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm">{feature.title}</h3>
+                    <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
+
+        {/* Platform Stats */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
           className="grid grid-cols-3 gap-3"
         >
           {[
-            { icon: Zap, value: "۱۰۰+", label: "مدل AI", color: "text-amber-500" },
-            { icon: Users, value: "۵K+", label: "کاربر فعال", color: "text-blue-500" },
+            { icon: Star, value: "۱۰۰+", label: "مدل AI", color: "text-amber-500" },
+            { icon: Users, value: "۵K+", label: "کاربر", color: "text-blue-500" },
             { icon: TrendingUp, value: "۹۹%", label: "رضایت", color: "text-green-500" },
-          ].map((stat, i) => (
+          ].map((stat) => (
             <div key={stat.label} className="p-4 rounded-2xl bg-muted/50 text-center">
               <stat.icon className={cn("w-5 h-5 mx-auto mb-2", stat.color)} />
               <div className="text-lg font-bold">{stat.value}</div>
@@ -195,58 +254,6 @@ const Index = () => {
             </div>
           ))}
         </motion.section>
-
-        {/* Latest Articles */}
-        {articles.length > 0 && (
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-4"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-bold">آخرین مقالات</h2>
-              </div>
-              <Link to="/articles" className="text-sm text-primary flex items-center gap-1">
-                همه
-                <ChevronRight className="w-4 h-4 rotate-180" />
-              </Link>
-            </div>
-            
-            <div className="space-y-3">
-              {articles.map((article, idx) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.45 + idx * 0.05 }}
-                >
-                  <Link to={`/articles/${article.id}`}>
-                    <div className="flex gap-3 p-3 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-all group">
-                      {article.image_url && (
-                        <img 
-                          src={article.image_url} 
-                          alt={article.title}
-                          className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0 py-1">
-                        <h3 className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">
-                          {article.title}
-                        </h3>
-                        <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                          {article.excerpt}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          </motion.section>
-        )}
       </div>
     </MainLayout>
   );
