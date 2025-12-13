@@ -5,9 +5,10 @@ import {
   Home,
   BookOpen,
   Settings,
-  User,
-  LogIn,
-  ChevronLeft
+  MessageCircle,
+  Users,
+  ChevronLeft,
+  LogIn
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,11 @@ interface MainLayoutProps {
 }
 
 const navItems = [
-  { icon: Home, label: "خانه", href: "/", path: "/" },
+  { icon: MessageCircle, label: "چت‌بات", href: "/chat", path: "/chat" },
   { icon: BookOpen, label: "مقالات", href: "/articles", path: "/articles" },
-  { icon: Settings, label: "تنظیمات", href: "/profile", path: "/profile" },
+  { icon: Home, label: "خانه", href: "/", path: "/" },
+  { icon: Users, label: "نئوهای", href: "/neohi", path: "/neohi" },
+  { icon: Settings, label: "تنظیمات", href: "/settings", path: "/settings" },
 ];
 
 export function MainLayout({ 
@@ -59,10 +62,10 @@ export function MainLayout({
     <div className="min-h-screen bg-background flex flex-col">
       {/* Modern Header */}
       {showHeader && (
-        <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl border-b border-border/40 shadow-sm">
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border/30">
           <div className="flex items-center justify-between px-4 h-14">
             {/* Left Side */}
-            <div className="w-20 flex items-center">
+            <div className="w-12 flex items-center">
               {showBackButton ? (
                 <Button 
                   variant="ghost" 
@@ -72,6 +75,17 @@ export function MainLayout({
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </Button>
+              ) : user ? (
+                <Link to="/settings">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-sm font-bold shadow-sm cursor-pointer"
+                  >
+                    {user.user_metadata?.display_name?.charAt(0)?.toUpperCase() || 
+                     user.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </motion.div>
+                </Link>
               ) : null}
             </div>
 
@@ -79,36 +93,25 @@ export function MainLayout({
             <div className="flex-1 flex items-center justify-center">
               <Link to="/" className="flex items-center gap-2">
                 <motion.span 
-                  className="text-2xl font-pacifico bg-gradient-to-l from-primary via-secondary to-accent bg-clip-text text-transparent"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className="text-xl font-pacifico bg-gradient-to-l from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   NeoHoosh
                 </motion.span>
               </Link>
             </div>
 
-            {/* Right Side - Auth */}
-            <div className="w-20 flex items-center justify-end">
-              {user ? (
-                <Link to="/profile">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-white text-sm font-bold shadow-md cursor-pointer"
-                  >
-                    {user.user_metadata?.display_name?.charAt(0)?.toUpperCase() || 
-                     user.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </motion.div>
-                </Link>
-              ) : (
+            {/* Right Side */}
+            <div className="w-12 flex items-center justify-end">
+              {!user && (
                 <Link to="/auth">
                   <Button 
-                    size="sm" 
-                    className="rounded-full h-9 px-4 text-xs gap-1.5 shadow-md bg-gradient-to-r from-primary to-primary/90"
+                    size="icon" 
+                    variant="ghost"
+                    className="rounded-full h-9 w-9"
                   >
-                    <LogIn className="w-3.5 h-3.5" />
-                    ورود
+                    <LogIn className="w-5 h-5" />
                   </Button>
                 </Link>
               )}
@@ -120,43 +123,45 @@ export function MainLayout({
       {/* Main Content */}
       <main className={cn(
         "flex-1",
-        showNav && "pb-16"
+        showNav && "pb-20"
       )}>
         {children}
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - 5 Items */}
       {showNav && (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/40 shadow-lg">
-          <div className="flex items-center justify-around h-14 px-4 max-w-lg mx-auto">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border/30 safe-area-bottom">
+          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path || 
-                (item.path !== "/" && location.pathname.startsWith(item.path));
+              const isActive = item.path === "/" 
+                ? location.pathname === "/" 
+                : location.pathname.startsWith(item.path);
               const Icon = item.icon;
               
               return (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className="flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 min-w-[60px]"
+                  className="flex flex-col items-center justify-center p-2 rounded-2xl transition-all duration-200 min-w-[56px]"
                 >
                   <motion.div
                     whileTap={{ scale: 0.85 }}
                     className="relative"
                   >
-                    <Icon className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground"
-                    )} />
-                    {isActive && (
-                      <motion.div
-                        layoutId="main-nav-indicator"
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-primary"
-                      />
-                    )}
+                    <div className={cn(
+                      "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
+                      isActive 
+                        ? "bg-primary/10" 
+                        : "bg-transparent"
+                    )}>
+                      <Icon className={cn(
+                        "w-5 h-5 transition-colors",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )} />
+                    </div>
                   </motion.div>
                   <span className={cn(
-                    "text-[10px] mt-1 font-medium transition-colors",
+                    "text-[10px] mt-0.5 font-medium transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}>
                     {item.label}
