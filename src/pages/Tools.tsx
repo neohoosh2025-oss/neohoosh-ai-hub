@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Image, 
@@ -11,13 +10,13 @@ import {
   Code, 
   FileText,
   Sparkles,
-  ArrowLeft,
   Search,
   Users
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 interface Tool {
   id: string;
@@ -102,9 +101,9 @@ const Tools = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
+    <MainLayout>
+      {/* Page Header */}
+      <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -199,7 +198,7 @@ const Tools = () => {
           </div>
         )}
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Eye, EyeOff, Loader2, Bot, Wand2, BookOpen, Users, Settings } from "lucide-react";
-import logo from "@/assets/neohoosh-logo-new.png";
-import { cn } from "@/lib/utils";
-import type { Session, User } from "@supabase/supabase-js";
+import { Eye, EyeOff, Loader2, Sparkles, Mail, Lock, User } from "lucide-react";
+import { MainLayout } from "@/components/layouts/MainLayout";
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 
 const Auth = () => {
   const location = useLocation();
