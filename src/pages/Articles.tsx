@@ -1,16 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Calendar, Search, Grid3x3, List, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Clock, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from "framer-motion";
-import { OptimizedImage } from "@/components/OptimizedImage";
 import { cn } from "@/lib/utils";
 import { MainLayout } from "@/components/layouts/MainLayout";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ArticleTranslation {
   language: string;
@@ -30,15 +27,12 @@ interface Article {
   article_translations?: ArticleTranslation[];
 }
 
-type ViewMode = "grid" | "list";
-
 const Articles = () => {
   const [articles, setArticles] = useState<Article[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const { language } = useLanguage();
 
   useEffect(() => {
@@ -95,142 +89,126 @@ const Articles = () => {
 
   return (
     <MainLayout>
-      {/* Page Header */}
-      <div className="sticky top-14 z-30 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-xl font-bold">مقالات</h1>
-              <p className="text-xs text-muted-foreground">دانشنامه هوش مصنوعی</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="icon"
-                className="h-9 w-9 rounded-lg"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </Button>
-              <Button
-                variant={viewMode === "list" ? "default" : "ghost"}
-                size="icon"
-                className="h-9 w-9 rounded-lg"
-                onClick={() => setViewMode("list")}
-              >
-                <List className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="جستجو در مقالات..."
-              className="pr-10 h-11 rounded-xl bg-muted/50 border-0"
-            />
-          </div>
-        </div>
+      <div className="px-4 py-6 space-y-6 pb-24">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-1"
+        >
+          <h1 className="text-2xl font-bold">مقالات</h1>
+          <p className="text-sm text-muted-foreground">دانشنامه هوش مصنوعی</p>
+        </motion.div>
+        
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="relative"
+        >
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="جستجو در مقالات..."
+            className="pr-12 h-12 rounded-2xl bg-muted/50 border-0 text-base"
+          />
+        </motion.div>
         
         {/* Category Pills */}
-        <div className="px-4 pb-3 flex gap-2 overflow-x-auto scrollbar-hide">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4"
+        >
           {getCategories().map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
                 selectedCategory === category
                   ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-muted/70 text-muted-foreground hover:bg-muted"
               )}
             >
               {category === "all" ? "همه" : category}
             </button>
           ))}
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Content */}
-      <div className="px-4 py-6">
+        {/* Content */}
         {loading ? (
-          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-4"}>
-            {[1, 2, 3, 4].map((i) => (
-              <Card key={i} className="overflow-hidden animate-pulse">
-                <div className="h-32 bg-muted" />
-                <div className="p-3 space-y-2">
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-full" />
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex gap-4 p-4 rounded-2xl bg-card border border-border/50">
+                <Skeleton className="w-24 h-24 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         ) : filteredArticles.length === 0 ? (
-          <div className="text-center py-16">
-            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-            <p className="font-medium mb-1">مقاله‌ای یافت نشد</p>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16"
+          >
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted/50 flex items-center justify-center">
+              <BookOpen className="w-8 h-8 text-muted-foreground/50" />
+            </div>
+            <p className="font-semibold mb-1">مقاله‌ای یافت نشد</p>
             <p className="text-sm text-muted-foreground">
               {searchQuery ? "جستجوی دیگری امتحان کنید" : "به زودی مقالات جدید منتشر می‌شوند"}
             </p>
-          </div>
+          </motion.div>
         ) : (
-          <div className={viewMode === "grid" ? "grid grid-cols-2 gap-3" : "space-y-4"}>
+          <div className="space-y-4">
             {filteredArticles.map((article, idx) => (
               <motion.div
                 key={article.id}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
+                transition={{ delay: 0.2 + idx * 0.05 }}
               >
                 <Link to={`/articles/${article.id}`}>
-                  <Card className={cn(
-                    "overflow-hidden group hover:shadow-lg transition-all",
-                    viewMode === "list" && "flex flex-row"
-                  )}>
+                  <div className="flex gap-4 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 hover:shadow-md transition-all group">
                     {article.image_url && (
-                      <div className={cn(
-                        "relative overflow-hidden bg-muted",
-                        viewMode === "list" ? "w-28 h-full" : "h-28"
-                      )}>
-                        <OptimizedImage
+                      <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+                        <img
                           src={article.image_url}
                           alt={getArticleText(article, 'title')}
-                          width={viewMode === "list" ? 112 : 200}
-                          height={viewMode === "list" ? 120 : 112}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <Badge className="absolute top-2 right-2 text-[10px] px-2 py-0 h-5 bg-background/80 backdrop-blur-sm">
+                        <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-background/90 backdrop-blur-sm text-[10px] font-medium">
                           {article.category}
-                        </Badge>
+                        </div>
                       </div>
                     )}
                     
-                    <div className="p-3 flex-1">
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                    <div className="flex-1 min-w-0 py-1">
+                      <h3 className="font-semibold text-base mb-1 line-clamp-1 group-hover:text-primary transition-colors">
                         {getArticleText(article, 'title')}
                       </h3>
-                      
-                      {viewMode === "list" && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
-                          {getArticleText(article, 'excerpt')}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                        {getArticleText(article, 'excerpt')}
+                      </p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span>
                           {new Date(article.created_at).toLocaleDateString("fa-IR")}
                         </span>
                         <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
+                          <Clock className="w-3.5 h-3.5" />
                           {calculateReadTime(getArticleText(article, 'excerpt'))} دقیقه
                         </span>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               </motion.div>
             ))}

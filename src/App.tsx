@@ -22,7 +22,7 @@ const About = lazy(() => import("./pages/About"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Auth = lazy(() => import("./pages/Auth"));
-const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
 const MemoryManagement = lazy(() => import("./pages/MemoryManagement"));
 const AdminTranslate = lazy(() => import("./pages/AdminTranslate"));
 const NeoHi = lazy(() => import("./pages/NeoHi"));
@@ -99,7 +99,7 @@ const App = () => (
                         <Route path="/admin" element={<Admin />} />
                         <Route path="/admin/translate" element={<AdminTranslate />} />
                         <Route path="/auth" element={<Auth />} />
-                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/settings" element={<Settings />} />
                         
                         <Route path="*" element={<NotFound />} />
                       </Routes>
