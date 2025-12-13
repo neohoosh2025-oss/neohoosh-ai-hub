@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import logo from "@/assets/neohoosh-logo-new.png";
+import { MainLayout } from "@/components/layouts/MainLayout";
 
 const About = () => {
   const values = [
@@ -97,7 +98,8 @@ const About = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <MainLayout>
+      <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 md:py-32">
         <div className="absolute inset-0 bg-[image:var(--gradient-mesh)] opacity-40"></div>
@@ -354,7 +356,8 @@ const About = () => {
           </div>
         </div>
       </section>
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 
