@@ -1,35 +1,79 @@
-import { MessageCircle, Users, Camera, Settings } from "lucide-react";
+import { MessageCircle, Users, Phone, Settings, Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-const BottomNavigation = () => {
+interface BottomNavigationProps {
+  onSearchToggle?: () => void;
+  showSearch?: boolean;
+}
+
+const BottomNavigation = ({ onSearchToggle, showSearch }: BottomNavigationProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   
   const navItems = [
-    { icon: MessageCircle, path: "/neohi", tab: "chats", isActive: location.pathname === "/neohi" && !location.search },
-    { icon: Camera, path: "/neohi?tab=stories", tab: "stories", isActive: location.search.includes("tab=stories") },
-    { icon: Users, path: "/neohi?tab=contacts", tab: "contacts", isActive: location.search.includes("tab=contacts") },
-    { icon: Settings, path: "/neohi?tab=settings", tab: "settings", isActive: location.search.includes("tab=settings") },
+    { 
+      icon: Settings, 
+      path: "/neohi?tab=settings", 
+      isActive: location.search.includes("tab=settings"),
+      label: "settings"
+    },
+    { 
+      icon: Users, 
+      path: "/neohi?tab=contacts", 
+      isActive: location.search.includes("tab=contacts"),
+      label: "contacts"
+    },
+    { 
+      icon: Phone, 
+      path: "/neohi?tab=calls", 
+      isActive: location.search.includes("tab=calls"),
+      label: "calls"
+    },
+    { 
+      icon: MessageCircle, 
+      path: "/neohi", 
+      isActive: location.pathname === "/neohi" && !location.search,
+      label: "chats"
+    },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border safe-area-bottom">
-      <div className="flex items-center justify-around h-16 px-2">
-        {navItems.map((item, index) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-neutral-950 border-t border-neutral-100 dark:border-neutral-900 safe-area-bottom">
+      <div className="flex items-center justify-around h-14 px-4">
+        {/* Search Button */}
+        {onSearchToggle && (
+          <button
+            onClick={onSearchToggle}
+            className={cn(
+              "flex items-center justify-center p-3 rounded-full transition-all duration-200",
+              showSearch
+                ? "text-neutral-900 dark:text-white"
+                : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
+            )}
+          >
+            <Search className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+        )}
+        
+        {navItems.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex items-center justify-center p-3 rounded-xl transition-all duration-200 min-w-[48px] min-h-[48px]",
+                "flex items-center justify-center p-3 rounded-full transition-all duration-200",
                 item.isActive
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "text-neutral-900 dark:text-white"
+                  : "text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               )}
             >
-              <Icon className={cn("w-6 h-6", item.isActive && "animate-scale-in")} />
+              <Icon 
+                className="w-5 h-5" 
+                strokeWidth={1.5}
+                fill={item.isActive ? "currentColor" : "none"}
+              />
             </button>
           );
         })}

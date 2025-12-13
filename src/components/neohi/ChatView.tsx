@@ -3,13 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, MoreVertical, Phone, Video, Info, Search, X } from "lucide-react";
+import { ArrowLeft, MoreVertical, Phone, Video, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageInput } from "./MessageInput";
 import { MessageList } from "./MessageList";
 import { GroupInfo } from "./GroupInfo";
 import { ChannelInfo } from "./ChannelInfo";
 import { UserProfile } from "./UserProfile";
+import { CallScreen } from "./CallScreen";
+import { useNeohiCall } from "@/hooks/useNeohiCall";
 
 interface Message {
   id: string;
@@ -42,6 +44,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  
+  // Call functionality
+  const { activeCall, startCall, endCall } = useNeohiCall();
 
   useEffect(() => {
     const init = async () => {
@@ -388,19 +393,21 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
             >
               <Search className="h-[18px] w-[18px]" />
             </Button>
-            {chat.type === "dm" && (
+            {chat.type === "dm" && otherUserId && (
               <>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden sm:flex"
+                  onClick={() => startCall(otherUserId, "voice", chatId)}
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
                 >
                   <Phone className="h-[18px] w-[18px]" />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden sm:flex"
+                  onClick={() => startCall(otherUserId, "video", chatId)}
+                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
                 >
                   <Video className="h-[18px] w-[18px]" />
                 </Button>
@@ -503,6 +510,19 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               ) : null}
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Active Call Screen */}
+      <AnimatePresence>
+        {activeCall && (
+          <CallScreen
+            callId={activeCall.callId}
+            callType={activeCall.callType}
+            isIncoming={false}
+            otherUser={activeCall.otherUser}
+            onEnd={endCall}
+          />
         )}
       </AnimatePresence>
     </div>

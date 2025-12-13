@@ -7,15 +7,15 @@ import { ChatView } from "@/components/neohi/ChatView";
 import { NewChatDialog } from "@/components/neohi/NewChatDialog";
 import { ProfileSettings } from "@/components/neohi/ProfileSettings";
 import { ContactsPage } from "@/components/neohi/ContactsPage";
-import { Sidebar } from "@/components/neohi/Sidebar";
-import StoriesPage from "@/pages/StoriesPage";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Plus, MessageCircle, Users, Camera, Settings, Search } from "lucide-react";
+import { Plus, MessageCircle, Home, Search as SearchIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import BottomNavigation from "@/components/neohi/BottomNavigation";
 import { Link } from "react-router-dom";
+import { IncomingCallListener } from "@/components/neohi/IncomingCallDialog";
+import { StoryBar } from "@/components/neohi/StoryBar";
 
 interface Chat {
   id: string;
@@ -42,6 +42,7 @@ export default function NeoHi() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [showNewChat, setShowNewChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -224,11 +225,11 @@ export default function NeoHi() {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-background flex items-center justify-center">
+      <div className="h-screen w-full bg-white dark:bg-neutral-950 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-neutral-900 dark:border-white border-t-transparent rounded-full"
         />
       </div>
     );
@@ -237,9 +238,6 @@ export default function NeoHi() {
   // Handle tab routing
   if (activeTab === "contacts") {
     return <ContactsPage onBack={() => navigate("/neohi")} />;
-  }
-  if (activeTab === "stories") {
-    return <StoriesPage onBack={() => navigate("/neohi")} />;
   }
   if (activeTab === "settings") {
     return <ProfileSettings onBack={() => navigate("/neohi")} />;
@@ -258,103 +256,140 @@ export default function NeoHi() {
     );
   }
 
-  // Main Chat List View
+  // Main Chat List View - MINIMAL DESIGN
   return (
-    <div className="h-screen w-full bg-background flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
+    <div className="h-screen w-full bg-white dark:bg-neutral-950 flex flex-col">
+      {/* Incoming Call Listener */}
+      <IncomingCallListener />
+
+      {/* Header - Clean & Minimal */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-900 safe-area-top">
         <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="font-bold text-lg">NEOHI</h1>
-              <p className="text-[10px] text-muted-foreground">شبکه اجتماعی هوشمند</p>
-            </div>
-          </div>
-          
+          {/* Left: Create New Chat */}
           <Button
+            variant="ghost"
             size="icon"
-            className="rounded-full bg-primary"
             onClick={() => setShowNewChat(true)}
+            className="w-10 h-10 rounded-full text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5" strokeWidth={1.5} />
           </Button>
-        </div>
-        
-        {/* Search */}
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="جستجو در چت‌ها..."
-              className="pr-10 h-10 rounded-xl bg-muted/50 border-0"
-            />
-          </div>
+          
+          {/* Center: Title */}
+          <h1 className="font-semibold text-lg tracking-tight text-neutral-900 dark:text-white">
+            NEOHI
+          </h1>
+          
+          {/* Right: Home */}
+          <Link to="/">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10 rounded-full text-neutral-900 dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-900"
+            >
+              <Home className="w-5 h-5" strokeWidth={1.5} />
+            </Button>
+          </Link>
         </div>
       </header>
 
-      {/* Chat List */}
+      {/* Stories Section - Optional, Minimal */}
+      <StoryBar />
+
+      {/* Search Toggle */}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="px-4 py-2 bg-white dark:bg-neutral-950 border-b border-neutral-100 dark:border-neutral-900"
+          >
+            <div className="relative">
+              <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="جستجو..."
+                className="pr-10 h-10 rounded-full bg-neutral-50 dark:bg-neutral-900 border-0 text-sm"
+                autoFocus
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Chat List - Clean Design */}
       <div className="flex-1 overflow-y-auto pb-20">
         {filteredChats.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <MessageCircle className="w-10 h-10 text-primary" />
+          <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+            <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center mb-4">
+              <MessageCircle className="w-8 h-8 text-neutral-400" strokeWidth={1.5} />
             </div>
-            <h3 className="font-bold text-lg mb-2">هنوز چتی نداری</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              یه چت جدید شروع کن و با دوستات در ارتباط باش
+            <h3 className="font-medium text-neutral-900 dark:text-white mb-1">هنوز چتی نداری</h3>
+            <p className="text-sm text-neutral-500 mb-6">
+              یه چت جدید شروع کن
             </p>
-            <Button onClick={() => setShowNewChat(true)}>
+            <Button 
+              onClick={() => setShowNewChat(true)}
+              className="rounded-full px-6 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 hover:bg-neutral-800 dark:hover:bg-neutral-100"
+            >
               <Plus className="w-4 h-4 ml-2" />
               چت جدید
             </Button>
           </div>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div>
             {filteredChats.map((chat, i) => (
               <motion.button
                 key={chat.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: i * 0.02 }}
                 onClick={() => {
                   setSelectedChatId(chat.id);
                   setChats(prev => prev.map(c => 
                     c.id === chat.id ? { ...c, unread_count: 0 } : c
                   ));
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-right"
+                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-neutral-900/50 transition-colors text-right active:bg-neutral-100 dark:active:bg-neutral-900"
               >
-                <Avatar className="w-12 h-12 flex-shrink-0">
-                  <AvatarImage src={chat.avatar_url || undefined} />
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white">
-                    {chat.name?.charAt(0) || "?"}
-                  </AvatarFallback>
-                </Avatar>
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  <Avatar className="w-12 h-12">
+                    <AvatarImage src={chat.avatar_url || undefined} />
+                    <AvatarFallback className="bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-medium">
+                      {chat.name?.charAt(0) || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
                 
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-semibold text-sm truncate">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <h3 className={cn(
+                      "font-medium text-[15px] truncate",
+                      (chat.unread_count || 0) > 0 
+                        ? "text-neutral-900 dark:text-white" 
+                        : "text-neutral-900 dark:text-white"
+                    )}>
                       {chat.name || "چت"}
                     </h3>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-xs text-neutral-400 mr-2">
                       {getTimeDisplay(chat.last_message_at)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground truncate flex-1">
+                    <p className={cn(
+                      "text-sm truncate flex-1",
+                      (chat.unread_count || 0) > 0 
+                        ? "text-neutral-600 dark:text-neutral-300" 
+                        : "text-neutral-400"
+                    )}>
                       {chat.last_message?.content || "پیامی نیست"}
                     </p>
                     {(chat.unread_count || 0) > 0 && (
-                      <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] flex items-center justify-center font-medium">
-                        {chat.unread_count}
-                      </span>
+                      <div className="w-2 h-2 rounded-full bg-neutral-900 dark:bg-white mr-2 flex-shrink-0" />
                     )}
                   </div>
                 </div>
@@ -365,7 +400,7 @@ export default function NeoHi() {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
+      <BottomNavigation onSearchToggle={() => setShowSearch(!showSearch)} showSearch={showSearch} />
 
       {/* New Chat Dialog */}
       <NewChatDialog
