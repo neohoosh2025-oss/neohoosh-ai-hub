@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
   User, Mail, LogOut, Loader2, 
-  Calendar, ChevronRight, Camera, Save,
-  Wifi, WifiOff, Download, Bell, BellOff, Shield, MessageSquare, TrendingUp
+  Calendar, ChevronLeft, Camera, Check,
+  Wifi, WifiOff, Download, Bell, BellOff, Shield, MessageSquare, 
+  HelpCircle, Info, Moon, Globe, Smartphone, Lock, Trash2
 } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
 import { MainLayout } from "@/components/layouts/MainLayout";
@@ -25,8 +26,8 @@ const Settings = () => {
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [stats, setStats] = useState({ messages: 0, conversations: 0, growth: 0 });
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [stats, setStats] = useState({ messages: 0, conversations: 0 });
 
   useEffect(() => {
     const checkUser = async () => {
@@ -69,7 +70,6 @@ const Settings = () => {
           setStats({
             messages: count || 0,
             conversations: conversations.length,
-            growth: 12
           });
         }
       } catch {
@@ -115,14 +115,14 @@ const Settings = () => {
     }
   };
 
-  const handleUpdateProfile = async () => {
-    if (!user) return;
+  const handleUpdateName = async () => {
+    if (!user || !displayName.trim()) return;
     setSaving(true);
     try {
       await supabase.auth.updateUser({ data: { display_name: displayName } });
       await supabase.from('neohi_users').update({ display_name: displayName }).eq('id', user.id);
-      toast.success("پروفایل به‌روز شد");
-      setIsEditing(false);
+      toast.success("نام به‌روز شد");
+      setIsEditingName(false);
     } catch {
       toast.error("خطا در به‌روزرسانی");
     } finally {
@@ -149,169 +149,259 @@ const Settings = () => {
     );
   }
 
-  const menuItems = [
+  const menuSections = [
     {
-      title: "اطلاعات حساب",
+      title: "حساب کاربری",
       items: [
-        { icon: Mail, label: "ایمیل", value: user?.email, disabled: true },
-        { icon: Calendar, label: "عضویت", value: new Date(user?.created_at).toLocaleDateString('fa-IR'), disabled: true },
-        { icon: Shield, label: "تأیید ایمیل", value: user?.email_confirmed_at ? "تأیید شده" : "تأیید نشده", status: user?.email_confirmed_at ? "success" : "warning" },
+        { 
+          icon: User, 
+          label: "نام نمایشی", 
+          value: displayName || "تنظیم نشده",
+          onClick: () => setIsEditingName(true)
+        },
+        { 
+          icon: Mail, 
+          label: "ایمیل", 
+          value: user?.email,
+          disabled: true
+        },
+        { 
+          icon: Calendar, 
+          label: "تاریخ عضویت", 
+          value: new Date(user?.created_at).toLocaleDateString('fa-IR'),
+          disabled: true
+        },
+        { 
+          icon: Shield, 
+          label: "وضعیت تأیید", 
+          value: user?.email_confirmed_at ? "تأیید شده" : "تأیید نشده",
+          status: user?.email_confirmed_at ? "success" : "warning",
+          disabled: true
+        },
       ]
     },
     {
-      title: "وضعیت اپلیکیشن",
+      title: "تنظیمات اپلیکیشن",
       items: [
-        { icon: isOnline ? Wifi : WifiOff, label: "اتصال", value: isOnline ? "آنلاین" : "آفلاین", status: isOnline ? "success" : "error" },
-        { icon: isNotificationsEnabled ? Bell : BellOff, label: "اعلان‌ها", value: isNotificationsEnabled ? "فعال" : "غیرفعال", action: isPushSupported ? toggleNotifications : undefined },
-        { icon: Download, label: "نصب اپلیکیشن", value: isInstalled ? "نصب شده" : "نصب نشده", action: canInstall ? handleInstall : undefined },
+        { 
+          icon: isNotificationsEnabled ? Bell : BellOff, 
+          label: "اعلان‌ها", 
+          value: isNotificationsEnabled ? "فعال" : "غیرفعال",
+          onClick: isPushSupported ? toggleNotifications : undefined,
+          status: isNotificationsEnabled ? "success" : undefined
+        },
+        { 
+          icon: Download, 
+          label: "نصب اپلیکیشن", 
+          value: isInstalled ? "نصب شده" : canInstall ? "نصب کنید" : "نصب نشده",
+          onClick: canInstall ? handleInstall : undefined,
+          status: isInstalled ? "success" : undefined
+        },
+        { 
+          icon: isOnline ? Wifi : WifiOff, 
+          label: "وضعیت اتصال", 
+          value: isOnline ? "آنلاین" : "آفلاین",
+          status: isOnline ? "success" : "error",
+          disabled: true
+        },
       ]
-    }
+    },
+    {
+      title: "پشتیبانی",
+      items: [
+        { 
+          icon: HelpCircle, 
+          label: "راهنما و سوالات متداول", 
+          onClick: () => toast.info("به زودی...")
+        },
+        { 
+          icon: Info, 
+          label: "درباره نئوهوش", 
+          value: "نسخه ۱.۰.۰",
+          onClick: () => navigate("/about")
+        },
+      ]
+    },
   ];
 
   return (
     <MainLayout>
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
 
-      <div className="px-4 py-6 space-y-6 pb-24">
-        {/* Header */}
+      <div className="pb-24">
+        {/* Profile Header - Telegram Style */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-1"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative bg-gradient-to-b from-primary/10 to-background pt-6 pb-8 px-4"
         >
-          <h1 className="text-2xl font-bold">تنظیمات</h1>
-          <p className="text-sm text-muted-foreground">مدیریت حساب و تنظیمات</p>
-        </motion.div>
-
-        {/* Profile Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6"
-        >
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-          
-          <div className="relative flex items-center gap-4">
+          {/* Avatar */}
+          <div className="flex flex-col items-center">
             <motion.div 
               whileTap={{ scale: 0.95 }}
-              className="relative cursor-pointer"
+              className="relative cursor-pointer mb-4"
               onClick={() => fileInputRef.current?.click()}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Profile" className="w-20 h-20 rounded-2xl object-cover" />
+                <img 
+                  src={avatarUrl} 
+                  alt="Profile" 
+                  className="w-24 h-24 rounded-full object-cover border-4 border-background shadow-lg" 
+                />
               ) : (
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-2xl font-bold">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-3xl font-bold border-4 border-background shadow-lg">
                   {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
               )}
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-primary rounded-full border-2 border-background flex items-center justify-center">
-                {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 text-primary-foreground animate-spin" /> : <Camera className="w-3.5 h-3.5 text-primary-foreground" />}
+              <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full border-3 border-background flex items-center justify-center shadow-md">
+                {uploadingAvatar ? (
+                  <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4 text-primary-foreground" />
+                )}
               </div>
             </motion.div>
 
-            <div className="flex-1 min-w-0">
-              {isEditing ? (
-                <div className="flex gap-2">
-                  <Input 
-                    value={displayName} 
-                    onChange={(e) => setDisplayName(e.target.value)} 
-                    placeholder="نام نمایشی"
-                    className="h-10"
-                  />
-                  <Button onClick={handleUpdateProfile} disabled={saving} size="icon" className="h-10 w-10 flex-shrink-0">
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  </Button>
-                </div>
-              ) : (
-                <div onClick={() => setIsEditing(true)} className="cursor-pointer">
-                  <h2 className="text-lg font-bold truncate">{displayName || "کاربر نئوهوش"}</h2>
-                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
-                </div>
-              )}
+            {/* Name */}
+            <h1 className="text-xl font-bold mb-1">{displayName || "کاربر نئوهوش"}</h1>
+            <p className="text-sm text-muted-foreground">{user?.email}</p>
+
+            {/* Quick Stats */}
+            <div className="flex items-center gap-6 mt-5">
+              <div className="text-center">
+                <div className="text-lg font-bold">{stats.messages}</div>
+                <div className="text-xs text-muted-foreground">پیام</div>
+              </div>
+              <div className="w-px h-8 bg-border" />
+              <div className="text-center">
+                <div className="text-lg font-bold">{stats.conversations}</div>
+                <div className="text-xs text-muted-foreground">گفتگو</div>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="grid grid-cols-3 gap-3"
-        >
-          {[
-            { icon: MessageSquare, value: stats.messages, label: "پیام" },
-            { icon: User, value: stats.conversations, label: "گفتگو" },
-            { icon: TrendingUp, value: `+${stats.growth}%`, label: "رشد" },
-          ].map((stat, i) => (
-            <div key={stat.label} className="p-4 rounded-2xl bg-muted/50 text-center">
-              <stat.icon className="w-5 h-5 mx-auto mb-2 text-muted-foreground" />
-              <div className="text-lg font-bold">{stat.value}</div>
-              <div className="text-[10px] text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
+        {/* Edit Name Modal */}
+        {isEditingName && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+            onClick={() => setIsEditingName(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-card rounded-2xl p-6 w-full max-w-sm space-y-4"
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-center">ویرایش نام</h3>
+              <Input 
+                value={displayName} 
+                onChange={(e) => setDisplayName(e.target.value)} 
+                placeholder="نام نمایشی"
+                className="h-12 rounded-xl text-center"
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-11 rounded-xl"
+                  onClick={() => setIsEditingName(false)}
+                >
+                  انصراف
+                </Button>
+                <Button 
+                  className="flex-1 h-11 rounded-xl"
+                  onClick={handleUpdateName}
+                  disabled={saving || !displayName.trim()}
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-2" />}
+                  ذخیره
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
 
         {/* Menu Sections */}
-        {menuItems.map((section, sectionIdx) => (
+        <div className="px-4 space-y-6 mt-6">
+          {menuSections.map((section, sectionIdx) => (
+            <motion.div
+              key={section.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: sectionIdx * 0.1 }}
+            >
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
+                {section.title}
+              </h3>
+              <div className="bg-card rounded-2xl border border-border/50 overflow-hidden divide-y divide-border/50">
+                {section.items.map((item) => (
+                  <div 
+                    key={item.label}
+                    onClick={item.onClick}
+                    className={cn(
+                      "flex items-center justify-between p-4 transition-colors",
+                      item.onClick && "cursor-pointer active:bg-muted/50"
+                    )}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <div className={cn(
+                        "w-9 h-9 rounded-xl flex items-center justify-center",
+                        item.status === "success" ? "bg-green-500/10" :
+                        item.status === "warning" ? "bg-amber-500/10" :
+                        item.status === "error" ? "bg-red-500/10" :
+                        "bg-muted"
+                      )}>
+                        <item.icon className={cn(
+                          "w-[18px] h-[18px]",
+                          item.status === "success" ? "text-green-500" :
+                          item.status === "warning" ? "text-amber-500" :
+                          item.status === "error" ? "text-red-500" :
+                          "text-muted-foreground"
+                        )} />
+                      </div>
+                      <span className="text-sm font-medium">{item.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.value && (
+                        <span className={cn(
+                          "text-sm",
+                          item.status === "success" ? "text-green-500" :
+                          item.status === "warning" ? "text-amber-500" :
+                          item.status === "error" ? "text-red-500" :
+                          "text-muted-foreground"
+                        )}>
+                          {item.value}
+                        </span>
+                      )}
+                      {item.onClick && (
+                        <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+
+          {/* Sign Out Button */}
           <motion.div
-            key={section.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 + sectionIdx * 0.05 }}
-            className="space-y-3"
+            transition={{ delay: 0.3 }}
           >
-            <h3 className="text-sm font-medium text-muted-foreground px-1">{section.title}</h3>
-            <div className="rounded-2xl bg-card border border-border/50 divide-y divide-border/50 overflow-hidden">
-              {section.items.map((item, i) => (
-                <div 
-                  key={item.label}
-                  onClick={item.action}
-                  className={cn(
-                    "flex items-center justify-between p-4",
-                    item.action && "cursor-pointer hover:bg-muted/50 transition-colors"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-muted/80 flex items-center justify-center">
-                      <item.icon className="w-4.5 h-4.5 text-muted-foreground" />
-                    </div>
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={cn(
-                      "text-sm",
-                      item.status === "success" && "text-green-500",
-                      item.status === "warning" && "text-amber-500",
-                      item.status === "error" && "text-red-500",
-                      !item.status && "text-muted-foreground"
-                    )}>
-                      {item.value}
-                    </span>
-                    {item.action && <ChevronRight className="w-4 h-4 text-muted-foreground rotate-180" />}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Button 
+              onClick={handleSignOut} 
+              variant="ghost" 
+              className="w-full h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/10 font-medium"
+            >
+              <LogOut className="w-5 h-5 ml-2" />
+              خروج از حساب کاربری
+            </Button>
           </motion.div>
-        ))}
-
-        {/* Sign Out */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-        >
-          <Button 
-            onClick={handleSignOut} 
-            variant="outline" 
-            className="w-full h-12 rounded-2xl text-destructive border-destructive/30 hover:bg-destructive/10"
-          >
-            <LogOut className="w-4 h-4 ml-2" />
-            خروج از حساب
-          </Button>
-        </motion.div>
+        </div>
       </div>
     </MainLayout>
   );
