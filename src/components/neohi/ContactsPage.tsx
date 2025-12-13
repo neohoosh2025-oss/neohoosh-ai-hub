@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, UserPlus, X, Users, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Dialog,
   DialogContent,
@@ -121,7 +122,6 @@ export function ContactsPage({ onBack }: { onBack?: () => void }) {
         .limit(20);
 
       if (data) {
-        // Filter out users who are already contacts
         const contactIds = contacts.map((c) => c.contact_user_id);
         const filtered = data.filter((u) => !contactIds.includes(u.id));
         setSearchResults(filtered);
@@ -190,171 +190,192 @@ export function ContactsPage({ onBack }: { onBack?: () => void }) {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="h-screen w-full bg-background flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-foreground/20 border-t-foreground rounded-full"
+        />
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-black flex flex-col overflow-hidden" dir="ltr">
-      {/* Header */}
-      <header className="bg-[#1c1c1d] border-b border-[#2c2c2e] px-4 py-2">
-        <div className="flex items-center justify-between h-11">
+    <div className="h-screen w-full bg-background flex flex-col overflow-hidden" dir="ltr">
+      {/* Header - Minimal */}
+      <header className="border-b border-border/50 px-4 py-3">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
-            className="text-[#0a84ff] hover:bg-transparent"
+            className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
             onClick={onBack}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
           </Button>
           
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-[#0a84ff] flex items-center justify-center">
-              <Users className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-white font-semibold text-lg">Contacts</span>
-          </div>
+          <span className="text-foreground font-medium text-base tracking-tight">
+            Contacts
+          </span>
 
           <Button
             variant="ghost"
             size="icon"
-            className="text-[#0a84ff] hover:bg-transparent"
+            className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
             onClick={() => setShowAddDialog(true)}
           >
-            <UserPlus className="h-5 w-5" />
+            <UserPlus className="h-5 w-5" strokeWidth={1.5} />
           </Button>
         </div>
 
-        {/* Search Bar */}
-        <div className="mt-2 mb-1">
+        {/* Search Bar - Clean */}
+        <div className="mt-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
             <Input
-              placeholder="Search contacts"
+              placeholder="Search contacts..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500 pl-10 h-9 rounded-lg"
+              className="bg-muted/30 border-0 text-foreground placeholder:text-muted-foreground pl-10 h-10 rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
             />
           </div>
         </div>
       </header>
 
       {/* Contacts List */}
-      <ScrollArea className="flex-1 bg-black">
+      <ScrollArea className="flex-1">
         {filteredContacts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <Users className="h-16 w-16 text-gray-600 mb-4" />
-            <p className="text-gray-400 text-lg">No contacts yet</p>
-            <p className="text-gray-500 text-sm mt-2">
-              Click + to add contacts by username
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center h-[60vh] text-center p-8"
+          >
+            <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+              <Users className="h-7 w-7 text-muted-foreground" strokeWidth={1.5} />
+            </div>
+            <p className="text-foreground/80 font-medium">No contacts yet</p>
+            <p className="text-muted-foreground text-sm mt-1">
+              Tap + to add contacts
             </p>
-          </div>
+          </motion.div>
         ) : (
-          <div className="divide-y divide-[#2c2c2e]">
-            {filteredContacts.map((contact) => (
-              <div
-                key={contact.id}
-                className="px-4 py-3 flex items-center gap-3 hover:bg-[#1c1c1d] transition-colors"
-              >
-                {/* Avatar */}
-                <div className="relative shrink-0">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={contact.contact.avatar_url || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {(contact.contact.display_name || contact.contact.username).charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  {contact.contact.is_online && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-black" />
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-white font-medium text-[15px] truncate">
-                    {contact.contact_name || contact.contact.display_name || contact.contact.username}
-                  </h3>
-                  <p className="text-gray-400 text-[14px] truncate">
-                    @{contact.contact.username}
-                  </p>
-                </div>
-
-                {/* Remove button */}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-red-500 hover:bg-red-500/10 hover:text-red-400 shrink-0"
-                  onClick={() => handleRemoveContact(contact.id)}
+          <div className="py-2">
+            <AnimatePresence>
+              {filteredContacts.map((contact, index) => (
+                <motion.div
+                  key={contact.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ delay: index * 0.03 }}
+                  className="px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors cursor-pointer"
                 >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            ))}
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={contact.contact.avatar_url || undefined} />
+                      <AvatarFallback className="bg-muted text-foreground/70 font-medium">
+                        {(contact.contact.display_name || contact.contact.username).charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    {contact.contact.is_online && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-background" />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-foreground font-medium text-[15px] truncate">
+                      {contact.contact_name || contact.contact.display_name || contact.contact.username}
+                    </h3>
+                    <p className="text-muted-foreground text-sm truncate">
+                      @{contact.contact.username}
+                    </p>
+                  </div>
+
+                  {/* Remove button */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleRemoveContact(contact.id);
+                    }}
+                  >
+                    <X className="h-4 w-4" strokeWidth={1.5} />
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </ScrollArea>
 
-      {/* Add Contact Dialog */}
+      {/* Add Contact Dialog - Clean */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="bg-[#1c1c1d] border-[#2c2c2e] text-white">
+        <DialogContent className="bg-background border-border/50 text-foreground sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Contact</DialogTitle>
+            <DialogTitle className="text-center font-medium">Add Contact</DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-4 pt-2">
             <div className="flex gap-2">
               <Input
                 placeholder="Enter username"
                 value={searchUsername}
                 onChange={(e) => setSearchUsername(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearchUsers()}
-                className="bg-[#2c2c2e] border-none text-white placeholder:text-gray-500"
+                className="bg-muted/30 border-0 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-foreground/20"
               />
               <Button
                 onClick={handleSearchUsers}
                 disabled={searching}
-                className="bg-[#0a84ff] hover:bg-[#0066cc]"
+                variant="outline"
+                size="icon"
+                className="shrink-0 border-border/50 hover:bg-muted/50"
               >
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4" strokeWidth={1.5} />
               </Button>
             </div>
 
             <ScrollArea className="max-h-[300px]">
               {searchResults.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {searchResults.map((user) => (
-                    <div
+                    <motion.div
                       key={user.id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-[#2c2c2e] hover:bg-[#3c3c3e] transition-colors"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/30 transition-colors"
                     >
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                          {(user.display_name || user.username).charAt(0)}
+                        <AvatarFallback className="bg-muted text-foreground/70 font-medium">
+                          {(user.display_name || user.username).charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium truncate">
+                        <p className="text-foreground font-medium truncate text-sm">
                           {user.display_name || user.username}
                         </p>
-                        <p className="text-gray-400 text-sm truncate">
+                        <p className="text-muted-foreground text-xs truncate">
                           @{user.username}
                         </p>
                       </div>
                       <Button
                         size="sm"
+                        variant="outline"
                         onClick={() => handleAddContact(user)}
-                        className="bg-[#0a84ff] hover:bg-[#0066cc]"
+                        className="text-xs h-8 border-border/50 hover:bg-foreground hover:text-background"
                       >
                         Add
                       </Button>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               ) : searchUsername && !searching ? (
-                <p className="text-gray-400 text-center py-4">No users found</p>
+                <p className="text-muted-foreground text-center py-8 text-sm">No users found</p>
               ) : null}
             </ScrollArea>
           </div>

@@ -45,7 +45,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   
-  // Call functionality
   const { activeCall, startCall, endCall } = useNeohiCall();
 
   useEffect(() => {
@@ -67,7 +66,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     };
   }, [chatId]);
 
-  // Subscribe to user status changes for DMs
   useEffect(() => {
     if (!otherUserId || chat?.type !== "dm") return;
 
@@ -96,7 +94,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     };
   }, [otherUserId, chat?.type]);
 
-  // Subscribe to typing indicators
   useEffect(() => {
     if (!chatId || !currentUser) return;
 
@@ -112,7 +109,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         },
         async (payload: any) => {
           if (payload.new && payload.new.user_id !== currentUser.id && payload.new.is_typing) {
-            // User is typing
             const { data: user } = await supabase
               .from("neohi_users")
               .select("display_name")
@@ -120,12 +116,11 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               .single();
 
             if (user) {
-              setTypingUsers(prev => [...new Set([...prev, user.display_name || "کاربر"])]);
+              setTypingUsers(prev => [...new Set([...prev, user.display_name || "User"])]);
             }
 
-            // Remove after 3 seconds
             setTimeout(() => {
-              setTypingUsers(prev => prev.filter(u => u !== (user?.display_name || "کاربر")));
+              setTypingUsers(prev => prev.filter(u => u !== (user?.display_name || "User")));
             }, 3000);
           }
         }
@@ -141,11 +136,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     scrollToBottom();
   }, [messages]);
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUser(user);
-  };
-
   const scrollToBottom = () => {
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -156,15 +146,11 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { error } = await supabase
+    await supabase
       .from("neohi_chat_members")
       .update({ last_read_at: new Date().toISOString() })
       .eq("chat_id", chatId)
       .eq("user_id", user.id);
-    
-    if (error) {
-      console.error("Error marking messages as read:", error);
-    }
   };
 
   const loadChatWithUser = async (user: any) => {
@@ -177,7 +163,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     if (data) {
       let chatData: any = { ...data };
 
-      // For DMs, get the other user's info
       if (data.type === "dm" && user) {
         const { data: members } = await supabase
           .from("neohi_chat_members")
@@ -213,7 +198,6 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get messages and filter out deleted ones
     const { data } = await supabase
       .from("neohi_messages")
       .select(`
@@ -225,15 +209,12 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       .order("created_at", { ascending: true });
 
     if (data) {
-      // Get user's deleted messages
       const { data: deletions } = await supabase
         .from("neohi_message_deletions")
         .select("message_id")
         .eq("user_id", user.id);
 
       const deletedMessageIds = new Set(deletions?.map(d => d.message_id) || []);
-      
-      // Filter out messages deleted by current user
       const filteredMessages = data.filter(msg => !deletedMessageIds.has(msg.id));
       setMessages(filteredMessages);
     }
@@ -299,7 +280,7 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
   const getStatusText = () => {
     if (chat?.type !== "dm" || !otherUserData) return "";
-    if (otherUserData.is_online) return "آنلاین";
+    if (otherUserData.is_online) return "Online";
     if (otherUserData.last_seen) {
       const lastSeen = new Date(otherUserData.last_seen);
       const now = new Date();
@@ -307,12 +288,12 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
       const minutes = Math.floor(diff / 60000);
       const hours = Math.floor(minutes / 60);
       
-      if (minutes < 1) return "لحظاتی پیش";
-      if (minutes < 60) return `${minutes} دقیقه پیش`;
-      if (hours < 24) return `${hours} ساعت پیش`;
-      return "اخیراً";
+      if (minutes < 1) return "Just now";
+      if (minutes < 60) return `${minutes}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      return "Recently";
     }
-    return "اخیراً";
+    return "Recently";
   };
 
   const filteredMessages = searchQuery
@@ -323,58 +304,58 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
 
   if (!chat) {
     return (
-      <div className="h-screen bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
+      <div className="h-screen bg-background flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 border-3 border-[hsl(var(--neohi-accent))] border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-foreground/20 border-t-foreground rounded-full"
         />
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-neohi-bg-chat">
-      {/* Header - Fixed Top Bar (Telegram Style) */}
-      <header className="h-[60px] flex-shrink-0 bg-neohi-bg-sidebar/95 backdrop-blur-lg border-b border-neohi-border px-3 z-10">
+    <div className="h-screen flex flex-col bg-background">
+      {/* Header - Clean Minimal */}
+      <header className="h-14 flex-shrink-0 bg-background border-b border-border/50 px-3 z-10">
         <div className="h-full flex items-center justify-between gap-2">
-          {/* Back Button - Mobile Only */}
+          {/* Back Button */}
           <Button
             variant="ghost"
             size="icon"
             onClick={onBack}
-            className="md:hidden h-9 w-9 rounded-full hover:bg-neohi-bg-hover text-neohi-text-primary flex-shrink-0"
+            className="md:hidden h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50 flex-shrink-0"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
           </Button>
 
-          {/* Chat Info - Clickable */}
+          {/* Chat Info */}
           <button
             onClick={() => setShowInfo(true)}
-            className="flex items-center gap-3 flex-1 hover:bg-neohi-bg-hover rounded-xl px-2 py-1.5 transition-all min-w-0"
+            className="flex items-center gap-3 flex-1 hover:bg-muted/30 rounded-xl px-2 py-1.5 transition-all min-w-0"
           >
-            <Avatar className="h-10 w-10 ring-1 ring-neohi-border flex-shrink-0">
+            <Avatar className="h-9 w-9 flex-shrink-0">
               <AvatarImage src={chat.avatar_url || undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-neohi-accent to-blue-600 text-white font-semibold text-sm">
+              <AvatarFallback className="bg-muted text-foreground/70 font-medium text-sm">
                 {chat.name?.charAt(0)?.toUpperCase() || "C"}
               </AvatarFallback>
             </Avatar>
 
-            <div className="flex-1 text-right min-w-0">
-              <h2 className="text-neohi-text-primary font-semibold text-[15px] truncate leading-tight">
-                {chat.type === "dm" ? (otherUserData?.display_name || "کاربر") : (chat.name || "کاربر")}
+            <div className="flex-1 text-left min-w-0">
+              <h2 className="text-foreground font-medium text-[15px] truncate leading-tight">
+                {chat.type === "dm" ? (otherUserData?.display_name || "User") : (chat.name || "Chat")}
               </h2>
-              <p className="text-neohi-text-secondary text-[13px] flex items-center gap-1.5 truncate leading-tight mt-0.5 justify-end flex-row-reverse">
+              <p className="text-muted-foreground text-xs flex items-center gap-1.5 truncate leading-tight mt-0.5">
                 {typingUsers.length > 0 ? (
-                  <span className="text-neohi-accent">در حال نوشتن...</span>
+                  <span className="text-foreground">typing...</span>
                 ) : chat.type === "channel" ? (
-                  "کانال"
+                  "Channel"
                 ) : chat.type === "group" ? (
-                  "گروه"
+                  "Group"
                 ) : otherUserData?.is_online ? (
                   <>
-                    آنلاین
-                    <span className="w-1.5 h-1.5 rounded-full bg-neohi-online"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                    Online
                   </>
                 ) : (
                   <span>{getStatusText()}</span>
@@ -389,9 +370,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
               variant="ghost" 
               size="icon" 
               onClick={() => setShowSearch(!showSearch)}
-              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
+              className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
             >
-              <Search className="h-[18px] w-[18px]" />
+              <Search className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </Button>
             {chat.type === "dm" && otherUserId && (
               <>
@@ -399,61 +380,63 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
                   variant="ghost" 
                   size="icon" 
                   onClick={() => startCall(otherUserId, "voice", chatId)}
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
+                  className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
                 >
-                  <Phone className="h-[18px] w-[18px]" />
+                  <Phone className="h-[18px] w-[18px]" strokeWidth={1.5} />
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => startCall(otherUserId, "video", chatId)}
-                  className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full"
+                  className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
                 >
-                  <Video className="h-[18px] w-[18px]" />
+                  <Video className="h-[18px] w-[18px]" strokeWidth={1.5} />
                 </Button>
               </>
             )}
             <Button 
               variant="ghost" 
               size="icon" 
-              className="text-neohi-text-secondary hover:bg-neohi-bg-hover hover:text-neohi-accent transition-all h-9 w-9 rounded-full hidden md:flex"
+              className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50 hidden md:flex"
             >
-              <MoreVertical className="h-[18px] w-[18px]" />
+              <MoreVertical className="h-[18px] w-[18px]" strokeWidth={1.5} />
             </Button>
           </div>
         </div>
       </header>
 
       {/* Search Bar */}
-      {showSearch && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: "auto", opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          className="bg-neohi-bg-sidebar border-b border-neohi-border px-3 py-2"
-        >
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neohi-text-secondary" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="جستجو در پیام‌ها..."
-              className="bg-neohi-bg-chat border-neohi-border text-neohi-text-primary pr-10 pl-10"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-neohi-text-secondary hover:text-neohi-text-primary"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {showSearch && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-b border-border/50 px-3 py-2"
+          >
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search messages..."
+                className="bg-muted/30 border-0 text-foreground pl-10 pr-10 h-10 rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4" strokeWidth={1.5} />
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Messages Area - Scrollable Container (Telegram Style) */}
-      <div className="flex-1 overflow-hidden relative">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-hidden relative bg-muted/10">
         <MessageList 
           messages={filteredMessages} 
           loading={loading} 
@@ -464,9 +447,9 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         />
       </div>
 
-      {/* Input Bar - Fixed at Bottom (Telegram Style) */}
+      {/* Input Bar */}
       {(chat.type === "dm" || chat.type === "group") && (
-        <div className="flex-shrink-0 border-t border-neohi-border bg-neohi-bg-sidebar/95 backdrop-blur-lg">
+        <div className="flex-shrink-0 border-t border-border/50 bg-background">
           <MessageInput 
             onSend={handleSendMessage}
             replyMessage={replyMessage}
@@ -476,55 +459,56 @@ export function ChatView({ chatId, onBack }: ChatViewProps) {
         </div>
       )}
 
-      {/* Info Panel - Modern Slide-in */}
+      {/* Info Panel */}
       <AnimatePresence>
         {showInfo && (
           <>
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowInfo(false)}
-              className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+              className="fixed inset-0 bg-black/40 z-40 md:hidden"
             />
             
-            {/* Info Panel */}
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 250 }}
-              className="fixed md:absolute top-0 left-0 bottom-0 w-full sm:w-[90%] md:w-80 bg-neohi-bg-sidebar shadow-2xl z-50 overflow-y-auto safe-area-inset"
+              className="fixed md:absolute top-0 right-0 bottom-0 w-full sm:w-[90%] md:w-80 bg-background border-l border-border/50 shadow-2xl z-50 overflow-y-auto"
             >
               {chat.type === "group" ? (
-                <GroupInfo chatId={chatId} onClose={() => setShowInfo(false)} />
-              ) : chat.type === "channel" ? (
-                <ChannelInfo chatId={chatId} onClose={() => setShowInfo(false)} />
-              ) : otherUserId ? (
-                <UserProfile 
-                  userId={otherUserId} 
+                <GroupInfo
+                  chatId={chatId}
                   onClose={() => setShowInfo(false)}
-                  onSendMessage={() => setShowInfo(false)}
                 />
-              ) : null}
+              ) : chat.type === "channel" ? (
+                <ChannelInfo
+                  chatId={chatId}
+                  onClose={() => setShowInfo(false)}
+                />
+              ) : (
+                <UserProfile
+                  userId={otherUserId!}
+                  onClose={() => setShowInfo(false)}
+                />
+              )}
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* Active Call Screen */}
-      <AnimatePresence>
-        {activeCall && (
-          <CallScreen
-            callId={activeCall.callId}
-            callType={activeCall.callType}
-            isIncoming={false}
-            otherUser={activeCall.otherUser}
-            onEnd={endCall}
-          />
-        )}
-      </AnimatePresence>
+      {/* Call Screen */}
+      {activeCall && (
+        <CallScreen
+          callId={activeCall.callId}
+          callType={activeCall.callType}
+          otherUser={activeCall.otherUser}
+          isIncoming={false}
+          onEnd={endCall}
+        />
+      )}
     </div>
   );
 }

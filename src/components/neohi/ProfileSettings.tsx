@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
@@ -20,8 +19,7 @@ import {
   Shield,
   Bell,
   Palette,
-  Globe,
-  Sparkles,
+  ChevronRight,
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -49,7 +47,6 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [showPrivacyDialog, setShowPrivacyDialog] = useState(false);
   
-  // Privacy settings
   const [privacySettings, setPrivacySettings] = useState({
     showPhone: true,
     showOnlineStatus: true,
@@ -57,7 +54,6 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
     readReceipts: true,
   });
 
-  // Auto-save with debounce
   const autoSave = useDebounceCallback(async (data: {
     display_name?: string;
     bio?: string;
@@ -121,7 +117,7 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
       const fileExt = file.name.split(".").pop();
       const filePath = `${userId}/avatar-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("neohi-avatars")
         .upload(filePath, file, { upsert: true });
 
@@ -132,19 +128,16 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         .getPublicUrl(filePath);
 
       setAvatarUrl(publicUrl);
-      
-      // Auto-save avatar URL
       await autoSave({ avatar_url: publicUrl });
 
       toast({
-        title: "آواتار ذخیره شد",
-        description: "آواتار شما با موفقیت آپلود و ذخیره شد",
+        title: "Avatar saved",
+        description: "Your avatar has been updated",
       });
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({
-        title: "خطا در آپلود",
-        description: "آپلود آواتار با مشکل مواجه شد",
+        title: "Upload failed",
         variant: "destructive",
       });
     } finally {
@@ -159,246 +152,211 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
 
   if (loading) {
     return (
-      <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex items-center justify-center">
+      <div className="h-screen w-full bg-background flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-10 h-10 border-3 border-[hsl(var(--neohi-accent))] border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-foreground/20 border-t-foreground rounded-full"
         />
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full bg-[hsl(var(--neohi-bg-main))] flex flex-col overflow-hidden">
-      {/* Header */}
+    <div className="h-screen w-full bg-background flex flex-col overflow-hidden">
+      {/* Header - Minimal */}
       <motion.header
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="bg-[hsl(var(--neohi-bg-sidebar))] border-b border-[hsl(var(--neohi-border))] px-4 py-3 backdrop-blur-md"
+        className="border-b border-border/50 px-4 py-3"
       >
-        <div className="flex items-center justify-center relative">
+        <div className="flex items-center justify-between">
           <Button
             variant="ghost"
             size="icon"
-            className="absolute left-0 text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))] transition-all"
+            className="h-9 w-9 rounded-full text-foreground/70 hover:text-foreground hover:bg-muted/50"
             onClick={onBack}
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ArrowLeft className="h-5 w-5" strokeWidth={1.5} />
           </Button>
           
-          <span className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg">
-            Profile
+          <span className="text-foreground font-medium text-base tracking-tight">
+            Settings
           </span>
+
+          <div className="w-9" />
         </div>
       </motion.header>
 
       {/* Content */}
-      <ScrollArea className="flex-1 bg-[hsl(var(--neohi-bg-main))]">
-        <div className="max-w-2xl mx-auto p-6 space-y-6">
-          {/* Avatar Section */}
+      <ScrollArea className="flex-1">
+        <div className="max-w-lg mx-auto p-4 space-y-6 pb-8">
+          {/* Avatar Section - Clean */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-8 border border-[hsl(var(--neohi-border))] shadow-lg"
+            className="flex flex-col items-center py-6"
           >
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative group">
-                <div 
-                  className="cursor-pointer"
-                  onClick={() => avatarUrl && setShowAvatarDialog(true)}
-                >
-                  <Avatar className="h-32 w-32 ring-4 ring-[hsl(var(--neohi-border))] transition-all group-hover:ring-[hsl(var(--neohi-accent))]">
-                    <AvatarImage src={avatarUrl || undefined} />
-                    <AvatarFallback className="bg-gradient-to-br from-[hsl(var(--neohi-accent))] to-primary text-white text-4xl font-bold">
-                      {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-2 right-2 w-10 h-10 bg-[hsl(var(--neohi-accent))] rounded-full flex items-center justify-center cursor-pointer hover:bg-[hsl(var(--neohi-accent))]/90 transition-all shadow-lg group-hover:scale-110 z-10"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Camera className="h-5 w-5 text-white" />
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleAvatarUpload}
-                    disabled={uploading}
-                  />
-                </label>
+            <div className="relative group">
+              <div 
+                className="cursor-pointer"
+                onClick={() => avatarUrl && setShowAvatarDialog(true)}
+              >
+                <Avatar className="h-24 w-24 ring-2 ring-border/50 transition-all group-hover:ring-foreground/30">
+                  <AvatarImage src={avatarUrl || undefined} />
+                  <AvatarFallback className="bg-muted text-foreground/70 text-2xl font-medium">
+                    {displayName?.charAt(0)?.toUpperCase() || username?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
               </div>
-              {uploading && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-[hsl(var(--neohi-accent))] text-sm font-medium"
-                >
-                  Uploading...
-                </motion.p>
-              )}
-              <div className="text-center">
-                <h3 className="text-[hsl(var(--neohi-text-primary))] font-bold text-2xl">
-                  {displayName || "کاربر"}
-                </h3>
-                {createdAt && (
-                  <p className="text-[hsl(var(--neohi-text-secondary))] text-xs mt-2">
-                    عضو از {new Date(createdAt).toLocaleDateString('fa-IR')}
-                  </p>
-                )}
-              </div>
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 w-8 h-8 bg-foreground rounded-full flex items-center justify-center cursor-pointer hover:bg-foreground/90 transition-all shadow-lg"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Camera className="h-4 w-4 text-background" strokeWidth={1.5} />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                  disabled={uploading}
+                />
+              </label>
             </div>
+            {uploading && (
+              <p className="text-muted-foreground text-sm mt-3">Uploading...</p>
+            )}
+            <h3 className="text-foreground font-medium text-lg mt-4">
+              {displayName || username || "User"}
+            </h3>
+            {createdAt && (
+              <p className="text-muted-foreground text-xs mt-1">
+                Member since {new Date(createdAt).toLocaleDateString()}
+              </p>
+            )}
           </motion.div>
 
-          {/* Profile Information */}
+          {/* Profile Fields */}
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-6 border border-[hsl(var(--neohi-border))] shadow-lg space-y-6"
+            className="space-y-4"
           >
-            <h4 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg flex items-center gap-2">
-              <User className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
-              Profile Information
-            </h4>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
-                  <AtSign className="h-4 w-4" />
-                  نام کاربری
-                </Label>
-                <Input
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    autoSave({ username: e.target.value });
-                  }}
-                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))]"
-                  dir="ltr"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  نام نمایشی
-                </Label>
-                <Input
-                  value={displayName}
-                  onChange={(e) => {
-                    setDisplayName(e.target.value);
-                    autoSave({ display_name: e.target.value });
-                  }}
-                  placeholder="نام نمایشی خود را وارد کنید"
-                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  بیوگرافی
-                </Label>
-                <Textarea
-                  value={bio}
-                  onChange={(e) => {
-                    setBio(e.target.value);
-                    autoSave({ bio: e.target.value });
-                  }}
-                  placeholder="درباره خودتان بنویسید..."
-                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] min-h-[120px] resize-none focus:border-[hsl(var(--neohi-accent))]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[hsl(var(--neohi-text-secondary))] text-sm flex items-center gap-2">
-                  <PhoneIcon className="h-4 w-4" />
-                  شماره تلفن
-                </Label>
-                <Input
-                  value={phone}
-                  onChange={(e) => {
-                    setPhone(e.target.value);
-                    autoSave({ phone: e.target.value });
-                  }}
-                  placeholder="+98 912 345 6789"
-                  className="bg-[hsl(var(--neohi-bg-chat))] border-[hsl(var(--neohi-border))] text-[hsl(var(--neohi-text-primary))] placeholder:text-[hsl(var(--neohi-text-secondary))] focus:border-[hsl(var(--neohi-accent))]"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wider flex items-center gap-2">
+                <AtSign className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Username
+              </Label>
+              <Input
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  autoSave({ username: e.target.value });
+                }}
+                className="bg-muted/30 border-0 text-foreground h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
+                dir="ltr"
+              />
             </div>
-          </motion.div>
-
-          {/* Settings */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="bg-[hsl(var(--neohi-bg-sidebar))] rounded-2xl p-6 border border-[hsl(var(--neohi-border))] shadow-lg space-y-4"
-          >
-            <h4 className="text-[hsl(var(--neohi-text-primary))] font-semibold text-lg flex items-center gap-2">
-              <Shield className="h-5 w-5 text-[hsl(var(--neohi-accent))]" />
-              Settings & Privacy
-            </h4>
 
             <div className="space-y-2">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/ai-settings')}
-                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
-              >
-                <Sparkles className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                تنظیمات AI Assistant
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
-              >
-                <Bell className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                Notifications
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setShowPrivacyDialog(true)}
-                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
-              >
-                <Shield className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                حریم خصوصی و امنیت
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
-              >
-                <Palette className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                Appearance
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-[hsl(var(--neohi-text-primary))] hover:bg-[hsl(var(--neohi-bg-chat))]"
-              >
-                <Globe className="h-5 w-5 mr-3 text-[hsl(var(--neohi-accent))]" />
-                Language
-              </Button>
+              <Label className="text-muted-foreground text-xs uppercase tracking-wider flex items-center gap-2">
+                <User className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Display Name
+              </Label>
+              <Input
+                value={displayName}
+                onChange={(e) => {
+                  setDisplayName(e.target.value);
+                  autoSave({ display_name: e.target.value });
+                }}
+                placeholder="Enter your name"
+                className="bg-muted/30 border-0 text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
+              />
             </div>
 
-            <Separator className="bg-[hsl(var(--neohi-border))]" />
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wider flex items-center gap-2">
+                <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Bio
+              </Label>
+              <Textarea
+                value={bio}
+                onChange={(e) => {
+                  setBio(e.target.value);
+                  autoSave({ bio: e.target.value });
+                }}
+                placeholder="Write something about yourself..."
+                className="bg-muted/30 border-0 text-foreground placeholder:text-muted-foreground min-h-[100px] resize-none rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
+              />
+            </div>
 
+            <div className="space-y-2">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wider flex items-center gap-2">
+                <PhoneIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                Phone
+              </Label>
+              <Input
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  autoSave({ phone: e.target.value });
+                }}
+                placeholder="+1 234 567 8900"
+                className="bg-muted/30 border-0 text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-foreground/20"
+              />
+            </div>
+          </motion.div>
+
+          {/* Settings Menu */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="space-y-1 pt-4"
+          >
+            <p className="text-muted-foreground text-xs uppercase tracking-wider px-1 mb-3">
+              Settings
+            </p>
+
+            <SettingsItem
+              icon={Bell}
+              label="Notifications"
+              onClick={() => {}}
+            />
+            <SettingsItem
+              icon={Shield}
+              label="Privacy & Security"
+              onClick={() => setShowPrivacyDialog(true)}
+            />
+            <SettingsItem
+              icon={Palette}
+              label="Appearance"
+              onClick={() => {}}
+            />
+          </motion.div>
+
+          {/* Logout */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="pt-4"
+          >
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start text-red-500 hover:bg-red-500/10"
+              className="w-full justify-start text-destructive hover:bg-destructive/10 h-12 rounded-xl"
             >
-              <LogOut className="h-5 w-5 mr-3" />
+              <LogOut className="h-5 w-5 mr-3" strokeWidth={1.5} />
               Log Out
             </Button>
           </motion.div>
         </div>
       </ScrollArea>
-
 
       {/* Avatar Dialog */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
@@ -406,12 +364,12 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
           <div className="relative w-full h-full flex items-center justify-center p-4">
             <button
               onClick={() => setShowAvatarDialog(false)}
-              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all backdrop-blur-sm"
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
             >
-              <X className="h-6 w-6" />
+              <X className="h-5 w-5" strokeWidth={1.5} />
             </button>
             <motion.img 
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               src={avatarUrl} 
               alt="Profile" 
@@ -421,89 +379,86 @@ export function ProfileSettings({ onBack }: ProfileSettingsProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Privacy Settings Dialog */}
+      {/* Privacy Dialog */}
       <Dialog open={showPrivacyDialog} onOpenChange={setShowPrivacyDialog}>
-        <DialogContent className="sm:max-w-[500px] bg-neohi-bg-sidebar border-neohi-border">
+        <DialogContent className="sm:max-w-[400px] bg-background border-border/50">
           <DialogHeader>
-            <DialogTitle className="text-neohi-text-primary flex items-center gap-2">
-              <Shield className="h-5 w-5 text-neohi-accent" />
-              تنظیمات حریم خصوصی
+            <DialogTitle className="text-foreground flex items-center gap-2 font-medium">
+              <Shield className="h-5 w-5" strokeWidth={1.5} />
+              Privacy
             </DialogTitle>
-            <DialogDescription className="text-neohi-text-secondary">
-              کنترل کنید چه کسی می‌تواند اطلاعات شما را ببیند
+            <DialogDescription className="text-muted-foreground text-sm">
+              Control who can see your information
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-neohi-text-primary">نمایش شماره تلفن</Label>
-                <p className="text-sm text-neohi-text-secondary">
-                  دیگران می‌توانند شماره شما را ببینند
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.showPhone}
-                onCheckedChange={(checked) =>
-                  setPrivacySettings({ ...privacySettings, showPhone: checked })
-                }
-              />
-            </div>
-            <Separator className="bg-neohi-border" />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-neohi-text-primary">نمایش وضعیت آنلاین</Label>
-                <p className="text-sm text-neohi-text-secondary">
-                  دیگران می‌توانند ببینند آنلاین هستید یا نه
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.showOnlineStatus}
-                onCheckedChange={(checked) =>
-                  setPrivacySettings({ ...privacySettings, showOnlineStatus: checked })
-                }
-              />
-            </div>
-            <Separator className="bg-neohi-border" />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-neohi-text-primary">مشاهده استوری‌ها</Label>
-                <p className="text-sm text-neohi-text-secondary">
-                  سایرین می‌توانند ببینند استوری‌شان را دیده‌اید
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.allowStoryViews}
-                onCheckedChange={(checked) =>
-                  setPrivacySettings({ ...privacySettings, allowStoryViews: checked })
-                }
-              />
-            </div>
-            <Separator className="bg-neohi-border" />
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-neohi-text-primary">تیک خوانده شدن</Label>
-                <p className="text-sm text-neohi-text-secondary">
-                  نمایش وضعیت خوانده شدن پیام‌ها
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.readReceipts}
-                onCheckedChange={(checked) =>
-                  setPrivacySettings({ ...privacySettings, readReceipts: checked })
-                }
-              />
-            </div>
-          </div>
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              onClick={() => setShowPrivacyDialog(false)}
-              className="bg-neohi-accent hover:bg-neohi-accent/90 text-white"
-            >
-              ذخیره تنظیمات
-            </Button>
+          <div className="space-y-4 py-4">
+            <PrivacyToggle
+              label="Show phone number"
+              description="Others can see your phone"
+              checked={privacySettings.showPhone}
+              onCheckedChange={(checked) =>
+                setPrivacySettings({ ...privacySettings, showPhone: checked })
+              }
+            />
+            <PrivacyToggle
+              label="Show online status"
+              description="Others can see when you're online"
+              checked={privacySettings.showOnlineStatus}
+              onCheckedChange={(checked) =>
+                setPrivacySettings({ ...privacySettings, showOnlineStatus: checked })
+              }
+            />
+            <PrivacyToggle
+              label="Allow story views"
+              description="Let others view your stories"
+              checked={privacySettings.allowStoryViews}
+              onCheckedChange={(checked) =>
+                setPrivacySettings({ ...privacySettings, allowStoryViews: checked })
+              }
+            />
+            <PrivacyToggle
+              label="Read receipts"
+              description="Show when you've read messages"
+              checked={privacySettings.readReceipts}
+              onCheckedChange={(checked) =>
+                setPrivacySettings({ ...privacySettings, readReceipts: checked })
+              }
+            />
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function SettingsItem({ icon: Icon, label, onClick }: { icon: any; label: string; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-colors"
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} />
+        <span className="text-foreground text-[15px]">{label}</span>
+      </div>
+      <ChevronRight className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} />
+    </button>
+  );
+}
+
+function PrivacyToggle({ label, description, checked, onCheckedChange }: {
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <div className="space-y-0.5">
+        <Label className="text-foreground text-sm">{label}</Label>
+        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>
   );
 }
