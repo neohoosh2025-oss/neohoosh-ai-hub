@@ -644,17 +644,21 @@ const Chat = () => {
       {/* Minimal Header - ChatGPT Style */}
       <div className="border-b border-border/40 bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Left: History Button */}
-          <button
-            onClick={() => setShowHistory(true)}
-            className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors"
-          >
-            <History className="w-5 h-5 text-muted-foreground" />
-          </button>
+          {/* Left: History Button (only for logged in users) */}
+          {user ? (
+            <button
+              onClick={() => setShowHistory(true)}
+              className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors"
+            >
+              <History className="w-5 h-5 text-muted-foreground" />
+            </button>
+          ) : (
+            <div className="w-9" />
+          )}
           
           {/* Center: Brand */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-base font-semibold text-foreground tracking-tight">نئوهوش</h1>
+            <h1 className="text-xl font-pacifico text-foreground tracking-wide">NeoHoosh</h1>
           </div>
           
           {/* Right: Profile or Login */}
@@ -865,7 +869,7 @@ const Chat = () => {
       {/* Input Bar - ChatGPT Style */}
       <div className="border-t border-border/40 bg-background sticky bottom-0">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-card border border-border/50">
+          <div className="relative flex items-end gap-1 p-2 rounded-2xl bg-card border border-border/50">
             {/* Model Selector + Button */}
             <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
               <PopoverTrigger asChild>
