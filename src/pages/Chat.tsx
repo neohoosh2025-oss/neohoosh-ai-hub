@@ -658,7 +658,7 @@ const Chat = () => {
           
           {/* Center: Brand */}
           <div className="absolute left-1/2 -translate-x-1/2">
-            <h1 className="text-xl font-pacifico text-foreground tracking-wide">NeoHoosh</h1>
+            <h1 className="text-xl font-brand font-semibold text-foreground tracking-tight">NeoHoosh</h1>
           </div>
           
           {/* Right: Profile or Login */}

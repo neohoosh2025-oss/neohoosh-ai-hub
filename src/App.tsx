@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { PageTransition } from "./components/PageTransition";
 import { SystemMonitor } from "./components/SystemMonitor";
-import { lazy, Suspense } from "react";
+import { SplashScreen } from "./components/SplashScreen";
+import { lazy, Suspense, useState, useEffect } from "react";
+import { AnimatePresence } from "framer-motion";
 import Chat from "./pages/Chat";
 
 // Lazy load most pages
@@ -59,49 +61,71 @@ const LoadingFallback = () => (
 
 import { Navigate } from "react-router-dom";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <SystemMonitor />
-        <BrowserRouter>
-          <Suspense fallback={<LoadingFallback />}>
-            <PageTransition>
-              <Routes>
-                <Route path="/" element={<Navigate to="/chat" replace />} />
-                <Route path="/neohi" element={<NeoHi />} />
-                <Route path="/ai-settings" element={<AISettings />} />
-                <Route path="/design-system" element={<DesignSystem />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/articles" element={<Articles />} />
-                <Route path="/articles/:id" element={<ArticleDetail />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/products/:id" element={<ProductDetail />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/tools" element={<Tools />} />
-                <Route path="/tools/image-generator" element={<ImageGenerator />} />
-                <Route path="/tools/voice-to-text" element={<VoiceToText />} />
-                <Route path="/tools/text-to-voice" element={<TextToVoice />} />
-                <Route path="/tools/code-generator" element={<CodeGenerator />} />
-                <Route path="/memory" element={<MemoryManagement />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/translate" element={<AdminTranslate />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </PageTransition>
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    // Check if splash was shown in this session
+    const splashShown = sessionStorage.getItem('splashShown');
+    if (splashShown) {
+      setShowSplash(false);
+    }
+  }, []);
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem('splashShown', 'true');
+    setShowSplash(false);
+  };
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <SystemMonitor />
+          
+          <AnimatePresence mode="wait">
+            {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+          </AnimatePresence>
+          
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <PageTransition>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/chat" replace />} />
+                  <Route path="/neohi" element={<NeoHi />} />
+                  <Route path="/ai-settings" element={<AISettings />} />
+                  <Route path="/design-system" element={<DesignSystem />} />
+                  <Route path="/chat" element={<Chat />} />
+                  <Route path="/articles" element={<Articles />} />
+                  <Route path="/articles/:id" element={<ArticleDetail />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/products/:id" element={<ProductDetail />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/tools" element={<Tools />} />
+                  <Route path="/tools/image-generator" element={<ImageGenerator />} />
+                  <Route path="/tools/voice-to-text" element={<VoiceToText />} />
+                  <Route path="/tools/text-to-voice" element={<TextToVoice />} />
+                  <Route path="/tools/code-generator" element={<CodeGenerator />} />
+                  <Route path="/memory" element={<MemoryManagement />} />
+                  <Route path="/admin" element={<Admin />} />
+                  <Route path="/admin/translate" element={<AdminTranslate />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </PageTransition>
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
