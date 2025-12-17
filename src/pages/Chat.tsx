@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn, Plus, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -29,6 +29,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
@@ -100,7 +105,8 @@ const Chat = () => {
 
   const [user, setUser] = useState<any>(null);
   const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
+  const [selectedModel, setSelectedModel] = useState<ModelType>("general");
+  const [showModelSelector, setShowModelSelector] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -194,33 +200,37 @@ const Chat = () => {
     // Don't redirect - allow guest usage
   };
 
-  const handleModelSelect = async (modelId: ModelType) => {
+  const handleModelSelect = (modelId: ModelType) => {
     setSelectedModel(modelId);
-    setMessages([]);
-    
-    // Only create conversation in DB if user is logged in
-    if (user) {
-      const { data: convData, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: user.id,
-          model_type: modelId,
-          title: 'گفتگوی جدید'
-        })
-        .select()
-        .single();
+    setShowModelSelector(false);
+  };
 
-      if (convError) {
-        console.error("Error creating conversation:", convError);
-        toast.error("خطا در ایجاد گفتگو", { duration: 2000 });
-        return;
+  const initializeConversation = async () => {
+    if (!currentConversationId || currentConversationId.startsWith('guest-')) {
+      if (user) {
+        const { data: convData, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: user.id,
+            model_type: selectedModel,
+            title: 'گفتگوی جدید'
+          })
+          .select()
+          .single();
+
+        if (convError) {
+          console.error("Error creating conversation:", convError);
+          return null;
+        }
+        setCurrentConversationId(convData.id);
+        return convData.id;
+      } else {
+        const guestId = 'guest-' + Date.now();
+        setCurrentConversationId(guestId);
+        return guestId;
       }
-
-      setCurrentConversationId(convData.id);
-    } else {
-      // Guest mode - no DB conversation
-      setCurrentConversationId('guest-' + Date.now());
     }
+    return currentConversationId;
   };
 
   const handleNewChat = () => {
@@ -244,6 +254,13 @@ const Chat = () => {
       localStorage.setItem(GUEST_QUESTIONS_KEY, newCount.toString());
     }
 
+    // Initialize conversation if needed
+    const convId = await initializeConversation();
+    if (!convId) {
+      toast.error("خطا در ایجاد گفتگو", { duration: 2000 });
+      return;
+    }
+
     const userMessageContent = message;
     const userMessage: Message = { role: "user", content: userMessageContent };
     setMessages(prev => [...prev, userMessage]);
@@ -256,9 +273,9 @@ const Chat = () => {
 
     try {
       // Only save to DB if user is logged in
-      if (user && currentConversationId && !currentConversationId.startsWith('guest-')) {
+      if (user && convId && !convId.startsWith('guest-')) {
         await supabase.from('messages').insert({
-          conversation_id: currentConversationId,
+          conversation_id: convId,
           role: 'user',
           content: userMessageContent
         });
@@ -277,7 +294,7 @@ const Chat = () => {
               title,
               updated_at: new Date().toISOString()
             })
-            .eq('id', currentConversationId);
+            .eq('id', convId);
           
           await loadConversations();
         }
@@ -620,152 +637,6 @@ const Chat = () => {
     if (e.target) e.target.value = '';
   };
 
-  // Model Selection Screen - Calm Design
-  if (!selectedModel) {
-    return (
-      <div className="min-h-screen bg-background">
-        {/* Calm Header */}
-        <div className="sticky top-0 z-50 border-b border-border/30 bg-background/90 backdrop-blur-md">
-          <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-primary/80" />
-              </div>
-              <div>
-                <h1 className="text-base font-medium text-foreground/90">نئوهوش</h1>
-                <p className="text-xs text-muted-foreground/70">دستیار هوشمند شما</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {user ? (
-                <>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    onClick={() => {
-                      setShowHistory(true);
-                      loadConversations();
-                    }}
-                  >
-                    <History className="w-4 h-4" />
-                  </Button>
-                  <button 
-                    className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
-                    onClick={() => navigate('/profile')}
-                  >
-                    {userAvatarUrl ? (
-                      <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-muted/50 flex items-center justify-center">
-                        <UserCircle className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate('/auth')}
-                  className="h-9 px-4 rounded-xl text-primary hover:bg-primary/10 font-medium gap-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  ورود
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Model Grid - Calm Design */}
-        <div className="max-w-4xl mx-auto px-6 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-12 max-w-xl mx-auto"
-          >
-            <h2 className="text-2xl font-medium mb-3 text-foreground/90">چطور می‌تونم کمکت کنم؟</h2>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              یک حالت انتخاب کن تا بهترین نتیجه رو بگیری
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
-            {models.map((model, index) => {
-              const Icon = model.icon;
-              return (
-                <motion.button
-                  key={model.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.06, duration: 0.4 }}
-                  onClick={() => handleModelSelect(model.id)}
-                  className="group relative p-6 rounded-2xl border border-border/50 bg-card hover:bg-muted/30 hover:border-primary/30 transition-all duration-300 text-right"
-                >
-                  <div className="inline-flex p-2.5 rounded-xl bg-primary/10 mb-4">
-                    <Icon className="w-5 h-5 text-primary/80" />
-                  </div>
-                  <h3 className="text-base font-medium mb-1.5 text-foreground/90 group-hover:text-primary transition-colors">{model.name}</h3>
-                  <p className="text-sm text-muted-foreground/80 leading-relaxed">{model.description}</p>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          {/* Recent Conversations - Calm Design */}
-          {conversations.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="border-t border-border/30 pt-12"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <History className="w-4 h-4 text-muted-foreground/60" />
-                  <h3 className="text-base font-medium text-foreground/80">گفتگوهای اخیر</h3>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowHistory(true)}
-                  className="text-xs h-8 px-3 text-muted-foreground hover:text-foreground rounded-lg"
-                >
-                  مشاهده همه
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {conversations.slice(0, 6).map((conv) => (
-                  <motion.button
-                    key={conv.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={() => loadConversation(conv.id)}
-                    className="p-4 rounded-xl border border-border/40 bg-card hover:bg-muted/30 hover:border-primary/20 transition-all text-right group"
-                  >
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <h4 className="font-medium text-sm text-foreground/80 group-hover:text-primary transition-colors line-clamp-2 flex-1 leading-relaxed">
-                        {conv.title}
-                      </h4>
-                      <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap mt-0.5">
-                        {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                      <Bot className="w-3.5 h-3.5" />
-                      <span>{models.find(m => m.id === conv.model_type)?.name}</span>
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   // Chat Screen - Calm Design
   return (
@@ -1008,6 +879,57 @@ const Chat = () => {
       <div className="border-t border-border/30 bg-background/90 backdrop-blur-md sticky bottom-0">
         <div className="max-w-2xl mx-auto px-6 py-4">
           <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-card border border-border/40 shadow-sm">
+            {/* Model Selector + Button */}
+            <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="w-64 p-2" 
+                side="top" 
+                align="start"
+                sideOffset={8}
+              >
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground px-2 py-1.5 font-medium">انتخاب حالت</p>
+                  {models.map((model) => {
+                    const Icon = model.icon;
+                    const isSelected = selectedModel === model.id;
+                    return (
+                      <button
+                        key={model.id}
+                        onClick={() => handleModelSelect(model.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-right transition-all ${
+                          isSelected 
+                            ? 'bg-primary/10 text-primary' 
+                            : 'hover:bg-muted/50 text-foreground/80'
+                        }`}
+                      >
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                          isSelected ? 'bg-primary/20' : 'bg-muted/50'
+                        }`}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 text-right">
+                          <p className="text-sm font-medium">{model.name}</p>
+                          <p className="text-xs text-muted-foreground">{model.description}</p>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-primary" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <input
               ref={fileInputRef}
               type="file"
@@ -1040,6 +962,24 @@ const Chat = () => {
               className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2 placeholder:text-muted-foreground/50"
               rows={1}
             />
+
+            {/* Current Model Indicator */}
+            <button 
+              onClick={() => setShowModelSelector(true)}
+              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-xs text-muted-foreground hover:bg-muted transition-colors flex-shrink-0"
+            >
+              {(() => {
+                const currentModel = models.find(m => m.id === selectedModel);
+                const Icon = currentModel?.icon || MessageSquare;
+                return (
+                  <>
+                    <Icon className="w-3 h-3" />
+                    <span className="max-w-20 truncate">{currentModel?.name}</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </>
+                );
+              })()}
+            </button>
 
             {isLoading ? (
               <Button
