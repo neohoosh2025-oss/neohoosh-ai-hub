@@ -644,8 +644,13 @@ const Chat = () => {
       {/* Minimal Header - ChatGPT Style */}
       <div className="border-b border-border/40 bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Left: Empty for balance */}
-          <div className="w-9" />
+          {/* Left: History Button */}
+          <button
+            onClick={() => setShowHistory(true)}
+            className="h-9 w-9 rounded-full flex items-center justify-center hover:bg-muted/60 transition-colors"
+          >
+            <History className="w-5 h-5 text-muted-foreground" />
+          </button>
           
           {/* Center: Brand */}
           <div className="absolute left-1/2 -translate-x-1/2">
