@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Vazirmatn', 'system-ui', 'sans-serif'],
+        pacifico: ['Pacifico', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",
