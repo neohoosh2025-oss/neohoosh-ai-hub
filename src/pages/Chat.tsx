@@ -577,30 +577,30 @@ const Chat = () => {
     if (e.target) e.target.value = '';
   };
 
-  // Model Selection Screen
+  // Model Selection Screen - Calm Design
   if (!selectedModel) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+        {/* Calm Header */}
+        <div className="sticky top-0 z-50 border-b border-border/30 bg-background/90 backdrop-blur-md">
+          <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary/80" />
               </div>
               <div>
-                <h1 className="text-base font-semibold">نئوهوش</h1>
-                <p className="text-[11px] text-muted-foreground">دستیار هوشمند شما</p>
+                <h1 className="text-base font-medium text-foreground/90">نئوهوش</h1>
+                <p className="text-xs text-muted-foreground/70">دستیار هوشمند شما</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted" onClick={() => navigate('/')}>
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50" onClick={() => navigate('/')}>
                 <Home className="w-4 h-4" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-9 w-9 rounded-lg hover:bg-muted"
+                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 onClick={() => {
                   setShowHistory(true);
                   loadConversations();
@@ -612,87 +612,82 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Model Grid */}
-        <div className="max-w-6xl mx-auto px-6 py-16">
+        {/* Model Grid - Calm Design */}
+        <div className="max-w-4xl mx-auto px-6 py-12">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-16 max-w-2xl mx-auto"
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12 max-w-xl mx-auto"
           >
-            <h2 className="text-4xl font-bold mb-4 tracking-tight">یک مدل انتخاب کنید</h2>
-            <p className="text-muted-foreground text-base leading-relaxed">
-              هر مدل برای نیاز خاصی طراحی شده است. مدل مناسب را انتخاب کنید تا بهترین نتیجه را بگیرید
+            <h2 className="text-2xl font-medium mb-3 text-foreground/90">چطور می‌تونم کمکت کنم؟</h2>
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              یک حالت انتخاب کن تا بهترین نتیجه رو بگیری
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
             {models.map((model, index) => {
               const Icon = model.icon;
               return (
                 <motion.button
                   key={model.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.08 }}
+                  transition={{ delay: index * 0.06, duration: 0.4 }}
                   onClick={() => handleModelSelect(model.id)}
-                  className="group relative p-8 rounded-2xl border border-border/60 bg-card hover:bg-accent/30 hover:border-primary/40 transition-all duration-300 text-right hover:shadow-lg hover:-translate-y-1"
+                  className="group relative p-6 rounded-2xl border border-border/50 bg-card hover:bg-muted/30 hover:border-primary/30 transition-all duration-300 text-right"
                 >
-                  <div className={`inline-flex p-2.5 rounded-xl bg-gradient-to-br ${model.gradient} mb-5`}>
-                    <Icon className="w-5 h-5 text-white" />
+                  <div className="inline-flex p-2.5 rounded-xl bg-primary/10 mb-4">
+                    <Icon className="w-5 h-5 text-primary/80" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{model.name}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{model.description}</p>
-                  <div className="absolute top-6 left-6 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  </div>
+                  <h3 className="text-base font-medium mb-1.5 text-foreground/90 group-hover:text-primary transition-colors">{model.name}</h3>
+                  <p className="text-sm text-muted-foreground/80 leading-relaxed">{model.description}</p>
                 </motion.button>
               );
             })}
           </div>
 
-          {/* Recent Conversations */}
+          {/* Recent Conversations - Calm Design */}
           {conversations.length > 0 && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="border-t border-border/40 pt-16"
+              className="border-t border-border/30 pt-12"
             >
-              <div className="flex items-center justify-between mb-8">
-                <div>
-                  <h3 className="text-2xl font-bold mb-1 flex items-center gap-2.5">
-                    <History className="w-5 h-5 text-muted-foreground" />
-                    گفتگوهای اخیر
-                  </h3>
-                  <p className="text-sm text-muted-foreground">به گفتگوهای قبلی خود برگردید</p>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <History className="w-4 h-4 text-muted-foreground/60" />
+                  <h3 className="text-base font-medium text-foreground/80">گفتگوهای اخیر</h3>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowHistory(true)}
-                  className="text-xs h-9 px-4 hover:bg-muted rounded-lg"
+                  className="text-xs h-8 px-3 text-muted-foreground hover:text-foreground rounded-lg"
                 >
                   مشاهده همه
                 </Button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {conversations.slice(0, 6).map((conv) => (
                   <motion.button
                     key={conv.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     onClick={() => loadConversation(conv.id)}
-                    className="p-5 rounded-xl border border-border/50 bg-card hover:bg-accent/20 hover:border-primary/40 transition-all text-right group"
+                    className="p-4 rounded-xl border border-border/40 bg-card hover:bg-muted/30 hover:border-primary/20 transition-all text-right group"
                   >
-                    <div className="flex items-start justify-between gap-3 mb-3">
-                      <h4 className="font-medium text-sm group-hover:text-primary transition-colors line-clamp-2 flex-1 leading-relaxed">
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <h4 className="font-medium text-sm text-foreground/80 group-hover:text-primary transition-colors line-clamp-2 flex-1 leading-relaxed">
                         {conv.title}
                       </h4>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap mt-0.5">
+                      <span className="text-[10px] text-muted-foreground/60 whitespace-nowrap mt-0.5">
                         {new Date(conv.updated_at).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
                       <Bot className="w-3.5 h-3.5" />
                       <span>{models.find(m => m.id === conv.model_type)?.name}</span>
                     </div>
@@ -706,32 +701,32 @@ const Chat = () => {
     );
   }
 
-  // Chat Screen
+  // Chat Screen - Calm Design
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      {/* Calm Header */}
+      <div className="border-b border-border/30 bg-background/90 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] flex items-center justify-center">
-              <Bot className="w-4 h-4 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Bot className="w-4 h-4 text-primary/80" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold">نئوهوش</h1>
+              <h1 className="text-sm font-medium text-foreground/90">نئوهوش</h1>
               <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <p className="text-[11px] text-muted-foreground">آنلاین</p>
+                <div className="w-1.5 h-1.5 rounded-full bg-success/70" />
+                <p className="text-[11px] text-muted-foreground/70">آماده کمک</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg hover:bg-muted" onClick={() => navigate('/')}>
+          <div className="flex items-center gap-1.5">
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50" onClick={() => navigate('/')}>
               <Home className="w-4 h-4" />
             </Button>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-9 w-9 rounded-lg hover:bg-muted"
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
               onClick={() => {
                 setShowHistory(true);
                 loadConversations();
@@ -742,61 +737,52 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Action Strip */}
-        <div className="max-w-4xl mx-auto px-6 pb-3">
-          <div className="flex items-center gap-2">
+        {/* Action Strip - Subtle */}
+        <div className="max-w-3xl mx-auto px-6 pb-2.5">
+          <div className="flex items-center gap-1.5">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClearChat}
-              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
+              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg"
             >
-              <Trash2 className="w-3.5 h-3.5 ml-1.5" />
+              <Trash2 className="w-3 h-3 ml-1" />
               پاک کردن
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate('/voice-call')}
-              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
-            >
-              <Phone className="w-3.5 h-3.5 ml-1.5" />
-              تماس صوتی
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
               onClick={handleNewChat}
-              className="h-8 px-3 text-xs hover:bg-muted rounded-lg"
+              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg"
             >
-              <Sparkles className="w-3.5 h-3.5 ml-1.5" />
+              <Sparkles className="w-3 h-3 ml-1" />
               گفتگوی جدید
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages Area - Calm Design */}
       <div 
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto"
         onScroll={handleScroll}
       >
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+        <div className="max-w-2xl mx-auto px-6 py-8 space-y-5">
           <AnimatePresence mode="popLayout">
             {messages.map((msg, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
                   <Avatar className="w-8 h-8 ml-3 mt-1 flex-shrink-0">
-                    <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] rounded-lg">
-                      <Bot className="w-4 h-4 text-white" />
+                    <AvatarFallback className="bg-primary/10 rounded-xl">
+                      <Bot className="w-4 h-4 text-primary/70" />
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -804,8 +790,8 @@ const Chat = () => {
                 <div
                   className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] text-white shadow-md'
-                      : 'bg-muted/40 border border-border/40'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'bg-card border border-border/40 shadow-xs'
                   }`}
                 >
                   {msg.imageUrl ? (
@@ -902,21 +888,21 @@ const Chat = () => {
               className="flex items-start gap-3"
             >
               <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback className="bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] rounded-lg">
-                  <Bot className="w-4 h-4 text-white" />
+                <AvatarFallback className="bg-primary/10 rounded-xl">
+                  <Bot className="w-4 h-4 text-primary/70" />
                 </AvatarFallback>
               </Avatar>
-              <div className="bg-muted/40 rounded-2xl px-4 py-3 border border-border/40">
+              <div className="bg-card rounded-2xl px-4 py-3 border border-border/40 shadow-xs">
                 <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <motion.div
                       key={i}
-                      className="w-2 h-2 bg-primary/60 rounded-full"
-                      animate={{ y: [0, -6, 0] }}
+                      className="w-2 h-2 bg-primary/50 rounded-full"
+                      animate={{ y: [0, -5, 0] }}
                       transition={{
-                        duration: 0.6,
+                        duration: 0.5,
                         repeat: Infinity,
-                        delay: i * 0.15,
+                        delay: i * 0.12,
                       }}
                     />
                   ))}
@@ -929,10 +915,10 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Input Bar */}
-      <div className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 sticky bottom-0">
-        <div className="max-w-3xl mx-auto px-6 py-4">
-          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-muted/30 border border-border/40 shadow-sm hover:border-border/60 transition-colors">
+      {/* Input Bar - Calm Design */}
+      <div className="border-t border-border/30 bg-background/90 backdrop-blur-md sticky bottom-0">
+        <div className="max-w-2xl mx-auto px-6 py-4">
+          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-card border border-border/40 shadow-sm">
             <input
               ref={fileInputRef}
               type="file"
@@ -943,7 +929,7 @@ const Chat = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 flex-shrink-0 rounded-lg hover:bg-muted"
+              className="h-9 w-9 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
               onClick={() => fileInputRef.current?.click()}
             >
               <Paperclip className="w-4 h-4" />
@@ -962,7 +948,7 @@ const Chat = () => {
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="پیام خود را بنویسید..."
-              className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2 placeholder:text-muted-foreground/60"
+              className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2 placeholder:text-muted-foreground/50"
               rows={1}
             />
 
@@ -970,7 +956,7 @@ const Chat = () => {
               <Button
                 onClick={handleStopGeneration}
                 size="icon"
-                className="h-9 w-9 bg-red-500 hover:bg-red-600 flex-shrink-0 rounded-lg shadow-sm"
+                className="h-9 w-9 bg-destructive/80 hover:bg-destructive flex-shrink-0 rounded-xl shadow-sm"
               >
                 <Square className="w-3.5 h-3.5 fill-current" />
               </Button>
@@ -979,7 +965,7 @@ const Chat = () => {
                 onClick={handleSend}
                 disabled={!message.trim()}
                 size="icon"
-                className="h-9 w-9 bg-gradient-to-br from-[#4BA6FF] to-[#5E60CE] hover:opacity-90 flex-shrink-0 disabled:opacity-50 rounded-lg shadow-sm"
+                className="h-9 w-9 bg-primary hover:bg-primary/90 flex-shrink-0 disabled:opacity-40 rounded-xl shadow-sm"
               >
                 <Send className="w-4 h-4" />
               </Button>

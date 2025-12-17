@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence, Variants } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   MessageCircle, 
   Sparkles,
@@ -8,29 +8,27 @@ import {
   Volume2,
   Code,
   Users,
-  ArrowLeft,
-  Zap,
-  TrendingUp,
-  Star,
-  Award,
-  Target
+  Lock,
+  ArrowLeft
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SplashScreen } from "@/components/SplashScreen";
 import { OfflinePage } from "@/components/OfflinePage";
 import { usePWA } from "@/hooks/usePWA";
-import { MainLayout } from "@/components/layouts/MainLayout";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const { isOnline } = usePWA();
+  const navigate = useNavigate();
   const [showSplash, setShowSplash] = useState(() => {
     const hasSeenSplash = sessionStorage.getItem('neohoosh_splash_seen');
     return !hasSeenSplash;
   });
   const [user, setUser] = useState<any>(null);
-  const [stats, setStats] = useState({ messages: 0, conversations: 0 });
+  const [inputValue, setInputValue] = useState("");
 
   const handleSplashComplete = () => {
     sessionStorage.setItem('neohoosh_splash_seen', 'true');
@@ -41,319 +39,187 @@ const Index = () => {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      
-      if (user) {
-        const { data: conversations } = await supabase
-          .from("conversations")
-          .select("id")
-          .eq("user_id", user.id);
-
-        if (conversations && conversations.length > 0) {
-          const { count } = await supabase
-            .from("messages")
-            .select("id", { count: 'exact', head: true })
-            .in("conversation_id", conversations.map(c => c.id));
-          
-          setStats({
-            messages: count || 0,
-            conversations: conversations.length,
-          });
-        }
-      }
     };
     fetchData();
   }, []);
 
-  const tools = [
-    { icon: MessageCircle, title: "دستیار AI", desc: "گفتگو با هوش مصنوعی", path: "/chat", color: "bg-blue-500" },
-    { icon: Image, title: "تولید تصویر", desc: "خلق تصاویر با AI", path: "/tools/image-generator", color: "bg-purple-500" },
-    { icon: Mic, title: "صدا به متن", desc: "تبدیل گفتار", path: "/tools/voice-to-text", color: "bg-emerald-500" },
-    { icon: Volume2, title: "متن به صدا", desc: "تبدیل متن", path: "/tools/text-to-voice", color: "bg-cyan-500" },
-    { icon: Code, title: "تولید کد", desc: "برنامه‌نویسی", path: "/tools/code-generator", color: "bg-orange-500" },
-    { icon: Users, title: "NEOHI", desc: "شبکه اجتماعی", path: "/neohi", color: "bg-pink-500" },
-  ];
-
-  const features = [
-    { icon: Zap, title: "سریع و قدرتمند", desc: "پاسخ‌های فوری با بهترین مدل‌ها" },
-    { icon: Target, title: "دقت بالا", desc: "نتایج حرفه‌ای و دقیق" },
-    { icon: Award, title: "کیفیت برتر", desc: "خروجی‌های با کیفیت بالا" },
-  ];
-
-  // Animation variants with proper typing
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1
-      }
+  // Navigate to chat with message
+  const handleStartChat = () => {
+    if (inputValue.trim()) {
+      navigate('/chat', { state: { initialMessage: inputValue } });
+    } else {
+      navigate('/chat');
     }
   };
 
-  const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { duration: 0.4, ease: "easeOut" }
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleStartChat();
     }
   };
+
+  // Locked tools - visually disabled
+  const lockedTools = [
+    { icon: Image, title: "تولید تصویر", color: "bg-muted" },
+    { icon: Mic, title: "صدا به متن", color: "bg-muted" },
+    { icon: Volume2, title: "متن به صدا", color: "bg-muted" },
+    { icon: Code, title: "تولید کد", color: "bg-muted" },
+    { icon: Users, title: "NEOHI", color: "bg-muted" },
+  ];
 
   if (!isOnline) {
     return <OfflinePage />;
   }
 
   return (
-    <MainLayout>
+    <div className="min-h-screen bg-background flex flex-col">
       <AnimatePresence>
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       </AnimatePresence>
 
-      <motion.div 
-        className="px-4 py-6 space-y-6 pb-24"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Welcome Section */}
-        <motion.section variants={itemVariants}>
-          <motion.p 
-            className="text-muted-foreground text-sm mb-1"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+      {/* Minimal Centered Layout */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
+        <motion.div 
+          className="w-full max-w-lg mx-auto space-y-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          {/* Logo & Welcome - Extremely Minimal */}
+          <motion.div 
+            className="text-center space-y-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            {new Date().toLocaleDateString('fa-IR', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </motion.p>
-          <motion.h1 
-            className="text-2xl font-bold"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            {user ? `سلام ${user.user_metadata?.display_name || 'کاربر'}` : 'به نئوهوش خوش آمدید'} 
-            <motion.span
-              animate={{ rotate: [0, 20, 0] }}
-              transition={{ duration: 0.5, delay: 0.8, repeat: 2 }}
-              className="inline-block ml-1"
-            >
-              👋
-            </motion.span>
-          </motion.h1>
-        </motion.section>
-
-        {/* Hero Card */}
-        <motion.section variants={itemVariants}>
-          <Link to="/chat">
+            {/* Subtle Logo Mark */}
             <motion.div 
-              className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/90 to-primary/80 p-6 text-primary-foreground"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ duration: 0.2 }}
+              className="w-16 h-16 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center"
+              animate={{ 
+                scale: [1, 1.02, 1],
+              }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             >
-              {/* Animated background elements */}
-              <motion.div 
-                className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full blur-3xl"
-                animate={{ 
-                  x: [0, 10, 0],
-                  y: [0, -10, 0],
-                  scale: [1, 1.1, 1]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              />
-              <motion.div 
-                className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full blur-2xl"
-                animate={{ 
-                  x: [0, -10, 0],
-                  y: [0, 10, 0],
-                  scale: [1, 1.2, 1]
-                }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+              <Sparkles className="w-7 h-7 text-primary/80" />
+            </motion.div>
+
+            {/* Brand Name - Calm Typography */}
+            <h1 className="text-2xl font-medium text-foreground/90 tracking-tight">
+              نئوهوش
+            </h1>
+
+            {/* Welcome Text - Warm & Inviting */}
+            <p className="text-muted-foreground text-base leading-relaxed max-w-sm mx-auto">
+              {user 
+                ? `سلام ${user.user_metadata?.display_name || 'دوست عزیز'}، چطور می‌تونم کمکت کنم؟` 
+                : 'سلام، من اینجام تا کمکت کنم.'
+              }
+            </p>
+          </motion.div>
+
+          {/* Large Chat Input - The Star of the Show */}
+          <motion.div 
+            className="relative"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="relative bg-card rounded-2xl shadow-md border border-border/50 overflow-hidden">
+              <Textarea
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="هر سوالی داری بپرس..."
+                className="min-h-[120px] p-5 text-base resize-none border-0 focus:ring-0 focus-visible:ring-0 bg-transparent placeholder:text-muted-foreground/60"
+                dir="rtl"
               />
               
-              <div className="relative space-y-4">
-                <div className="flex items-center gap-2">
-                  <motion.div 
-                    className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center"
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 3, repeat: Infinity }}
-                  >
-                    <Sparkles className="w-5 h-5" />
-                  </motion.div>
-                  <motion.span 
-                    className="text-sm font-medium bg-white/20 px-3 py-1 rounded-full"
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    نسل جدید AI
-                  </motion.span>
-                </div>
-                
-                <div>
-                  <h2 className="text-xl font-bold mb-1">شروع گفتگو با هوش مصنوعی</h2>
-                  <p className="text-sm text-primary-foreground/80">
-                    سوالات خود را بپرسید و پاسخ دریافت کنید
-                  </p>
-                </div>
-                
-                <motion.div 
-                  className="flex items-center gap-2 text-sm font-medium"
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+              {/* Send Button */}
+              <div className="absolute bottom-4 left-4">
+                <Button
+                  onClick={handleStartChat}
+                  size="icon"
+                  className={cn(
+                    "w-11 h-11 rounded-xl transition-all duration-300",
+                    inputValue.trim() 
+                      ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm" 
+                      : "bg-muted text-muted-foreground"
+                  )}
                 >
-                  <span>همین الان شروع کن</span>
-                  <ArrowLeft className="w-4 h-4" />
-                </motion.div>
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
               </div>
-            </motion.div>
-          </Link>
-        </motion.section>
+            </div>
 
-        {/* User Stats - Only if logged in */}
-        <AnimatePresence>
-          {user && (stats.messages > 0 || stats.conversations > 0) && (
-            <motion.section
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="grid grid-cols-2 gap-3"
+            {/* Subtle Helper Text */}
+            <p className="text-center text-xs text-muted-foreground/60 mt-3">
+              Enter بزن یا دکمه ارسال رو بزن
+            </p>
+          </motion.div>
+
+          {/* Quick Start Link */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Link 
+              to="/chat" 
+              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
             >
-              {[
-                { value: stats.messages, label: "پیام ارسال شده" },
-                { value: stats.conversations, label: "گفتگو" }
-              ].map((stat, i) => (
-                <motion.div
-                  key={stat.label}
-                  className="p-4 rounded-2xl bg-card border border-border/50 text-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 + i * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <motion.div 
-                    className="text-2xl font-bold text-primary"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.4 + i * 0.1 }}
-                  >
-                    {stat.value}
-                  </motion.div>
-                  <div className="text-xs text-muted-foreground mt-1">{stat.label}</div>
-                </motion.div>
-              ))}
-            </motion.section>
-          )}
-        </AnimatePresence>
+              <MessageCircle className="w-4 h-4" />
+              <span>یا مستقیم به چت برو</span>
+            </Link>
+          </motion.div>
+        </motion.div>
+      </main>
 
-        {/* Tools Grid */}
-        <motion.section className="space-y-4" variants={itemVariants}>
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">ابزارها</h2>
-            <Link to="/tools" className="text-sm text-primary">مشاهده همه</Link>
-          </div>
+      {/* Bottom Section - Locked Features (Visually Disabled) */}
+      <motion.footer 
+        className="py-8 px-6 border-t border-border/30"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.7 }}
+      >
+        <div className="max-w-lg mx-auto">
+          <p className="text-center text-xs text-muted-foreground/50 mb-4">
+            امکانات بیشتر
+          </p>
           
-          <div className="grid grid-cols-3 gap-3">
-            {tools.map((tool, i) => {
+          {/* Locked Tools Grid - Visually Disabled */}
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {lockedTools.map((tool, i) => {
               const Icon = tool.icon;
               return (
                 <motion.div
                   key={tool.title}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + i * 0.08 }}
-                  whileHover={{ y: -4 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 0.4, scale: 1 }}
+                  transition={{ delay: 0.8 + i * 0.05 }}
+                  className="relative group cursor-not-allowed"
                 >
-                  <Link to={tool.path}>
-                    <div className="p-4 rounded-2xl bg-card border border-border/50 text-center hover:border-primary/30 hover:shadow-md transition-all group">
-                      <motion.div 
-                        className={cn(
-                          "w-12 h-12 rounded-2xl mx-auto mb-3 flex items-center justify-center",
-                          tool.color
-                        )}
-                        whileHover={{ rotate: [0, -10, 10, 0] }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <Icon className="w-6 h-6 text-white" />
-                      </motion.div>
-                      <h3 className="font-semibold text-sm mb-0.5 group-hover:text-primary transition-colors">
-                        {tool.title}
-                      </h3>
-                      <p className="text-[10px] text-muted-foreground">
-                        {tool.desc}
-                      </p>
+                  <div className="p-3 rounded-xl bg-muted/50 border border-border/30">
+                    <Icon className="w-5 h-5 text-muted-foreground/50" />
+                  </div>
+                  {/* Lock Indicator */}
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-muted flex items-center justify-center">
+                    <Lock className="w-2.5 h-2.5 text-muted-foreground/60" />
+                  </div>
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <div className="bg-popover text-popover-foreground text-xs px-2 py-1 rounded whitespace-nowrap shadow-sm">
+                      {tool.title}
                     </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.section>
-
-        {/* Features Section */}
-        <motion.section className="space-y-4" variants={itemVariants}>
-          <h2 className="text-lg font-bold">چرا نئوهوش؟</h2>
-          
-          <div className="space-y-3">
-            {features.map((feature, i) => {
-              const Icon = feature.icon;
-              return (
-                <motion.div
-                  key={feature.title}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + i * 0.1 }}
-                  whileHover={{ x: 5 }}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/50"
-                >
-                  <motion.div 
-                    className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0"
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                  >
-                    <Icon className="w-5 h-5 text-primary" />
-                  </motion.div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{feature.title}</h3>
-                    <p className="text-xs text-muted-foreground">{feature.desc}</p>
                   </div>
                 </motion.div>
               );
             })}
           </div>
-        </motion.section>
-
-        {/* Platform Stats */}
-        <motion.section 
-          className="grid grid-cols-3 gap-3"
-          variants={itemVariants}
-        >
-          {[
-            { icon: Star, value: "۱۰۰+", label: "مدل AI", color: "text-amber-500" },
-            { icon: Users, value: "۵K+", label: "کاربر", color: "text-blue-500" },
-            { icon: TrendingUp, value: "۹۹%", label: "رضایت", color: "text-green-500" },
-          ].map((stat, i) => (
-            <motion.div 
-              key={stat.label} 
-              className="p-4 rounded-2xl bg-muted/50 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 + i * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-            >
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-              >
-                <stat.icon className={cn("w-5 h-5 mx-auto mb-2", stat.color)} />
-              </motion.div>
-              <div className="text-lg font-bold">{stat.value}</div>
-              <div className="text-[10px] text-muted-foreground">{stat.label}</div>
-            </motion.div>
-          ))}
-        </motion.section>
-      </motion.div>
-    </MainLayout>
+        </div>
+      </motion.footer>
+    </div>
   );
 };
 
