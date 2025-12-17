@@ -57,6 +57,8 @@ const LoadingFallback = () => (
   </div>
 );
 
+import { Navigate } from "react-router-dom";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
@@ -68,7 +70,7 @@ const App = () => (
           <Suspense fallback={<LoadingFallback />}>
             <PageTransition>
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<Navigate to="/chat" replace />} />
                 <Route path="/neohi" element={<NeoHi />} />
                 <Route path="/ai-settings" element={<AISettings />} />
                 <Route path="/design-system" element={<DesignSystem />} />

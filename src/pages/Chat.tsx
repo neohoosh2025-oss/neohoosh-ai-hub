@@ -638,120 +638,138 @@ const Chat = () => {
   };
 
 
-  // Chat Screen - Calm Design
+  // Chat Screen - ChatGPT Style Dark Theme
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Calm Header */}
-      <div className="border-b border-border/30 bg-background/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-6 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-primary/80" />
-            </div>
-            <div>
-              <h1 className="text-sm font-medium text-foreground/90">نئوهوش</h1>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-success/70" />
-                <p className="text-[11px] text-muted-foreground/70">آماده کمک</p>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {user ? (
+      {/* Minimal Header - ChatGPT Style */}
+      <div className="border-b border-border/40 bg-card/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+          {/* Left: History + New Chat */}
+          <div className="flex items-center gap-1">
+            {user && (
               <>
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
                   onClick={() => {
                     setShowHistory(true);
                     loadConversations();
                   }}
                 >
-                  <History className="w-4 h-4" />
+                  <History className="w-4.5 h-4.5" />
                 </Button>
-                <button 
-                  className="h-8 w-8 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
-                  onClick={() => navigate('/profile')}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleNewChat}
+                  className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
                 >
-                  {userAvatarUrl ? (
-                    <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full bg-muted/50 flex items-center justify-center">
-                      <UserCircle className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  )}
-                </button>
+                  <Sparkles className="w-4.5 h-4.5" />
+                </Button>
               </>
+            )}
+          </div>
+          
+          {/* Center: Brand */}
+          <div className="absolute left-1/2 -translate-x-1/2">
+            <h1 className="text-base font-semibold text-foreground tracking-tight">نئوهوش</h1>
+          </div>
+          
+          {/* Right: Profile or Login */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <button 
+                className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all bg-muted"
+                onClick={() => navigate('/profile')}
+              >
+                {userAvatarUrl ? (
+                  <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/20">
+                    <span className="text-sm font-medium text-primary">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </button>
             ) : (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => navigate('/auth')}
-                className="h-8 px-3 rounded-lg text-primary hover:bg-primary/10 font-medium gap-1.5 text-xs"
+                className="h-9 px-4 rounded-xl border-border/60 hover:bg-muted/60 font-medium gap-2"
               >
-                <LogIn className="w-3.5 h-3.5" />
+                <LogIn className="w-4 h-4" />
                 ورود
               </Button>
             )}
           </div>
         </div>
-
-        {/* Action Strip - Subtle */}
-        <div className="max-w-3xl mx-auto px-6 pb-2.5">
-          <div className="flex items-center gap-1.5">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearChat}
-              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg"
-            >
-              <Trash2 className="w-3 h-3 ml-1" />
-              پاک کردن
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleNewChat}
-              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg"
-            >
-              <Sparkles className="w-3 h-3 ml-1" />
-              گفتگوی جدید
-            </Button>
-          </div>
-        </div>
       </div>
 
-      {/* Messages Area - Calm Design */}
+      {/* Messages Area - ChatGPT Style */}
       <div 
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto"
         onScroll={handleScroll}
       >
-        <div className="max-w-2xl mx-auto px-6 py-8 space-y-5">
+        <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+          {/* Empty State - ChatGPT Style */}
+          {messages.length === 0 && (
+            <motion.div 
+              className="flex flex-col items-center justify-center py-20"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mb-5">
+                <Sparkles className="w-7 h-7 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground mb-2">سلام!</h2>
+              <p className="text-muted-foreground text-center max-w-sm">
+                چطور می‌تونم کمکتون کنم؟
+              </p>
+              {/* Quick Actions */}
+              <div className="flex flex-wrap justify-center gap-2 mt-8">
+                {[
+                  { text: "نوشتن مقاله", icon: "✍️" },
+                  { text: "تحلیل متن", icon: "📊" },
+                  { text: "ایده‌پردازی", icon: "💡" },
+                ].map((action) => (
+                  <button
+                    key={action.text}
+                    onClick={() => setMessage(action.text)}
+                    className="px-4 py-2.5 rounded-xl bg-card border border-border/50 text-sm text-foreground/80 hover:bg-muted hover:border-border transition-all"
+                  >
+                    <span className="ml-2">{action.icon}</span>
+                    {action.text}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           <AnimatePresence mode="popLayout">
             {messages.map((msg, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.25 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <Avatar className="w-8 h-8 ml-3 mt-1 flex-shrink-0">
-                    <AvatarFallback className="bg-primary/10 rounded-xl">
-                      <Bot className="w-4 h-4 text-primary/70" />
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-8 h-8 ml-3 mt-1 flex-shrink-0 rounded-xl bg-primary/15 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                  </div>
                 )}
                 
                 <div
-                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 ${
+                  className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-3 ${
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'bg-card border border-border/40 shadow-xs'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-card border border-border/50'
                   }`}
                 >
                   {msg.imageUrl ? (
@@ -841,24 +859,22 @@ const Chat = () => {
             ))}
           </AnimatePresence>
 
-          {isLoading && (
+          {isLoading && messages[messages.length - 1]?.role === 'assistant' && !messages[messages.length - 1]?.content && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex items-start gap-3"
             >
-              <Avatar className="w-8 h-8 flex-shrink-0">
-                <AvatarFallback className="bg-primary/10 rounded-xl">
-                  <Bot className="w-4 h-4 text-primary/70" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="bg-card rounded-2xl px-4 py-3 border border-border/40 shadow-xs">
+              <div className="w-8 h-8 flex-shrink-0 rounded-xl bg-primary/15 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <div className="bg-card rounded-2xl px-4 py-3 border border-border/50">
                 <div className="flex gap-1.5">
                   {[0, 1, 2].map((i) => (
                     <motion.div
                       key={i}
-                      className="w-2 h-2 bg-primary/50 rounded-full"
-                      animate={{ y: [0, -5, 0] }}
+                      className="w-2 h-2 bg-primary/60 rounded-full"
+                      animate={{ y: [0, -4, 0] }}
                       transition={{
                         duration: 0.5,
                         repeat: Infinity,
@@ -875,19 +891,19 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Input Bar - Calm Design */}
-      <div className="border-t border-border/30 bg-background/90 backdrop-blur-md sticky bottom-0">
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-card border border-border/40 shadow-sm">
+      {/* Input Bar - ChatGPT Style */}
+      <div className="border-t border-border/40 bg-background sticky bottom-0">
+        <div className="max-w-2xl mx-auto px-4 py-4">
+          <div className="relative flex items-end gap-2 p-2 rounded-2xl bg-card border border-border/50">
             {/* Model Selector + Button */}
             <Popover open={showModelSelector} onOpenChange={setShowModelSelector}>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="h-10 w-10 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-5 h-5" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent 
@@ -940,10 +956,10 @@ const Chat = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="h-10 w-10 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
               onClick={() => fileInputRef.current?.click()}
             >
-              <Paperclip className="w-4 h-4" />
+              <Paperclip className="w-5 h-5" />
             </Button>
 
             <VoiceRecorder
@@ -958,45 +974,28 @@ const Chat = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="پیام خود را بنویسید..."
-              className="flex-1 min-h-[40px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm px-2 placeholder:text-muted-foreground/50"
+              placeholder="پیامی بنویسید..."
+              className="flex-1 min-h-[44px] max-h-32 resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 py-2.5 placeholder:text-muted-foreground/60"
               rows={1}
             />
 
-            {/* Current Model Indicator */}
-            <button 
-              onClick={() => setShowModelSelector(true)}
-              className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-xs text-muted-foreground hover:bg-muted transition-colors flex-shrink-0"
-            >
-              {(() => {
-                const currentModel = models.find(m => m.id === selectedModel);
-                const Icon = currentModel?.icon || MessageSquare;
-                return (
-                  <>
-                    <Icon className="w-3 h-3" />
-                    <span className="max-w-20 truncate">{currentModel?.name}</span>
-                    <ChevronDown className="w-3 h-3" />
-                  </>
-                );
-              })()}
-            </button>
 
             {isLoading ? (
               <Button
                 onClick={handleStopGeneration}
                 size="icon"
-                className="h-9 w-9 bg-destructive/80 hover:bg-destructive flex-shrink-0 rounded-xl shadow-sm"
+                className="h-10 w-10 bg-destructive hover:bg-destructive/90 flex-shrink-0 rounded-xl"
               >
-                <Square className="w-3.5 h-3.5 fill-current" />
+                <Square className="w-4 h-4 fill-current" />
               </Button>
             ) : (
               <Button
                 onClick={handleSend}
                 disabled={!message.trim()}
                 size="icon"
-                className="h-9 w-9 bg-primary hover:bg-primary/90 flex-shrink-0 disabled:opacity-40 rounded-xl shadow-sm"
+                className="h-10 w-10 bg-primary hover:bg-primary/90 flex-shrink-0 disabled:opacity-30 rounded-xl"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-4.5 h-4.5" />
               </Button>
             )}
           </div>
