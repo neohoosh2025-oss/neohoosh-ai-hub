@@ -680,18 +680,12 @@ const Chat = () => {
           <div className="flex items-center gap-2">
             {user ? (
               <button 
-                className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/40 transition-all bg-muted"
+                className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/20 hover:bg-primary/30 transition-all"
                 onClick={() => navigate('/profile')}
               >
-                {userAvatarUrl ? (
-                  <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary/20">
-                    <span className="text-sm font-medium text-primary">
-                      {user.email?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
+                <span className="text-sm font-medium text-primary">
+                  {user.email?.charAt(0).toUpperCase()}
+                </span>
               </button>
             ) : (
               <Button
@@ -722,7 +716,6 @@ const Chat = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <h2 className="text-xl font-semibold text-foreground mb-2">سلام!</h2>
               <p className="text-muted-foreground text-center max-w-sm">
                 چطور می‌تونم کمکتون کنم؟
               </p>
@@ -973,7 +966,7 @@ const Chat = () => {
               onKeyDown={handleKeyPress}
               placeholder="به چی فکر میکنی..."
               autoGrow
-              className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 placeholder:text-muted-foreground/60 placeholder:text-[13px] flex items-center leading-[44px]"
+              className="flex-1 min-h-[40px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[14px] px-2 py-2 placeholder:text-muted-foreground/60 placeholder:text-[13px]"
               rows={1}
             />
 
