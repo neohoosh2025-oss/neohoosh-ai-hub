@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  MessageCircle, 
   Sparkles,
   Image,
   Mic,
@@ -9,7 +8,8 @@ import {
   Code,
   Users,
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  LogIn
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -77,6 +77,26 @@ const Index = () => {
       <AnimatePresence>
         {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       </AnimatePresence>
+
+      {/* Login Button - Top Right */}
+      {!user && (
+        <motion.div 
+          className="absolute top-4 left-4 z-50"
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/auth')}
+            className="h-9 px-4 rounded-xl text-primary hover:bg-primary/10 hover:text-primary font-medium gap-2"
+          >
+            <LogIn className="w-4 h-4" />
+            ورود
+          </Button>
+        </motion.div>
+      )}
 
       {/* Minimal Centered Layout */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12">
@@ -156,22 +176,6 @@ const Index = () => {
             <p className="text-center text-xs text-muted-foreground/60 mt-3">
               Enter بزن یا دکمه ارسال رو بزن
             </p>
-          </motion.div>
-
-          {/* Quick Start Link */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Link 
-              to="/chat" 
-              className="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>یا مستقیم به چت برو</span>
-            </Link>
           </motion.div>
         </motion.div>
       </main>
