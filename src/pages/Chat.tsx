@@ -974,9 +974,9 @@ const Chat = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="پیام..."
+              placeholder="به چی فکر میکنی..."
               autoGrow
-              className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 py-2.5 placeholder:text-muted-foreground/60"
+              className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 py-2.5 placeholder:text-muted-foreground/60 placeholder:text-[13px]"
               rows={1}
             />
 
