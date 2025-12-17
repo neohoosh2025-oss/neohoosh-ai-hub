@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,19 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
-  User, Mail, LogOut, Loader2, ChevronRight, Camera, Check, X, MessageSquare, Calendar
+  User, Mail, LogOut, Loader2, ChevronRight, Check, X, MessageSquare, Calendar
 } from "lucide-react";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState("");
   const [stats, setStats] = useState({ messages: 0, conversations: 0 });
@@ -35,16 +32,14 @@ const Profile = () => {
 
         setUser(user);
         setDisplayName(user.user_metadata?.display_name || "");
-        setAvatarUrl(user.user_metadata?.avatar_url || null);
         
-        // Get NEOHI profile
+        // Get NEOHI profile for display name
         const { data: neohiUser } = await supabase
           .from('neohi_users')
-          .select('avatar_url, display_name')
+          .select('display_name')
           .eq('id', user.id)
           .single();
         
-        if (neohiUser?.avatar_url) setAvatarUrl(neohiUser.avatar_url);
         if (neohiUser?.display_name && !user.user_metadata?.display_name) {
           setDisplayName(neohiUser.display_name);
         }
@@ -76,38 +71,6 @@ const Profile = () => {
     checkUser();
   }, [navigate]);
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    if (!file.type.startsWith('image/') || file.size > 5 * 1024 * 1024) {
-      toast.error('فایل باید تصویر و کمتر از ۵ مگابایت باشد');
-      return;
-    }
-
-    setUploadingAvatar(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
-      
-      await supabase.storage.from('neohi-avatars').upload(fileName, file, { upsert: true });
-      const { data: { publicUrl } } = supabase.storage.from('neohi-avatars').getPublicUrl(fileName);
-
-      await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
-      await supabase.from('neohi_users').upsert({ 
-        id: user.id, 
-        username: user.email?.split('@')[0] || `user_${user.id.slice(0, 8)}`,
-        avatar_url: publicUrl 
-      });
-
-      setAvatarUrl(publicUrl);
-      toast.success('عکس پروفایل به‌روز شد');
-    } catch {
-      toast.error('خطا در آپلود عکس');
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
 
   const handleUpdateName = async () => {
     if (!user || !tempName.trim()) return;
@@ -145,7 +108,6 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
 
       {/* Header - Calm */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/30">
@@ -162,37 +124,17 @@ const Profile = () => {
       </div>
 
       <div className="max-w-lg mx-auto px-6 py-10">
-        {/* Avatar Section - Calm */}
+        {/* Avatar Section - Simple Letter */}
         <motion.div 
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="flex flex-col items-center mb-10"
         >
-          <div 
-            className="relative cursor-pointer group mb-3"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            {avatarUrl ? (
-              <img 
-                src={avatarUrl} 
-                alt="Profile" 
-                className="w-20 h-20 rounded-2xl object-cover ring-1 ring-border/30" 
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground/70 text-2xl font-medium ring-1 ring-border/30">
-                {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-            )}
-            <div className="absolute inset-0 rounded-2xl bg-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              {uploadingAvatar ? (
-                <Loader2 className="w-5 h-5 text-background animate-spin" />
-              ) : (
-                <Camera className="w-5 h-5 text-background" />
-              )}
-            </div>
+          <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center text-primary text-3xl font-semibold mb-3">
+            {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
           </div>
-          <p className="text-[11px] text-muted-foreground/50">تغییر عکس</p>
+          <p className="text-sm text-foreground/80">{displayName || user?.email?.split('@')[0]}</p>
         </motion.div>
 
         {/* Info Cards - Calm */}

@@ -644,32 +644,8 @@ const Chat = () => {
       {/* Minimal Header - ChatGPT Style */}
       <div className="border-b border-border/40 bg-card/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          {/* Left: History + New Chat */}
-          <div className="flex items-center gap-1">
-            {user && (
-              <>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                  onClick={() => {
-                    setShowHistory(true);
-                    loadConversations();
-                  }}
-                >
-                  <History className="w-4.5 h-4.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleNewChat}
-                  className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
-                >
-                  <Sparkles className="w-4.5 h-4.5" />
-                </Button>
-              </>
-            )}
-          </div>
+          {/* Left: Empty for balance */}
+          <div className="w-9" />
           
           {/* Center: Brand */}
           <div className="absolute left-1/2 -translate-x-1/2">
