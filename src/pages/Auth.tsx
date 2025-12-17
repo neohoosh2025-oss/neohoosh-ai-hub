@@ -84,183 +84,172 @@ const Auth = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="flex-1 flex items-center justify-center px-4 py-8 min-h-[calc(100vh-140px)]">
+    <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-sm"
+      >
+        {/* Calm Logo */}
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-sm"
+          className="flex justify-center mb-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
         >
-          {/* Logo */}
-          <motion.div 
-            className="flex justify-center mb-8"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", duration: 0.6 }}
-          >
-            <div className="relative">
-              <motion.div 
-                className="absolute inset-0 bg-primary/20 rounded-full blur-2xl"
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              />
-              <motion.div 
-                className="relative bg-gradient-to-br from-primary to-primary/70 p-6 rounded-3xl shadow-xl"
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Sparkles className="w-12 h-12 text-primary-foreground" />
-              </motion.div>
-            </div>
-          </motion.div>
+          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+            <Sparkles className="w-7 h-7 text-primary/70" />
+          </div>
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Card className="border-border/50 shadow-xl bg-card">
-              <CardHeader className="text-center pb-2 px-6 pt-6">
-                <CardTitle className="text-xl font-bold">
-                  {isForgotPassword ? "بازیابی رمز عبور" : (isSignUp ? "ثبت نام" : "ورود به نئوهوش")}
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  {isForgotPassword 
-                    ? "ایمیل خود را وارد کنید"
-                    : "به دنیای هوش مصنوعی خوش آمدید"
-                  }
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="px-6 pb-6">
-                <form onSubmit={handleAuth} className="space-y-4">
+        {/* Calm Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
+          <Card className="border-border/40 shadow-md bg-card">
+            <CardHeader className="text-center pb-3 px-6 pt-6">
+              <CardTitle className="text-lg font-medium text-foreground/90">
+                {isForgotPassword ? "بازیابی رمز عبور" : (isSignUp ? "ثبت نام" : "ورود")}
+              </CardTitle>
+              <CardDescription className="text-sm text-muted-foreground/70">
+                {isForgotPassword 
+                  ? "ایمیل خود را وارد کنید"
+                  : "خوش آمدید، وقتتون رو بگیرید"
+                }
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="px-6 pb-6">
+              <form onSubmit={handleAuth} className="space-y-4">
+                <motion.div 
+                  className="space-y-2"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 }}
+                >
+                  <Label htmlFor="email" className="text-sm">ایمیل</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    disabled={loading}
+                    className="h-12 rounded-2xl"
+                    dir="ltr"
+                  />
+                </motion.div>
+                
+                {!isForgotPassword && (
                   <motion.div 
                     className="space-y-2"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    <Label htmlFor="email" className="text-sm">ایمیل</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="your@email.com"
-                      required
-                      disabled={loading}
-                      className="h-12 rounded-2xl"
-                      dir="ltr"
-                    />
-                  </motion.div>
-                  
-                  {!isForgotPassword && (
-                    <motion.div 
-                      className="space-y-2"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password" className="text-sm">رمز عبور</Label>
-                        <Button
-                          type="button"
-                          variant="link"
-                          className="h-auto p-0 text-xs text-primary"
-                          onClick={() => setIsForgotPassword(true)}
-                        >
-                          فراموشی رمز عبور؟
-                        </Button>
-                      </div>
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          required
-                          disabled={loading}
-                          className="h-12 pl-12 rounded-2xl"
-                          dir="ltr"
-                          minLength={6}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute left-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl hover:bg-muted"
-                          onClick={() => setShowPassword(!showPassword)}
-                          disabled={loading}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <Button 
-                      type="submit" 
-                      className="w-full h-12 text-sm rounded-2xl" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        isForgotPassword ? "ارسال لینک بازیابی" : 
-                        isSignUp ? "ثبت نام" : "ورود"
-                      )}
-                    </Button>
-                  </motion.div>
-                  
-                  {!isForgotPassword && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.6 }}
-                    >
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
-                        className="w-full text-sm rounded-2xl"
-                        onClick={() => setIsSignUp(!isSignUp)}
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password" className="text-sm">رمز عبور</Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="h-auto p-0 text-xs text-primary"
+                        onClick={() => setIsForgotPassword(true)}
+                      >
+                        فراموشی رمز عبور؟
+                      </Button>
+                    </div>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        required
+                        disabled={loading}
+                        className="h-12 pl-12 rounded-2xl"
+                        dir="ltr"
+                        minLength={6}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-1 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl hover:bg-muted"
+                        onClick={() => setShowPassword(!showPassword)}
                         disabled={loading}
                       >
-                        {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </Button>
-                    </motion.div>
-                  )}
-                  
-                  {isForgotPassword && (
+                    </div>
+                  </motion.div>
+                )}
+
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 text-sm rounded-2xl" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      isForgotPassword ? "ارسال لینک بازیابی" : 
+                      isSignUp ? "ثبت نام" : "ورود"
+                    )}
+                  </Button>
+                </motion.div>
+                
+                {!isForgotPassword && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                  >
                     <Button 
                       type="button" 
                       variant="ghost" 
                       className="w-full text-sm rounded-2xl"
-                      onClick={() => {
-                        setIsForgotPassword(false);
-                        setEmail("");
-                      }}
+                      onClick={() => setIsSignUp(!isSignUp)}
                       disabled={loading}
                     >
-                      بازگشت به صفحه ورود
+                      {isSignUp ? "قبلاً ثبت نام کرده‌اید؟ وارد شوید" : "حساب کاربری ندارید؟ ثبت نام کنید"}
                     </Button>
-                  )}
-                </form>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  </motion.div>
+                )}
+                
+                {isForgotPassword && (
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    className="w-full text-sm rounded-2xl"
+                    onClick={() => {
+                      setIsForgotPassword(false);
+                      setEmail("");
+                    }}
+                    disabled={loading}
+                  >
+                    بازگشت به صفحه ورود
+                  </Button>
+                )}
+              </form>
+            </CardContent>
+          </Card>
         </motion.div>
-      </div>
-    </MainLayout>
+      </motion.div>
+    </div>
   );
 };
 

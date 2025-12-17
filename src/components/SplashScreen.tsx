@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import logo from "@/assets/neohoosh-logo-new.png";
+import { Sparkles } from "lucide-react";
 
 interface SplashScreenProps {
   onComplete?: () => void;
@@ -13,127 +13,62 @@ export const SplashScreen = ({ onComplete }: SplashScreenProps) => {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.4 }}
       onAnimationComplete={() => {
-        setTimeout(() => onComplete?.(), 1200);
+        setTimeout(() => onComplete?.(), 1000);
       }}
-      className="fixed inset-0 z-[200] bg-gradient-to-br from-background via-background to-primary/5 flex flex-col items-center justify-center overflow-hidden"
+      className="fixed inset-0 z-[200] bg-background flex flex-col items-center justify-center"
     >
-      {/* Animated Background Circles */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 2, opacity: 0.1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-primary"
-        />
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 3, opacity: 0.05 }}
-          transition={{ duration: 2, ease: "easeOut", delay: 0.2 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-secondary"
-        />
-      </div>
-
-      {/* Logo Container */}
+      {/* Calm Logo */}
       <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ 
-          type: "spring",
-          stiffness: 200,
-          damping: 15,
-          delay: 0.1 
-        }}
-        className="relative flex flex-col items-center gap-6"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="flex flex-col items-center gap-5"
       >
-        {/* Glowing Ring */}
+        {/* Icon */}
         <motion.div
-          className="absolute inset-0 -m-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+          className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center"
+          animate={{ scale: [1, 1.03, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
         >
-          <div className="w-full h-full rounded-full border-2 border-primary/30 blur-sm" />
-        </motion.div>
-
-        {/* Logo */}
-        <motion.div
-          className="relative"
-          animate={{ 
-            rotateY: [0, 360],
-          }}
-          transition={{
-            duration: 2,
-            ease: "easeInOut",
-            delay: 0.3
-          }}
-        >
-          <motion.img
-            src={logo}
-            alt="نئوهوش"
-            className="w-24 h-24 drop-shadow-2xl"
-            animate={{ 
-              scale: [1, 1.05, 1],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "reverse",
-              delay: 0.5
-            }}
-          />
+          <Sparkles className="w-7 h-7 text-primary/70" />
         </motion.div>
 
         {/* Brand Name */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
+        <motion.h1 
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-center"
+          transition={{ delay: 0.2 }}
+          className="text-2xl font-medium text-foreground/90"
         >
-          <motion.h1 
-            className="text-3xl font-bold"
-            animate={{
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-            style={{
-              background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--primary)))",
-              backgroundSize: "200% auto",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text"
-            }}
-          >
-            نئوهوش
-          </motion.h1>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-sm text-muted-foreground mt-2"
-          >
-            دنیای هوش مصنوعی
-          </motion.p>
-        </motion.div>
+          نئوهوش
+        </motion.h1>
+
+        {/* Tagline */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-sm text-muted-foreground/60"
+        >
+          اینجام تا کمکت کنم
+        </motion.p>
       </motion.div>
 
-      {/* Loading Bar */}
+      {/* Subtle Loading */}
       <motion.div
-        initial={{ opacity: 0, width: 0 }}
-        animate={{ opacity: 1, width: "120px" }}
-        transition={{ delay: 0.7 }}
-        className="absolute bottom-24 h-1 bg-muted/30 rounded-full overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="absolute bottom-20 flex gap-1.5"
       >
-        <motion.div
-          className="h-full bg-gradient-to-r from-primary to-secondary rounded-full"
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{ 
-            duration: 1,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1.5 h-1.5 rounded-full bg-primary/40"
+            animate={{ opacity: [0.3, 0.8, 0.3] }}
+            transition={{ duration: 1, repeat: Infinity, delay: i * 0.15 }}
+          />
+        ))}
       </motion.div>
     </motion.div>
   );
