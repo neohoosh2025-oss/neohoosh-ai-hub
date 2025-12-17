@@ -722,9 +722,6 @@ const Chat = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="w-16 h-16 rounded-2xl bg-primary/15 flex items-center justify-center mb-5">
-                <Sparkles className="w-7 h-7 text-primary" />
-              </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">سلام!</h2>
               <p className="text-muted-foreground text-center max-w-sm">
                 چطور می‌تونم کمکتون کنم؟
@@ -976,7 +973,7 @@ const Chat = () => {
               onKeyDown={handleKeyPress}
               placeholder="به چی فکر میکنی..."
               autoGrow
-              className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 py-2.5 placeholder:text-muted-foreground/60 placeholder:text-[13px]"
+              className="flex-1 min-h-[44px] max-h-32 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-[15px] px-2 placeholder:text-muted-foreground/60 placeholder:text-[13px] flex items-center leading-[44px]"
               rows={1}
             />
 
