@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { VoiceRecorder } from "@/components/VoiceRecorder";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
 
@@ -39,9 +46,13 @@ interface Message {
   imageUrl?: string;
 }
 
+const GUEST_QUESTION_LIMIT = 4;
+const GUEST_QUESTIONS_KEY = 'neohoosh_guest_questions';
+
 const Chat = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
   const models: Model[] = [
     {
       id: "general",
@@ -100,6 +111,11 @@ const Chat = () => {
   const [copiedCodeBlock, setCopiedCodeBlock] = useState<string | null>(null);
   const [ratedMessages, setRatedMessages] = useState<Map<number, 'like' | 'dislike'>>(new Map());
   const [userScrolled, setUserScrolled] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [guestQuestionCount, setGuestQuestionCount] = useState(() => {
+    const saved = localStorage.getItem(GUEST_QUESTIONS_KEY);
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -157,55 +173,54 @@ const Chat = () => {
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      navigate("/auth");
-      return;
-    }
-    setUser(session.user);
-    
-    // Fetch avatar
-    const avatarFromMeta = session.user.user_metadata?.avatar_url;
-    if (avatarFromMeta) {
-      setUserAvatarUrl(avatarFromMeta);
-    } else {
-      const { data: neohiUser } = await supabase
-        .from('neohi_users')
-        .select('avatar_url')
-        .eq('id', session.user.id)
-        .single();
-      if (neohiUser?.avatar_url) {
-        setUserAvatarUrl(neohiUser.avatar_url);
+    if (session) {
+      setUser(session.user);
+      
+      // Fetch avatar
+      const avatarFromMeta = session.user.user_metadata?.avatar_url;
+      if (avatarFromMeta) {
+        setUserAvatarUrl(avatarFromMeta);
+      } else {
+        const { data: neohiUser } = await supabase
+          .from('neohi_users')
+          .select('avatar_url')
+          .eq('id', session.user.id)
+          .single();
+        if (neohiUser?.avatar_url) {
+          setUserAvatarUrl(neohiUser.avatar_url);
+        }
       }
     }
+    // Don't redirect - allow guest usage
   };
 
   const handleModelSelect = async (modelId: ModelType) => {
-    if (!user) {
-      toast.error("لطفاً ابتدا وارد شوید", { duration: 2000 });
-      return;
-    }
-    
     setSelectedModel(modelId);
     setMessages([]);
     
-    // Create new conversation with temporary title
-    const { data: convData, error: convError } = await supabase
-      .from('conversations')
-      .insert({
-        user_id: user.id,
-        model_type: modelId,
-        title: 'گفتگوی جدید'
-      })
-      .select()
-      .single();
+    // Only create conversation in DB if user is logged in
+    if (user) {
+      const { data: convData, error: convError } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: user.id,
+          model_type: modelId,
+          title: 'گفتگوی جدید'
+        })
+        .select()
+        .single();
 
-    if (convError) {
-      console.error("Error creating conversation:", convError);
-      toast.error("خطا در ایجاد گفتگو", { duration: 2000 });
-      return;
+      if (convError) {
+        console.error("Error creating conversation:", convError);
+        toast.error("خطا در ایجاد گفتگو", { duration: 2000 });
+        return;
+      }
+
+      setCurrentConversationId(convData.id);
+    } else {
+      // Guest mode - no DB conversation
+      setCurrentConversationId('guest-' + Date.now());
     }
-
-    setCurrentConversationId(convData.id);
   };
 
   const handleNewChat = () => {
@@ -215,7 +230,19 @@ const Chat = () => {
   };
 
   const handleSend = async () => {
-    if (!message.trim() || !selectedModel || !currentConversationId) return;
+    if (!message.trim() || !selectedModel) return;
+    
+    // Check guest question limit
+    if (!user) {
+      if (guestQuestionCount >= GUEST_QUESTION_LIMIT) {
+        setShowLoginPrompt(true);
+        return;
+      }
+      // Increment guest question count
+      const newCount = guestQuestionCount + 1;
+      setGuestQuestionCount(newCount);
+      localStorage.setItem(GUEST_QUESTIONS_KEY, newCount.toString());
+    }
 
     const userMessageContent = message;
     const userMessage: Message = { role: "user", content: userMessageContent };
@@ -228,32 +255,32 @@ const Chat = () => {
     abortControllerRef.current = new AbortController();
 
     try {
-      // Save user message
-      await supabase.from('messages').insert({
-        conversation_id: currentConversationId,
-        role: 'user',
-        content: userMessageContent
-      });
+      // Only save to DB if user is logged in
+      if (user && currentConversationId && !currentConversationId.startsWith('guest-')) {
+        await supabase.from('messages').insert({
+          conversation_id: currentConversationId,
+          role: 'user',
+          content: userMessageContent
+        });
 
-      // Update conversation title based on first message
-      const isFirstMessage = messages.length === 0;
-      if (isFirstMessage) {
-        // Extract actual text content, removing any file links
-        const cleanContent = userMessageContent.replace(/\[فایل:.*?\]\(.*?\)/g, '').trim();
-        const title = cleanContent.length > 60 
-          ? cleanContent.substring(0, 60) + '...'
-          : cleanContent || 'گفتگوی جدید';
-        
-        await supabase
-          .from('conversations')
-          .update({ 
-            title,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', currentConversationId);
-        
-        // Reload conversations to update the list
-        await loadConversations();
+        // Update conversation title based on first message
+        const isFirstMessage = messages.length === 0;
+        if (isFirstMessage) {
+          const cleanContent = userMessageContent.replace(/\[فایل:.*?\]\(.*?\)/g, '').trim();
+          const title = cleanContent.length > 60 
+            ? cleanContent.substring(0, 60) + '...'
+            : cleanContent || 'گفتگوی جدید';
+          
+          await supabase
+            .from('conversations')
+            .update({ 
+              title,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentConversationId);
+          
+          await loadConversations();
+        }
       }
 
       // Prepare messages array with full history
@@ -341,8 +368,8 @@ const Chat = () => {
         }
       }
 
-      // Save final AI message
-      if (accumulatedContent) {
+      // Save final AI message (only for logged in users)
+      if (accumulatedContent && user && currentConversationId && !currentConversationId.startsWith('guest-')) {
         await supabase.from('messages').insert({
           conversation_id: currentConversationId,
           role: 'assistant',
@@ -376,7 +403,7 @@ const Chat = () => {
       // Handle abort - save partial content if any
       if (error.name === 'AbortError') {
         const partialContent = accumulatedContentRef.current;
-        if (partialContent) {
+        if (partialContent && user && currentConversationId && !currentConversationId.startsWith('guest-')) {
           await supabase.from('messages').insert({
             conversation_id: currentConversationId,
             role: 'assistant',
@@ -610,29 +637,43 @@ const Chat = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                onClick={() => {
-                  setShowHistory(true);
-                  loadConversations();
-                }}
-              >
-                <History className="w-4 h-4" />
-              </Button>
-              <button 
-                className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
-                onClick={() => navigate('/profile')}
-              >
-                {userAvatarUrl ? (
-                  <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-muted/50 flex items-center justify-center">
-                    <UserCircle className="w-4 h-4 text-muted-foreground" />
-                  </div>
-                )}
-              </button>
+              {user ? (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    onClick={() => {
+                      setShowHistory(true);
+                      loadConversations();
+                    }}
+                  >
+                    <History className="w-4 h-4" />
+                  </Button>
+                  <button 
+                    className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
+                    onClick={() => navigate('/profile')}
+                  >
+                    {userAvatarUrl ? (
+                      <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                        <UserCircle className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                  className="h-9 px-4 rounded-xl text-primary hover:bg-primary/10 font-medium gap-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  ورود
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -745,29 +786,43 @@ const Chat = () => {
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              onClick={() => {
-                setShowHistory(true);
-                loadConversations();
-              }}
-            >
-              <History className="w-4 h-4" />
-            </Button>
-            <button 
-              className="h-8 w-8 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
-              onClick={() => navigate('/profile')}
-            >
-              {userAvatarUrl ? (
-                <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-muted/50 flex items-center justify-center">
-                  <UserCircle className="w-4 h-4 text-muted-foreground" />
-                </div>
-              )}
-            </button>
+            {user ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  onClick={() => {
+                    setShowHistory(true);
+                    loadConversations();
+                  }}
+                >
+                  <History className="w-4 h-4" />
+                </Button>
+                <button 
+                  className="h-8 w-8 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
+                  onClick={() => navigate('/profile')}
+                >
+                  {userAvatarUrl ? (
+                    <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                      <UserCircle className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                </button>
+              </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="h-8 px-3 rounded-lg text-primary hover:bg-primary/10 font-medium gap-1.5 text-xs"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                ورود
+              </Button>
+            )}
           </div>
         </div>
 
@@ -1095,6 +1150,46 @@ const Chat = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Login Prompt Dialog */}
+      <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center">
+            <motion.div 
+              className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", duration: 0.5 }}
+            >
+              <Sparkles className="w-8 h-8 text-primary" />
+            </motion.div>
+            <DialogTitle className="text-xl font-semibold text-center">
+              برای ادامه وارد شوید ✨
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground leading-relaxed mt-2">
+              شما {GUEST_QUESTION_LIMIT} سوال رایگان پرسیدید!
+              <br />
+              برای پاسخگویی دقیق‌تر و بهتر، لطفاً وارد حساب کاربری شوید.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button 
+              onClick={() => navigate('/auth')} 
+              className="w-full h-12 rounded-xl font-medium gap-2"
+            >
+              <LogIn className="w-4 h-4" />
+              ورود / ثبت‌نام
+            </Button>
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowLoginPrompt(false)}
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              بعداً
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
