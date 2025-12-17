@@ -197,72 +197,72 @@ All colors MUST be HSL.
 
   .dark {
     /* ========================================
-       NEOHOOSH CALM DARK MODE
-       Soft dark - never pure black
+       NEOHOOSH CHATGPT-STYLE DARK MODE
+       Warm, confident, readable
        ======================================== */
 
-    /* Soft dark backgrounds - graphite/charcoal tone */
-    --background: 220 18% 10%;               /* #141619 - Soft dark graphite */
-    --foreground: 220 14% 88%;               /* #DDE1E7 - Comfortable light text */
+    /* Warm dark backgrounds - ChatGPT inspired */
+    --background: 0 0% 7%;                   /* #121212 - Deep but warm black */
+    --foreground: 0 0% 95%;                  /* #F2F2F2 - Warm off-white */
     
-    --card: 220 18% 12%;                     /* #1A1D22 - Slightly elevated */
-    --card-foreground: 220 14% 88%;
+    --card: 0 0% 10%;                        /* #1A1A1A - Elevated surfaces */
+    --card-foreground: 0 0% 95%;
     
-    --popover: 220 18% 12%;
-    --popover-foreground: 220 14% 88%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
     
-    --muted: 220 18% 16%;                    /* #232830 - Soft muted dark */
-    --muted-foreground: 220 10% 58%;         /* #8B919B - Readable muted */
+    --muted: 0 0% 15%;                       /* #262626 - Muted backgrounds */
+    --muted-foreground: 0 0% 65%;            /* #A6A6A6 - Readable muted text */
     
-    --border: 220 18% 18%;                   /* #292E36 - Subtle dark borders */
-    --input: 220 18% 16%;
-    --ring: 200 55% 50%;
+    --border: 0 0% 18%;                      /* #2E2E2E - Subtle borders */
+    --input: 0 0% 15%;
+    --ring: 265 60% 65%;                     /* Purple accent ring */
 
-    /* Calm accent in dark mode */
-    --primary: 200 55% 55%;                  /* Slightly brighter for visibility */
+    /* Warm purple accent - ChatGPT style */
+    --primary: 265 60% 65%;                  /* Warm purple */
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 260 25% 55%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
     
-    --accent: 180 30% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 18%;
+    --accent-foreground: 0 0% 95%;
 
-    /* Chat in dark mode */
-    --chat-bg: 220 18% 10%;
-    --chat-header-bg: 220 18% 12% / 0.95;
-    --chat-sidebar-bg: 220 18% 12%;
-    --chat-input-bg: 220 18% 14%;
-    --chat-user-bubble: 200 55% 50%;
-    --chat-bot-bubble: 220 18% 16%;
+    /* Chat in dark mode - layered */
+    --chat-bg: 0 0% 7%;
+    --chat-header-bg: 0 0% 10% / 0.98;
+    --chat-sidebar-bg: 0 0% 10%;
+    --chat-input-bg: 0 0% 12%;
+    --chat-user-bubble: 265 60% 60%;
+    --chat-bot-bubble: 0 0% 15%;
 
     /* NEOHI Dark Compatibility */
-    --neohi-bg-main: 220 18% 10%;
-    --neohi-bg-sidebar: 220 18% 8%;
-    --neohi-bg-chat: 220 18% 10%;
-    --neohi-bg-hover: 220 18% 14%;
-    --neohi-bg-message: 220 18% 14%;
-    --neohi-text-primary: 220 14% 88%;
-    --neohi-text-secondary: 220 10% 65%;
-    --neohi-text-muted: 220 10% 50%;
-    --neohi-accent: 200 55% 55%;
-    --neohi-accent-hover: 200 55% 60%;
-    --neohi-accent-light: 200 55% 12%;
-    --neohi-bubble-sent: 200 55% 50%;
-    --neohi-bubble-received: 220 18% 16%;
+    --neohi-bg-main: 0 0% 7%;
+    --neohi-bg-sidebar: 0 0% 5%;
+    --neohi-bg-chat: 0 0% 7%;
+    --neohi-bg-hover: 0 0% 12%;
+    --neohi-bg-message: 0 0% 12%;
+    --neohi-text-primary: 0 0% 95%;
+    --neohi-text-secondary: 0 0% 70%;
+    --neohi-text-muted: 0 0% 55%;
+    --neohi-accent: 265 60% 65%;
+    --neohi-accent-hover: 265 60% 70%;
+    --neohi-accent-light: 265 60% 15%;
+    --neohi-bubble-sent: 265 60% 60%;
+    --neohi-bubble-received: 0 0% 15%;
     --neohi-bubble-sent-text: 0 0% 100%;
-    --neohi-bubble-received-text: 220 14% 88%;
-    --neohi-border: 220 18% 18%;
-    --neohi-border-light: 220 18% 14%;
+    --neohi-bubble-received-text: 0 0% 95%;
+    --neohi-border: 0 0% 18%;
+    --neohi-border-light: 0 0% 14%;
     --neohi-online: 150 45% 50%;
-    --neohi-typing: 200 55% 55%;
+    --neohi-typing: 265 60% 65%;
 
     /* Status colors in dark */
-    --success: 150 40% 50%;
+    --success: 145 50% 45%;
     --success-foreground: 0 0% 100%;
-    --warning: 40 55% 55%;
+    --warning: 40 60% 55%;
     --warning-foreground: 0 0% 100%;
-    --destructive: 0 45% 55%;
+    --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
   }
 
