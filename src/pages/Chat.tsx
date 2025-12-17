@@ -88,6 +88,7 @@ const Chat = () => {
   ];
 
   const [user, setUser] = useState<any>(null);
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelType | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
@@ -161,6 +162,21 @@ const Chat = () => {
       return;
     }
     setUser(session.user);
+    
+    // Fetch avatar
+    const avatarFromMeta = session.user.user_metadata?.avatar_url;
+    if (avatarFromMeta) {
+      setUserAvatarUrl(avatarFromMeta);
+    } else {
+      const { data: neohiUser } = await supabase
+        .from('neohi_users')
+        .select('avatar_url')
+        .eq('id', session.user.id)
+        .single();
+      if (neohiUser?.avatar_url) {
+        setUserAvatarUrl(neohiUser.avatar_url);
+      }
+    }
   };
 
   const handleModelSelect = async (modelId: ModelType) => {
@@ -605,14 +621,18 @@ const Chat = () => {
               >
                 <History className="w-4 h-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              <button 
+                className="h-9 w-9 rounded-xl overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
                 onClick={() => navigate('/profile')}
               >
-                <UserCircle className="w-4 h-4" />
-              </Button>
+                {userAvatarUrl ? (
+                  <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                    <UserCircle className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -736,14 +756,18 @@ const Chat = () => {
             >
               <History className="w-4 h-4" />
             </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
+            <button 
+              className="h-8 w-8 rounded-lg overflow-hidden hover:ring-2 hover:ring-primary/30 transition-all"
               onClick={() => navigate('/profile')}
             >
-              <UserCircle className="w-4 h-4" />
-            </Button>
+              {userAvatarUrl ? (
+                <img src={userAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-muted/50 flex items-center justify-center">
+                  <UserCircle className="w-4 h-4 text-muted-foreground" />
+                </div>
+              )}
+            </button>
           </div>
         </div>
 

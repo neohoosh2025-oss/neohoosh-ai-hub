@@ -7,13 +7,11 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
   User, Mail, LogOut, Loader2, 
-  Calendar, ChevronLeft, Camera, Check,
-  Wifi, WifiOff, Download, Bell, BellOff, Shield, MessageSquare, 
-  HelpCircle, Info, Moon, Globe, Smartphone, Lock, Trash2
+  ChevronLeft, Camera, Check, X,
+  Wifi, WifiOff, Download, Bell, BellOff, 
+  HelpCircle, Info, ChevronRight
 } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
-import { MainLayout } from "@/components/layouts/MainLayout";
-import { cn } from "@/lib/utils";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -27,7 +25,7 @@ const Settings = () => {
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [stats, setStats] = useState({ messages: 0, conversations: 0 });
+  const [tempName, setTempName] = useState("");
 
   useEffect(() => {
     const checkUser = async () => {
@@ -43,7 +41,6 @@ const Settings = () => {
         setDisplayName(user.user_metadata?.display_name || "");
         setAvatarUrl(user.user_metadata?.avatar_url || null);
         
-        // Get NEOHI profile
         const { data: neohiUser } = await supabase
           .from('neohi_users')
           .select('avatar_url, display_name')
@@ -53,24 +50,6 @@ const Settings = () => {
         if (neohiUser?.avatar_url) setAvatarUrl(neohiUser.avatar_url);
         if (neohiUser?.display_name && !user.user_metadata?.display_name) {
           setDisplayName(neohiUser.display_name);
-        }
-        
-        // Get stats
-        const { data: conversations } = await supabase
-          .from("conversations")
-          .select("id")
-          .eq("user_id", user.id);
-
-        if (conversations && conversations.length > 0) {
-          const { count } = await supabase
-            .from("messages")
-            .select("id", { count: 'exact', head: true })
-            .in("conversation_id", conversations.map(c => c.id));
-          
-          setStats({
-            messages: count || 0,
-            conversations: conversations.length,
-          });
         }
       } catch {
         navigate("/auth");
@@ -116,11 +95,12 @@ const Settings = () => {
   };
 
   const handleUpdateName = async () => {
-    if (!user || !displayName.trim()) return;
+    if (!user || !tempName.trim()) return;
     setSaving(true);
     try {
-      await supabase.auth.updateUser({ data: { display_name: displayName } });
-      await supabase.from('neohi_users').update({ display_name: displayName }).eq('id', user.id);
+      await supabase.auth.updateUser({ data: { display_name: tempName } });
+      await supabase.from('neohi_users').update({ display_name: tempName }).eq('id', user.id);
+      setDisplayName(tempName);
       toast.success("نام به‌روز شد");
       setIsEditingName(false);
     } catch {
@@ -139,271 +119,284 @@ const Settings = () => {
     if (installPrompt) await installPrompt();
   };
 
+  const startEditingName = () => {
+    setTempName(displayName);
+    setIsEditingName(true);
+  };
+
   if (loading) {
     return (
-      <MainLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </MainLayout>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-muted-foreground/50" />
+      </div>
     );
   }
 
-  const menuSections = [
-    {
-      title: "حساب کاربری",
-      items: [
-        { 
-          icon: User, 
-          label: "نام نمایشی", 
-          value: displayName || "تنظیم نشده",
-          onClick: () => setIsEditingName(true)
-        },
-        { 
-          icon: Mail, 
-          label: "ایمیل", 
-          value: user?.email,
-          disabled: true
-        },
-        { 
-          icon: Calendar, 
-          label: "تاریخ عضویت", 
-          value: new Date(user?.created_at).toLocaleDateString('fa-IR'),
-          disabled: true
-        },
-        { 
-          icon: Shield, 
-          label: "وضعیت تأیید", 
-          value: user?.email_confirmed_at ? "تأیید شده" : "تأیید نشده",
-          status: user?.email_confirmed_at ? "success" : "warning",
-          disabled: true
-        },
-      ]
-    },
-    {
-      title: "تنظیمات اپلیکیشن",
-      items: [
-        { 
-          icon: isNotificationsEnabled ? Bell : BellOff, 
-          label: "اعلان‌ها", 
-          value: isNotificationsEnabled ? "فعال" : "غیرفعال",
-          onClick: isPushSupported ? toggleNotifications : undefined,
-          status: isNotificationsEnabled ? "success" : undefined
-        },
-        { 
-          icon: Download, 
-          label: "نصب اپلیکیشن", 
-          value: isInstalled ? "نصب شده" : canInstall ? "نصب کنید" : "نصب نشده",
-          onClick: canInstall ? handleInstall : undefined,
-          status: isInstalled ? "success" : undefined
-        },
-        { 
-          icon: isOnline ? Wifi : WifiOff, 
-          label: "وضعیت اتصال", 
-          value: isOnline ? "آنلاین" : "آفلاین",
-          status: isOnline ? "success" : "error",
-          disabled: true
-        },
-      ]
-    },
-    {
-      title: "پشتیبانی",
-      items: [
-        { 
-          icon: HelpCircle, 
-          label: "راهنما و سوالات متداول", 
-          onClick: () => toast.info("به زودی...")
-        },
-        { 
-          icon: Info, 
-          label: "درباره نئوهوش", 
-          value: "نسخه ۱.۰.۰",
-          onClick: () => navigate("/about")
-        },
-      ]
-    },
-  ];
-
   return (
-    <MainLayout>
+    <div className="min-h-screen bg-background">
       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
 
-      <div className="pb-24">
-        {/* Profile Header - Telegram Style */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="relative bg-gradient-to-b from-primary/10 to-background pt-6 pb-8 px-4"
+      {/* Header - Calm */}
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/30">
+        <div className="max-w-lg mx-auto px-6 h-14 flex items-center justify-between">
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-muted/50 transition-colors"
+          >
+            <ChevronRight className="w-5 h-5 text-foreground/70" />
+          </button>
+          <h1 className="text-sm font-medium text-foreground/80">تنظیمات</h1>
+          <div className="w-9" />
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto px-6 py-8">
+        {/* Profile Card - Calm */}
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 p-4 bg-card/30 rounded-2xl border border-border/30 mb-8"
+          onClick={() => navigate('/profile')}
         >
-          {/* Avatar */}
-          <div className="flex flex-col items-center">
-            <motion.div 
-              whileTap={{ scale: 0.95 }}
-              className="relative cursor-pointer mb-4"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {avatarUrl ? (
-                <img 
-                  src={avatarUrl} 
-                  alt="Profile" 
-                  className="w-24 h-24 rounded-full object-cover border-4 border-background shadow-lg" 
-                />
+          <div 
+            className="relative cursor-pointer group"
+            onClick={(e) => {
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
+          >
+            {avatarUrl ? (
+              <img 
+                src={avatarUrl} 
+                alt="Profile" 
+                className="w-14 h-14 rounded-2xl object-cover ring-1 ring-border/30" 
+              />
+            ) : (
+              <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center text-muted-foreground/70 text-xl font-medium ring-1 ring-border/30">
+                {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <div className="absolute inset-0 rounded-2xl bg-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              {uploadingAvatar ? (
+                <Loader2 className="w-4 h-4 text-background animate-spin" />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center text-primary-foreground text-3xl font-bold border-4 border-background shadow-lg">
-                  {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                </div>
+                <Camera className="w-4 h-4 text-background" />
               )}
-              <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full border-3 border-background flex items-center justify-center shadow-md">
-                {uploadingAvatar ? (
-                  <Loader2 className="w-4 h-4 text-primary-foreground animate-spin" />
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-medium text-foreground/80 truncate">{displayName || "کاربر نئوهوش"}</h2>
+            <p className="text-xs text-muted-foreground/50 truncate" dir="ltr">{user?.email}</p>
+          </div>
+          <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
+        </motion.div>
+
+        {/* Account Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-6"
+        >
+          <h3 className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider mb-2 px-1">حساب کاربری</h3>
+          <div className="bg-card/30 rounded-2xl border border-border/30 divide-y divide-border/20">
+            {/* Name */}
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <User className="w-3.5 h-3.5 text-muted-foreground/70" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[10px] text-muted-foreground/50 mb-0.5">نام</p>
+                    {isEditingName ? (
+                      <Input
+                        value={tempName}
+                        onChange={(e) => setTempName(e.target.value)}
+                        className="h-7 text-sm bg-transparent border-0 p-0 focus-visible:ring-0 text-foreground/90"
+                        autoFocus
+                        placeholder="نام خود را وارد کنید"
+                      />
+                    ) : (
+                      <p className="text-sm text-foreground/80">{displayName || "تنظیم نشده"}</p>
+                    )}
+                  </div>
+                </div>
+                {isEditingName ? (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setIsEditingName(false)}
+                      className="w-7 h-7 rounded-lg hover:bg-muted/50 flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5 text-muted-foreground/70" />
+                    </button>
+                    <button
+                      onClick={handleUpdateName}
+                      disabled={saving || !tempName.trim()}
+                      className="w-7 h-7 rounded-lg bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors disabled:opacity-50"
+                    >
+                      {saving ? (
+                        <Loader2 className="w-3.5 h-3.5 text-primary animate-spin" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5 text-primary" />
+                      )}
+                    </button>
+                  </div>
                 ) : (
-                  <Camera className="w-4 h-4 text-primary-foreground" />
+                  <button
+                    onClick={startEditingName}
+                    className="text-[11px] text-primary/70 hover:text-primary transition-colors"
+                  >
+                    ویرایش
+                  </button>
                 )}
               </div>
-            </motion.div>
+            </div>
 
-            {/* Name */}
-            <h1 className="text-xl font-bold mb-1">{displayName || "کاربر نئوهوش"}</h1>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
-
-            {/* Quick Stats */}
-            <div className="flex items-center gap-6 mt-5">
-              <div className="text-center">
-                <div className="text-lg font-bold">{stats.messages}</div>
-                <div className="text-xs text-muted-foreground">پیام</div>
-              </div>
-              <div className="w-px h-8 bg-border" />
-              <div className="text-center">
-                <div className="text-lg font-bold">{stats.conversations}</div>
-                <div className="text-xs text-muted-foreground">گفتگو</div>
+            {/* Email */}
+            <div className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <Mail className="w-3.5 h-3.5 text-muted-foreground/70" />
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground/50 mb-0.5">ایمیل</p>
+                  <p className="text-sm text-foreground/80" dir="ltr">{user?.email}</p>
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Edit Name Modal */}
-        {isEditingName && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
-            onClick={() => setIsEditingName(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="bg-card rounded-2xl p-6 w-full max-w-sm space-y-4"
-              onClick={e => e.stopPropagation()}
+        {/* App Settings Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-6"
+        >
+          <h3 className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider mb-2 px-1">تنظیمات اپلیکیشن</h3>
+          <div className="bg-card/30 rounded-2xl border border-border/30 divide-y divide-border/20">
+            {/* Notifications */}
+            <button 
+              onClick={isPushSupported ? toggleNotifications : undefined}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
             >
-              <h3 className="text-lg font-semibold text-center">ویرایش نام</h3>
-              <Input 
-                value={displayName} 
-                onChange={(e) => setDisplayName(e.target.value)} 
-                placeholder="نام نمایشی"
-                className="h-12 rounded-xl text-center"
-                autoFocus
-              />
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 h-11 rounded-xl"
-                  onClick={() => setIsEditingName(false)}
-                >
-                  انصراف
-                </Button>
-                <Button 
-                  className="flex-1 h-11 rounded-xl"
-                  onClick={handleUpdateName}
-                  disabled={saving || !displayName.trim()}
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4 ml-2" />}
-                  ذخیره
-                </Button>
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isNotificationsEnabled ? 'bg-green-500/10' : 'bg-muted/50'}`}>
+                  {isNotificationsEnabled ? (
+                    <Bell className="w-3.5 h-3.5 text-green-500/70" />
+                  ) : (
+                    <BellOff className="w-3.5 h-3.5 text-muted-foreground/70" />
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-foreground/80">اعلان‌ها</p>
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
+              <span className={`text-xs ${isNotificationsEnabled ? 'text-green-500/70' : 'text-muted-foreground/50'}`}>
+                {isNotificationsEnabled ? "فعال" : "غیرفعال"}
+              </span>
+            </button>
 
-        {/* Menu Sections */}
-        <div className="px-4 space-y-6 mt-6">
-          {menuSections.map((section, sectionIdx) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: sectionIdx * 0.1 }}
+            {/* Install */}
+            <button 
+              onClick={canInstall ? handleInstall : undefined}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
             >
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-2">
-                {section.title}
-              </h3>
-              <div className="bg-card rounded-2xl border border-border/50 overflow-hidden divide-y divide-border/50">
-                {section.items.map((item) => (
-                  <div 
-                    key={item.label}
-                    onClick={item.onClick}
-                    className={cn(
-                      "flex items-center justify-between p-4 transition-colors",
-                      item.onClick && "cursor-pointer active:bg-muted/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-3.5">
-                      <div className={cn(
-                        "w-9 h-9 rounded-xl flex items-center justify-center",
-                        item.status === "success" ? "bg-green-500/10" :
-                        item.status === "warning" ? "bg-amber-500/10" :
-                        item.status === "error" ? "bg-red-500/10" :
-                        "bg-muted"
-                      )}>
-                        <item.icon className={cn(
-                          "w-[18px] h-[18px]",
-                          item.status === "success" ? "text-green-500" :
-                          item.status === "warning" ? "text-amber-500" :
-                          item.status === "error" ? "text-red-500" :
-                          "text-muted-foreground"
-                        )} />
-                      </div>
-                      <span className="text-sm font-medium">{item.label}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {item.value && (
-                        <span className={cn(
-                          "text-sm",
-                          item.status === "success" ? "text-green-500" :
-                          item.status === "warning" ? "text-amber-500" :
-                          item.status === "error" ? "text-red-500" :
-                          "text-muted-foreground"
-                        )}>
-                          {item.value}
-                        </span>
-                      )}
-                      {item.onClick && (
-                        <ChevronLeft className="w-4 h-4 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isInstalled ? 'bg-green-500/10' : 'bg-muted/50'}`}>
+                  <Download className={`w-3.5 h-3.5 ${isInstalled ? 'text-green-500/70' : 'text-muted-foreground/70'}`} />
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-foreground/80">نصب اپلیکیشن</p>
+                </div>
               </div>
-            </motion.div>
-          ))}
+              <span className={`text-xs ${isInstalled ? 'text-green-500/70' : 'text-muted-foreground/50'}`}>
+                {isInstalled ? "نصب شده" : canInstall ? "نصب کنید" : "—"}
+              </span>
+            </button>
 
-          {/* Sign Out Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <Button 
-              onClick={handleSignOut} 
-              variant="ghost" 
-              className="w-full h-14 rounded-2xl text-destructive hover:text-destructive hover:bg-destructive/10 font-medium"
+            {/* Connection */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${isOnline ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                  {isOnline ? (
+                    <Wifi className="w-3.5 h-3.5 text-green-500/70" />
+                  ) : (
+                    <WifiOff className="w-3.5 h-3.5 text-red-500/70" />
+                  )}
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-foreground/80">وضعیت اتصال</p>
+                </div>
+              </div>
+              <span className={`text-xs ${isOnline ? 'text-green-500/70' : 'text-red-500/70'}`}>
+                {isOnline ? "آنلاین" : "آفلاین"}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Support Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <h3 className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider mb-2 px-1">پشتیبانی</h3>
+          <div className="bg-card/30 rounded-2xl border border-border/30 divide-y divide-border/20">
+            <button 
+              onClick={() => toast.info("به زودی...")}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
             >
-              <LogOut className="w-5 h-5 ml-2" />
-              خروج از حساب کاربری
-            </Button>
-          </motion.div>
-        </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/70" />
+                </div>
+                <p className="text-sm text-foreground/80">راهنما</p>
+              </div>
+              <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
+            </button>
+
+            <button 
+              onClick={() => navigate("/about")}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground/70" />
+                </div>
+                <p className="text-sm text-foreground/80">درباره نئوهوش</p>
+              </div>
+              <span className="text-xs text-muted-foreground/50">نسخه ۱.۰.۰</span>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Sign Out */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <Button 
+            onClick={handleSignOut} 
+            variant="ghost" 
+            className="w-full h-11 rounded-2xl text-destructive/70 hover:text-destructive hover:bg-destructive/5 text-sm font-normal"
+          >
+            <LogOut className="w-4 h-4 ml-2" />
+            خروج از حساب
+          </Button>
+        </motion.div>
+
+        {/* Footer */}
+        <p className="text-center text-[10px] text-muted-foreground/30 mt-10">
+          نئوهوش • نسخه ۱.۰.۰
+        </p>
       </div>
-    </MainLayout>
+    </div>
   );
 };
 
