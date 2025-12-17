@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -605,6 +605,14 @@ const Chat = () => {
               >
                 <History className="w-4 h-4" />
               </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                onClick={() => navigate('/profile')}
+              >
+                <UserCircle className="w-4 h-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -727,6 +735,14 @@ const Chat = () => {
               }}
             >
               <History className="w-4 h-4" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              onClick={() => navigate('/profile')}
+            >
+              <UserCircle className="w-4 h-4" />
             </Button>
           </div>
         </div>
