@@ -35,7 +35,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-type ModelType = "business" | "personal" | "general" | "ads" | "image" | "academic";
+type ModelType = "business" | "personal" | "general" | "ads" | "academic";
 
 interface Model {
   id: ModelType;
@@ -86,13 +86,6 @@ const Chat = () => {
       description: "محتوای بازاریابی",
       icon: Megaphone,
       gradient: "from-orange-500 to-red-500"
-    },
-    {
-      id: "image",
-      name: "تولید تصویر",
-      description: "ساخت تصویر از متن",
-      icon: ImageIcon,
-      gradient: "from-indigo-500 to-purple-500"
     },
     {
       id: "academic",
@@ -705,18 +698,23 @@ const Chat = () => {
                 چطور می‌تونم کمکتون کنم؟
               </p>
               {/* Quick Actions */}
-              <div className="flex flex-wrap justify-center gap-2 mt-8">
+              <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-md">
                 {[
-                  { text: "نوشتن مقاله", icon: "✍️" },
-                  { text: "تحلیل متن", icon: "📊" },
-                  { text: "ایده‌پردازی", icon: "💡" },
+                  { text: "مقاله درباره هوش مصنوعی بنویس", icon: "✍️" },
+                  { text: "یک پست اینستاگرامی بنویس", icon: "📱" },
+                  { text: "خلاصه این متن رو بده", icon: "📋" },
+                  { text: "ترجمه به انگلیسی", icon: "🌐" },
+                  { text: "ایده برای کسب‌وکار", icon: "💡" },
+                  { text: "سوال تستی بساز", icon: "📝" },
+                  { text: "کد پایتون بنویس", icon: "🐍" },
+                  { text: "داستان کوتاه بنویس", icon: "📖" },
                 ].map((action) => (
                   <button
                     key={action.text}
                     onClick={() => setMessage(action.text)}
-                    className="px-4 py-2.5 rounded-xl bg-card border border-border/50 text-sm text-foreground/80 hover:bg-muted hover:border-border transition-all"
+                    className="px-3 py-2 rounded-xl bg-card border border-border/50 text-xs text-foreground/80 hover:bg-muted hover:border-border transition-all"
                   >
-                    <span className="ml-2">{action.icon}</span>
+                    <span className="ml-1.5">{action.icon}</span>
                     {action.text}
                   </button>
                 ))}

@@ -151,22 +151,42 @@ serve(async (req) => {
       });
     }
 
-    // Load user memory with caching (5 minute TTL)
+    // Load user memory and AI settings with caching (5 minute TTL)
     let userContext = "";
+    let aiSettings: any = {};
+    
     if (userId) {
       const memoryCacheKey = `user_memory:${userId}`;
-      let memories = await getCachedData(supabase, memoryCacheKey);
+      const settingsCacheKey = `ai_settings:${userId}`;
       
+      // Load memories
+      let memories = await getCachedData(supabase, memoryCacheKey);
       if (!memories) {
         console.log('[Chat] Loading user memory from database');
         const { data } = await supabase
           .from('user_memory')
-          .select('key, value')
+          .select('key, value, memory_type')
           .eq('user_id', userId);
-        memories = data;
         
-        if (memories && memories.length > 0) {
-          await setCachedData(supabase, memoryCacheKey, memories, 300); // 5 min TTL
+        if (data) {
+          memories = data.filter((m: any) => m.memory_type === 'user_info');
+          const settings = data.filter((m: any) => m.memory_type === 'ai_settings');
+          settings.forEach((s: any) => {
+            aiSettings[s.key] = s.value;
+          });
+          
+          if (memories.length > 0) {
+            await setCachedData(supabase, memoryCacheKey, memories, 300);
+          }
+          if (Object.keys(aiSettings).length > 0) {
+            await setCachedData(supabase, settingsCacheKey, aiSettings, 300);
+          }
+        }
+      } else {
+        // Load settings from cache separately
+        const cachedSettings = await getCachedData(supabase, settingsCacheKey);
+        if (cachedSettings) {
+          aiSettings = cachedSettings;
         }
       }
       
@@ -184,6 +204,44 @@ ${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
 5. هرگز نگو "طبق اطلاعات ذخیره شده" یا "در حافظه دارم" - طبیعی باش`;
       }
     }
+    
+    // Build tone instruction based on AI settings
+    let toneInstruction = "";
+    const tone = aiSettings.tone || "friendly";
+    const creativity = aiSettings.creativity || "balanced";
+    const responseLength = aiSettings.response_length || "medium";
+    const customPrompt = aiSettings.custom_prompt || "";
+    
+    const toneMap: Record<string, string> = {
+      friendly: "دوستانه و صمیمی باش، مثل یک دوست خوب صحبت کن",
+      professional: "حرفه‌ای و رسمی باش، با لحن کاری و جدی",
+      humorous: "بانمک و شوخ باش، از طنز و شوخی استفاده کن",
+      sarcastic: "تیکه‌انداز باش، با کنایه و طعنه ملایم صحبت کن",
+      tough: "خشن و جدی باش، مستقیم و بدون تعارف حرف بزن",
+      caring: "مهربان و دلسوز باش، با عاطفه و همدلی صحبت کن",
+      enthusiastic: "پرانرژی و هیجانی باش، با شور و اشتیاق پاسخ بده",
+      calm: "آرام و متین باش، با صبر و حوصله توضیح بده"
+    };
+    
+    const creativityMap: Record<string, string> = {
+      conservative: "محافظه‌کارانه پاسخ بده، از اطلاعات مطمئن استفاده کن",
+      balanced: "تعادل بین خلاقیت و دقت برقرار کن",
+      creative: "خلاقانه فکر کن و ایده‌های جدید ارائه بده",
+      very_creative: "بسیار خلاق باش، از ایده‌های نوآورانه و غیرمعمول استفاده کن"
+    };
+    
+    const lengthMap: Record<string, string> = {
+      short: "پاسخ‌های کوتاه و مختصر بده، حداکثر ۲-۳ جمله",
+      medium: "پاسخ‌های متوسط بده، نه خیلی کوتاه نه خیلی بلند",
+      long: "پاسخ‌های بلند و جامع بده، با جزئیات کامل"
+    };
+    
+    toneInstruction = `
+🎭 تنظیمات شخصی‌سازی کاربر:
+- لحن: ${toneMap[tone] || toneMap.friendly}
+- خلاقیت: ${creativityMap[creativity] || creativityMap.balanced}
+- طول پاسخ: ${lengthMap[responseLength] || lengthMap.medium}
+${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
 
     // NEOHi Personality Core System
     const neohiCore = `شما NEOHi هستید - موتور هوش رسمی NeoHoosh.
@@ -332,6 +390,11 @@ ${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
     };
 
     let systemPrompt = neohiCore + (rolePrompts[modelType] || rolePrompts.general);
+    
+    // Add tone instruction
+    if (toneInstruction) {
+      systemPrompt += toneInstruction;
+    }
     
     // Add memory context if exists
     if (userContext) {
