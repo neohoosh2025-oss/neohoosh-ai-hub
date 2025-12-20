@@ -13,11 +13,11 @@ serve(async (req) => {
   try {
     const { conversationId } = await req.json();
     
-    const NEBIUS_API_KEY = Deno.env.get("NEBIUS_API_KEY");
+    const NEBIIUS_API_KEY = Deno.env.get("NEBIIUS_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!NEBIUS_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!NEBIIUS_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Missing environment variables");
     }
 
@@ -82,7 +82,7 @@ ${conversationText}
     const aiResponse = await fetch("https://api.tokenfactory.nebius.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${NEBIUS_API_KEY}`,
+        Authorization: `Bearer ${NEBIIUS_API_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
