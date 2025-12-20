@@ -22,6 +22,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { ProfileDrawer } from "@/components/chat/ProfileDrawer";
 import {
   Dialog,
   DialogContent,
@@ -111,6 +112,7 @@ const Chat = () => {
   const [ratedMessages, setRatedMessages] = useState<Map<number, 'like' | 'dislike'>>(new Map());
   const [userScrolled, setUserScrolled] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [guestQuestionCount, setGuestQuestionCount] = useState(() => {
     const saved = localStorage.getItem(GUEST_QUESTIONS_KEY);
     return saved ? parseInt(saved, 10) : 0;
@@ -659,7 +661,7 @@ const Chat = () => {
             {user ? (
               <button 
                 className="h-8 w-8 rounded-full flex items-center justify-center bg-primary/20 hover:bg-primary/30 transition-all"
-                onClick={() => navigate('/profile')}
+                onClick={() => setShowProfile(true)}
               >
                 <span className="text-sm font-medium text-primary">
                   {user.email?.charAt(0).toUpperCase()}
@@ -999,13 +1001,13 @@ const Chat = () => {
             </SheetHeader>
             
             {/* New Chat Button */}
-            <div className="px-6 pt-4">
+            <div className="px-6 pt-5 pb-4 border-b border-border/30">
               <Button
                 onClick={() => {
                   handleNewChat();
                   setShowHistory(false);
                 }}
-                className="w-full h-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-medium gap-2"
+                className="w-full h-12 rounded-2xl bg-primary/10 hover:bg-primary/20 text-primary font-medium gap-2"
                 variant="ghost"
               >
                 <Plus className="w-4 h-4" />
@@ -1013,7 +1015,8 @@ const Chat = () => {
               </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              <p className="text-xs font-medium text-muted-foreground/60 mb-3">گفتگوهای قبلی</p>
               <div className="space-y-3">
                 {conversations.length === 0 ? (
                   <div className="text-center py-20 text-muted-foreground">
@@ -1081,6 +1084,13 @@ const Chat = () => {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Profile Drawer */}
+      <ProfileDrawer 
+        open={showProfile} 
+        onOpenChange={setShowProfile}
+        user={user}
+      />
 
       {/* Login Prompt Dialog */}
       <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
