@@ -1001,7 +1001,7 @@ const Chat = () => {
             </SheetHeader>
             
             {/* New Chat Button */}
-            <div className="px-6 pt-5 pb-4 border-b border-border/30">
+            <div className="px-6 pt-5 pb-6">
               <Button
                 onClick={() => {
                   handleNewChat();
@@ -1015,8 +1015,11 @@ const Chat = () => {
               </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto px-6 py-5">
-              <p className="text-xs font-medium text-muted-foreground/60 mb-3">گفتگوهای قبلی</p>
+            {/* Separator with more spacing */}
+            <div className="mx-6 border-t border-border/40 mb-6" />
+            
+            <div className="flex-1 overflow-y-auto px-6 pb-5">
+              <p className="text-xs font-medium text-muted-foreground/60 mb-4">گفتگوهای قبلی</p>
               <div className="space-y-3">
                 {conversations.length === 0 ? (
                   <div className="text-center py-20 text-muted-foreground">
