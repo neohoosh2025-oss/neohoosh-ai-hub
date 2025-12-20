@@ -48,11 +48,11 @@ serve(async (req) => {
 
   try {
     const { messages, modelType, imageData } = await req.json();
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    const NEBIUS_API_KEY = Deno.env.get("NEBIUS_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is not configured");
+    if (!NEBIUS_API_KEY) throw new Error("NEBIUS_API_KEY is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -364,47 +364,37 @@ ${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
       })
     ];
 
-    // Select model based on type - academic uses gemma, others use gpt-oss with reasoning
-    const isAcademic = modelType === "academic";
-    const selectedModel = isAcademic 
-      ? "google/gemma-3-27b-it:free" 
-      : "openai/gpt-oss-20b:free";
+    // Use Nebius API with Meta-Llama model
+    const selectedModel = "meta-llama/Meta-Llama-3.1-8B-Instruct";
 
-    console.log("Calling OpenRouter with model:", selectedModel);
+    console.log("Calling Nebius API with model:", selectedModel);
 
-    // Build request body - add reasoning for non-academic models
+    // Build request body for Nebius
     const requestBody: any = {
       model: selectedModel,
       messages: apiMessages,
       stream: true
     };
-    
-    // Enable reasoning for gpt-oss model
-    if (!isAcademic) {
-      requestBody.reasoning = { enabled: true };
-    }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.tokenfactory.nebius.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://neohoosh.com",
-        "X-Title": "Neohoosh AI"
+        Authorization: `Bearer ${NEBIUS_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenRouter error:", response.status, errorText);
+      console.error("Nebius API error:", response.status, errorText);
       
       let errorMessage = "خطا در پردازش درخواست.";
       
       if (response.status === 429) {
         errorMessage = "محدودیت تعداد درخواست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.";
-      } else if (response.status === 402) {
-        errorMessage = "اعتبار تمام شده است. لطفاً اعتبار خود را شارژ کنید.";
+      } else if (response.status === 402 || response.status === 401) {
+        errorMessage = "خطا در احراز هویت API.";
       } else if (response.status >= 500) {
         errorMessage = "خطای سرور. لطفاً بعداً تلاش کنید.";
       }
