@@ -76,7 +76,7 @@ export const MessageBubble = memo(function MessageBubble({
           {isUser ? (
             <p className="text-sm whitespace-pre-wrap leading-relaxed">{content}</p>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed">
+            <div className="prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed overflow-hidden">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
@@ -92,6 +92,16 @@ export const MessageBubble = memo(function MessageBubble({
                       />
                     );
                   },
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto max-w-full my-2 rounded-lg border border-border/50">
+                      <table className="min-w-full text-sm">{children}</table>
+                    </div>
+                  ),
+                  thead: ({ children }) => <thead className="bg-muted/50">{children}</thead>,
+                  tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
+                  tr: ({ children }) => <tr className="hover:bg-muted/30">{children}</tr>,
+                  th: ({ children }) => <th className="px-3 py-2 text-right font-medium text-xs whitespace-nowrap">{children}</th>,
+                  td: ({ children }) => <td className="px-3 py-2 text-xs whitespace-nowrap">{children}</td>,
                   h1: ({ children }) => <h3 className="text-lg font-bold mt-4 mb-2">{children}</h3>,
                   h2: ({ children }) => <h4 className="text-base font-bold mt-3 mb-2">{children}</h4>,
                   h3: ({ children }) => <h5 className="text-sm font-bold mt-2 mb-1">{children}</h5>,

@@ -134,10 +134,10 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    if (user && !selectedModel) {
+    if (user) {
       loadConversations();
     }
-  }, [user, selectedModel]);
+  }, [user]);
 
   // Smart auto-scroll - only if user hasn't scrolled up
   useEffect(() => {
@@ -444,13 +444,13 @@ const Chat = () => {
     
     const { data, error } = await supabase
       .from('conversations')
-      .select('*')
+      .select('id, title, model_type, updated_at')
       .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(50);
 
     if (error) {
       console.error("Error loading conversations:", error);
-      toast.error("خطا در بارگذاری تاریخچه", { duration: 2000 });
       return;
     }
 
@@ -937,12 +937,6 @@ const Chat = () => {
               <Paperclip className="w-5 h-5" />
             </Button>
 
-            <VoiceRecorder
-              onTranscript={(text) => {
-                setMessage(text);
-                textareaRef.current?.focus();
-              }}
-            />
 
             <Textarea
               ref={textareaRef}
@@ -994,8 +988,22 @@ const Chat = () => {
                   <ChevronRight className="w-5 h-5" />
                 </Button>
               </div>
-              
             </SheetHeader>
+            
+            {/* New Chat Button */}
+            <div className="px-6 pt-4">
+              <Button
+                onClick={() => {
+                  handleNewChat();
+                  setShowHistory(false);
+                }}
+                className="w-full h-11 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-medium gap-2"
+                variant="ghost"
+              >
+                <Plus className="w-4 h-4" />
+                گفتگوی جدید
+              </Button>
+            </div>
             
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <div className="space-y-3">
