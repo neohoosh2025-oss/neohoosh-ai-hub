@@ -9,7 +9,7 @@ import {
   User, Mail, LogOut, Loader2, 
   ChevronLeft, Camera, Check, X,
   Wifi, WifiOff, Download, Bell, BellOff, 
-  HelpCircle, Info, ChevronRight, Brain
+  HelpCircle, Info, ChevronRight
 } from "lucide-react";
 import { usePWA } from "@/hooks/usePWA";
 
@@ -338,34 +338,42 @@ const Settings = () => {
           </div>
         </motion.div>
 
-        {/* AI Settings Section */}
+        {/* Support Section */}
         <motion.div 
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="mb-6"
+          className="mb-8"
         >
-          <h3 className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider mb-2 px-1">هوش مصنوعی</h3>
+          <h3 className="text-[10px] font-medium text-muted-foreground/50 uppercase tracking-wider mb-2 px-1">پشتیبانی</h3>
           <div className="bg-card/30 rounded-2xl border border-border/30 divide-y divide-border/20">
             <button 
-              onClick={() => navigate("/ai-settings")}
+              onClick={() => toast.info("به زودی...")}
               className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Brain className="w-3.5 h-3.5 text-primary/70" />
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/70" />
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-foreground/80">تنظیمات AI</p>
-                  <p className="text-[10px] text-muted-foreground/50">لحن، حافظه و شخصی‌سازی</p>
-                </div>
+                <p className="text-sm text-foreground/80">راهنما</p>
               </div>
               <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
             </button>
+
+            <button 
+              onClick={() => navigate("/about")}
+              className="w-full p-4 flex items-center justify-between hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground/70" />
+                </div>
+                <p className="text-sm text-foreground/80">درباره نئوهوش</p>
+              </div>
+              <span className="text-xs text-muted-foreground/50">نسخه ۱.۰.۰</span>
+            </button>
           </div>
         </motion.div>
-
-        {/* Support Section */}
         <motion.div 
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
