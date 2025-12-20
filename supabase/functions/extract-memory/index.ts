@@ -13,11 +13,11 @@ serve(async (req) => {
   try {
     const { conversationId } = await req.json();
     
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+    const NEBIUS_API_KEY = Deno.env.get("NEBIUS_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!OPENROUTER_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!NEBIUS_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Missing environment variables");
     }
 
@@ -79,16 +79,14 @@ ${conversationText}
 
 فقط JSON خروجی بده، بدون توضیحات اضافی.`;
 
-    const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const aiResponse = await fetch("https://api.tokenfactory.nebius.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://neohoosh.com",
-        "X-Title": "Neohoosh AI"
+        Authorization: `Bearer ${NEBIUS_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
+        model: "meta-llama/Meta-Llama-3.1-8B-Instruct",
         messages: [
           { role: "user", content: extractionPrompt }
         ],
@@ -98,7 +96,7 @@ ${conversationText}
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("OpenRouter API error:", aiResponse.status, errorText);
+      console.error("Nebius API error:", aiResponse.status, errorText);
       
       if (aiResponse.status === 429) {
         return new Response(JSON.stringify({ 
@@ -149,6 +147,7 @@ ${conversationText}
         .select('id')
         .eq('user_id', user.id)
         .eq('key', memory.key)
+        .eq('memory_type', 'user_info')
         .maybeSingle();
 
       if (existing) {
@@ -157,7 +156,6 @@ ${conversationText}
           .from('user_memory')
           .update({
             value: memory.value,
-            memory_type: memory.type || 'general',
             updated_at: new Date().toISOString()
           })
           .eq('id', existing.id);
@@ -169,7 +167,7 @@ ${conversationText}
             user_id: user.id,
             key: memory.key,
             value: memory.value,
-            memory_type: memory.type || 'general'
+            memory_type: 'user_info'
           });
       }
       savedCount++;

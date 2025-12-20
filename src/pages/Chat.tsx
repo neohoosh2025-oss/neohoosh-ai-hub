@@ -778,6 +778,16 @@ const Chat = () => {
                             />
                           );
                         },
+                        table: ({ children }) => (
+                          <div className="overflow-x-auto max-w-full my-3 rounded-lg border border-border/50">
+                            <table className="min-w-full text-xs border-collapse">{children}</table>
+                          </div>
+                        ),
+                        thead: ({ children }) => <thead className="bg-muted/50">{children}</thead>,
+                        tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
+                        tr: ({ children }) => <tr className="hover:bg-muted/30">{children}</tr>,
+                        th: ({ children }) => <th className="px-2 py-1.5 text-right font-medium text-[11px] whitespace-nowrap border border-border/30">{children}</th>,
+                        td: ({ children }) => <td className="px-2 py-1.5 text-[11px] whitespace-nowrap border border-border/30">{children}</td>,
                       }}
                     >
                       {msg.content}
