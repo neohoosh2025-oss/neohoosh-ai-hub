@@ -440,13 +440,82 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       systemPrompt += userContext;
     }
 
+    // Persian spelling auto-correction function
+    const correctPersianSpelling = (text: string): string => {
+      const corrections: [RegExp, string][] = [
+        // فاصله‌گذاری حروف اضافه
+        [/\bبه?\s*(شما|من|او|ما|آن|این|آنها|ایشان)/gi, 'به $1'],
+        [/\bبا?\s*(شما|من|او|ما|آن|این|آنها|ایشان)/gi, 'با $1'],
+        [/\bاز?\s*(شما|من|او|ما|آن|این|آنها|ایشان)/gi, 'از $1'],
+        [/\bدر?\s*(آن|این|آنجا|اینجا)/gi, 'در $1'],
+        [/\bبرای?\s*(شما|من|او|ما)/gi, 'برای $1'],
+        
+        // اصلاح چسبیدن‌ها
+        [/بشما/g, 'به شما'],
+        [/باشما/g, 'با شما'],
+        [/ازشما/g, 'از شما'],
+        [/برایشما/g, 'برای شما'],
+        [/بمن/g, 'به من'],
+        [/بامن/g, 'با من'],
+        [/ازمن/g, 'از من'],
+        [/برایمن/g, 'برای من'],
+        [/بما/g, 'به ما'],
+        [/باما/g, 'با ما'],
+        [/ازما/g, 'از ما'],
+        [/برایما/g, 'برای ما'],
+        
+        // اصلاح "می" و "نمی"
+        [/می\s+([آا-ی]+)/g, 'می‌$1'],
+        [/نمی\s+([آا-ی]+)/g, 'نمی‌$1'],
+        [/میخوا/g, 'می‌خوا'],
+        [/میشه/g, 'می‌شه'],
+        [/نمیشه/g, 'نمی‌شه'],
+        [/میتون/g, 'می‌تون'],
+        [/نمیتون/g, 'نمی‌تون'],
+        [/میکن/g, 'می‌کن'],
+        [/نمیکن/g, 'نمی‌کن'],
+        [/میدون/g, 'می‌دون'],
+        [/نمیدون/g, 'نمی‌دون'],
+        [/میگ/g, 'می‌گ'],
+        [/نمیگ/g, 'نمی‌گ'],
+        [/میخورم/g, 'می‌خورم'],
+        [/میخوری/g, 'می‌خوری'],
+        [/میخوره/g, 'می‌خوره'],
+        
+        // اصلاح "چی" به "چه"
+        [/چیکار/g, 'چه کار'],
+        [/چیجوری/g, 'چه‌جوری'],
+        [/چیطوری/g, 'چه‌طوری'],
+        
+        // اصلاح کلمات رایج
+        [/اگه/g, 'اگر'],
+        [/دیگه/g, 'دیگر'],
+        [/همینجوری/g, 'همین‌جوری'],
+        [/یجوری/g, 'یه‌جوری'],
+        [/واسه/g, 'برای'],
+        
+        // اصلاح "ها" و "های"
+        [/([آا-ی])ها\b/g, '$1‌ها'],
+        [/([آا-ی])های\b/g, '$1‌های'],
+        
+        // حذف فاصله‌های اضافی
+        [/\s+/g, ' '],
+      ];
+      
+      let corrected = text;
+      for (const [pattern, replacement] of corrections) {
+        corrected = corrected.replace(pattern, replacement);
+      }
+      return corrected.trim();
+    };
+
     // Prepare messages - preserve reasoning_details if present
     const apiMessages = [
       { role: "system", content: systemPrompt },
       ...messages.map((msg: any) => {
         const message: any = {
           role: msg.role,
-          content: msg.content
+          content: msg.role === 'user' ? correctPersianSpelling(msg.content) : msg.content
         };
         
         // Preserve reasoning_details from assistant messages
@@ -456,8 +525,9 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
         
         // Handle vision for user messages with images
         if (msg.role === 'user' && imageData) {
+          const correctedText = correctPersianSpelling(msg.content);
           message.content = [
-            { type: "text", text: msg.content },
+            { type: "text", text: correctedText },
             { type: "image_url", image_url: { url: imageData } }
           ];
         }
