@@ -994,7 +994,7 @@ const Chat = () => {
                   onClick={() => setShowHistory(false)}
                   className="h-9 w-9 rounded-lg hover:bg-muted"
                 >
-                  <ChevronRight className="w-5 h-5 rotate-180" />
+                  <ChevronRight className="w-5 h-5" />
                 </Button>
                 <SheetTitle className="text-lg font-bold">تاریخچه گفتگوها</SheetTitle>
               </div>
