@@ -13,7 +13,6 @@ import Chat from "./pages/Chat";
 
 // Lazy load most pages
 const Home = lazy(() => import("./pages/Index"));
-const Landing = lazy(() => import("./pages/Landing"));
 const Articles = lazy(() => import("./pages/Articles"));
 const ArticleDetail = lazy(() => import("./pages/ArticleDetail"));
 const Products = lazy(() => import("./pages/Products"));
@@ -94,7 +93,7 @@ const App = () => {
             <Suspense fallback={<LoadingFallback />}>
               <PageTransition>
                 <Routes>
-                  <Route path="/" element={<Landing />} />
+                  <Route path="/" element={<Navigate to="/chat" replace />} />
                   <Route path="/neohi" element={<NeoHi />} />
                   <Route path="/ai-settings" element={<AISettings />} />
                   <Route path="/design-system" element={<DesignSystem />} />

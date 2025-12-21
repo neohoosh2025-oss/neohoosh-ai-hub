@@ -35,7 +35,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { OnboardingTour } from "@/components/OnboardingTour";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "academic";
 
@@ -114,9 +113,6 @@ const Chat = () => {
   const [userScrolled, setUserScrolled] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return !localStorage.getItem('neohoosh_onboarding_completed');
-  });
   const [guestQuestionCount, setGuestQuestionCount] = useState(() => {
     const saved = localStorage.getItem(GUEST_QUESTIONS_KEY);
     return saved ? parseInt(saved, 10) : 0;
@@ -1151,11 +1147,6 @@ const Chat = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Onboarding Tour */}
-      {showOnboarding && (
-        <OnboardingTour onComplete={() => setShowOnboarding(false)} />
-      )}
     </div>
   );
 };
