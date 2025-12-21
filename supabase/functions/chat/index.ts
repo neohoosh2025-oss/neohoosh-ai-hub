@@ -48,11 +48,11 @@ serve(async (req) => {
 
   try {
     const { messages, modelType, imageData } = await req.json();
-    const NEBIIUS_API_KEY = Deno.env.get("NEBIIUS_API_KEY");
+    const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!NEBIIUS_API_KEY) throw new Error("NEBIIUS_API_KEY is not configured");
+    if (!GITHUB_TOKEN) throw new Error("GITHUB_TOKEN is not configured");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -466,22 +466,22 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       })
     ];
 
-    // Use Nebius API with Llama 3.3 70B fast model
-    const selectedModel = "meta-llama/Llama-3.3-70B-Instruct-fast";
+    // Use GitHub Models with GPT-5
+    const selectedModel = "openai/gpt-5";
 
-    console.log("Calling Nebius API with model:", selectedModel);
+    console.log("Calling GitHub Models API with model:", selectedModel);
 
-    // Build request body for Nebius
+    // Build request body for GitHub Models
     const requestBody: any = {
       model: selectedModel,
       messages: apiMessages,
       stream: true
     };
 
-    const response = await fetch("https://api.tokenfactory.nebius.com/v1/chat/completions", {
+    const response = await fetch("https://models.github.ai/inference/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${NEBIIUS_API_KEY}`,
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(requestBody),
@@ -489,14 +489,14 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Nebius API error:", response.status, errorText);
+      console.error("GitHub Models API error:", response.status, errorText);
       
       let errorMessage = "خطا در پردازش درخواست.";
       
       if (response.status === 429) {
         errorMessage = "محدودیت تعداد درخواست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.";
       } else if (response.status === 402 || response.status === 401) {
-        errorMessage = "خطا در احراز هویت API.";
+        errorMessage = "خطا در احراز هویت GitHub Token.";
       } else if (response.status >= 500) {
         errorMessage = "خطای سرور. لطفاً بعداً تلاش کنید.";
       }
