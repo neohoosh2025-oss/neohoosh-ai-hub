@@ -112,8 +112,14 @@ export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) 
       >
         <div className="h-full flex flex-col" dir="rtl">
           {/* Header */}
-          <div className="px-6 pt-6 pb-4 border-b border-border/30">
+          <div className="px-6 pt-6 pb-4 border-b border-border/30 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-foreground">پروفایل</h2>
+            <button
+              onClick={() => onOpenChange(false)}
+              className="w-8 h-8 rounded-lg hover:bg-muted/50 flex items-center justify-center transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-muted-foreground" />
+            </button>
           </div>
           
           {loading ? (

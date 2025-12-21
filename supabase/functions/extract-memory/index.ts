@@ -48,36 +48,44 @@ serve(async (req) => {
     // Prepare conversation for AI
     const conversationText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
 
-    // Call AI to extract memory
-    const extractionPrompt = `تحلیل گفتگوی زیر و اطلاعات مهم درباره کاربر را استخراج کن. فقط اطلاعات واقعی و مهمی که کاربر گفته را استخراج کن.
+    // Call AI to extract memory - improved prompt
+    const extractionPrompt = `تحلیل این گفتگو و فقط اطلاعات واقعی و مهم شخصی کاربر را استخراج کن.
 
-موارد مهم:
-- نام و مشخصات شخصی
-- علایق و سرگرمی‌ها
-- مشکلات و نگرانی‌ها
-- احساسات و حالات روحی
-- اهداف و آرزوها
-- ترجیحات و نظرات
-- تجربیات مهم زندگی
-- روابط و افراد مهم
-- وضعیت شغلی یا تحصیلی
-- سلامتی و نگرانی‌های پزشکی
+⚠️ مهم: فقط اطلاعات زیر را استخراج کن اگر کاربر صراحتاً گفته باشد:
+
+✅ اطلاعات قابل قبول:
+- نام واقعی (نه نام کاربری، نه کلمات تصادفی)
+- محل زندگی/شهر (فقط اسم شهر یا کشور واقعی)
+- شغل یا رشته تحصیلی واقعی
+- سن یا سال تولد
+- علایق و سرگرمی‌های مشخص (مثل: فوتبال، موسیقی، برنامه‌نویسی)
+- زبان‌هایی که بلد است
+- وضعیت تأهل یا تعداد فرزندان
+- نام‌های افراد مهم زندگی (همسر، فرزند)
+
+❌ موارد غیرقابل قبول (ذخیره نکن):
+- احساسات موقتی (خوبم، بدم، خسته‌ام)
+- نظرات درباره AI یا چت‌بات
+- درخواست‌ها و سوالات (مثل: کمک می‌خوام)
+- جملات عمومی و بی‌معنی
+- هر چیزی که فقط برای آن مکالمه است
+- کلمات تصادفی مثل "ennisily" یا چرت و پرت
 
 گفتگو:
 ${conversationText}
 
-خروجی را به صورت JSON با این ساختار بده:
+اگر هیچ اطلاعات واقعی شخصی پیدا نکردی، memories را خالی برگردان.
+
+خروجی JSON:
 {
   "memories": [
-    {"key": "نام", "value": "مقدار", "type": "personal"},
-    {"key": "علاقه", "value": "مقدار", "type": "interest"},
-    ...
+    {"key": "نام", "value": "علی"},
+    {"key": "شهر", "value": "تهران"},
+    {"key": "شغل", "value": "برنامه‌نویس"}
   ]
 }
 
-انواع type: personal, interest, concern, emotion, goal, preference, experience, relationship, work, health
-
-فقط JSON خروجی بده، بدون توضیحات اضافی.`;
+فقط JSON خروجی بده.`;
 
     const aiResponse = await fetch("https://api.tokenfactory.nebius.com/v1/chat/completions", {
       method: "POST",
@@ -86,11 +94,11 @@ ${conversationText}
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        model: "meta-llama/Llama-3.3-70B-Instruct-fast",
         messages: [
           { role: "user", content: extractionPrompt }
         ],
-        temperature: 0.3
+        temperature: 0.1
       }),
     });
 
