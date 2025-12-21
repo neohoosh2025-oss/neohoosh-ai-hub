@@ -4,7 +4,6 @@ import {
   MessageSquare, 
   Sparkles, 
   Settings, 
-  Image as ImageIcon,
   ArrowLeft,
   ArrowRight,
   X,
@@ -31,13 +30,6 @@ const tourSteps = [
     description: "هر سوالی داری بپرس! از نوشتن متن تا تحلیل داده، همه چیز در دسترسه.",
     icon: MessageSquare,
     gradient: "from-blue-500 to-cyan-500"
-  },
-  {
-    id: "image",
-    title: "تولید تصویر",
-    description: "با نوشتن یک توضیح، تصاویر خلاقانه بساز. کافیه بنویسی 'یک تصویر از...'",
-    icon: ImageIcon,
-    gradient: "from-purple-500 to-pink-500"
   },
   {
     id: "settings",
