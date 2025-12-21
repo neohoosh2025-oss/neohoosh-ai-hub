@@ -466,8 +466,8 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       })
     ];
 
-    // Use GitHub Models with GPT-5
-    const selectedModel = "openai/gpt-5";
+    // Use GitHub Models with GPT-4o
+    const selectedModel = "openai/gpt-4o";
 
     console.log("Calling GitHub Models API with model:", selectedModel);
 
