@@ -173,20 +173,50 @@ serve(async (req) => {
           aiSettings[s.key] = s.value;
         });
         
+        // Extract user preferences/instructions
+        const preferences = data.filter((m: any) => m.memory_type === 'preference');
+        
+        // Extract feedback for learning (last 5)
+        const feedbacks = data.filter((m: any) => m.memory_type === 'feedback').slice(-5);
+        
         console.log('[Chat] Loaded AI settings:', JSON.stringify(aiSettings));
+        console.log('[Chat] Loaded preferences:', preferences.length);
+        console.log('[Chat] Loaded feedbacks:', feedbacks.length);
+        
+        // Build user context with memories
+        let contextParts: string[] = [];
         
         if (memories && memories.length > 0) {
-          userContext = `
-
+          contextParts.push(`
 🔒 حافظه پنهان (فقط برای مرجع داخلی - هرگز مستقیماً ذکر نکن):
-${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
+${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}`);
+        }
+        
+        // Add user preferences/instructions
+        if (preferences && preferences.length > 0) {
+          contextParts.push(`
+🎯 ترجیحات و دستورات کاربر (رعایت کن!):
+${preferences.map((p: any) => `- ${p.value}`).join("\n")}`);
+        }
+        
+        // Add learning from feedback
+        if (feedbacks && feedbacks.length > 0) {
+          contextParts.push(`
+📚 یادگیری از بازخورد کاربر (از این اشتباهات اجتناب کن):
+${feedbacks.map((f: any) => `- ${f.value}`).join("\n")}`);
+        }
+        
+        if (contextParts.length > 0) {
+          userContext = contextParts.join("\n") + `
 
 قوانین استفاده از حافظه:
 1. این اطلاعات را هرگز خودبه‌خود و بدون درخواست کاربر ذکر نکن
 2. اگر کاربر فقط سلام کرد، فقط سلام کن - هیچ اطلاعاتی از حافظه نگو
 3. فقط وقتی کاربر صریحاً درباره موضوعی سؤال کرد یا بحث را ادامه داد، از حافظه استفاده کن
 4. مثل یک دوست هوشمند رفتار کن که همه چیز را یادش هست ولی فقط وقتی مناسب است از آن استفاده می‌کند
-5. هرگز نگو "طبق اطلاعات ذخیره شده" یا "در حافظه دارم" - طبیعی باش`;
+5. هرگز نگو "طبق اطلاعات ذخیره شده" یا "در حافظه دارم" - طبیعی باش
+6. به ترجیحات و دستورات کاربر توجه کن و آن‌ها را رعایت کن
+7. از اشتباهات قبلی که کاربر ازشون راضی نبوده، درس بگیر`;
         }
       }
     }
