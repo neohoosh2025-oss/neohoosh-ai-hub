@@ -692,32 +692,45 @@ const Chat = () => {
           {/* Empty State - ChatGPT Style */}
           {messages.length === 0 && (
             <motion.div 
-              className="flex flex-col items-center justify-center py-20"
+              className="flex flex-col items-center justify-center py-16"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <p className="text-muted-foreground text-center max-w-sm">
-                چطور می‌تونم کمکتون کنم؟
-              </p>
-              {/* Quick Actions */}
-              <div className="flex flex-wrap justify-center gap-2 mt-8 max-w-md">
+              <h2 className="text-2xl font-semibold text-foreground mb-2">سلام! چطور می‌تونم کمکت کنم؟</h2>
+              <p className="text-muted-foreground text-sm mb-10">یک سوال بپرس یا از پیشنهادات زیر شروع کن</p>
+              
+              {/* Quick Actions - ChatGPT Style Grid */}
+              <div className="grid grid-cols-2 gap-3 w-full max-w-lg">
                 {[
-                  { text: "مقاله درباره هوش مصنوعی بنویس", icon: "✍️" },
-                  { text: "یک پست اینستاگرامی بنویس", icon: "📱" },
-                  { text: "خلاصه این متن رو بده", icon: "📋" },
-                  { text: "ترجمه به انگلیسی", icon: "🌐" },
-                  { text: "ایده برای کسب‌وکار", icon: "💡" },
-                  { text: "سوال تستی بساز", icon: "📝" },
-                  { text: "کد پایتون بنویس", icon: "🐍" },
-                  { text: "داستان کوتاه بنویس", icon: "📖" },
+                  { 
+                    text: "یک ایده کسب‌وکار پیشنهاد بده", 
+                    icon: "💡",
+                    desc: "ایده‌پردازی"
+                  },
+                  { 
+                    text: "متنم رو ویرایش و بهتر کن", 
+                    icon: "✨",
+                    desc: "ویرایش متن"
+                  },
+                  { 
+                    text: "این مفهوم رو ساده توضیح بده", 
+                    icon: "📚",
+                    desc: "توضیح ساده"
+                  },
+                  { 
+                    text: "یک کد پایتون بنویس", 
+                    icon: "🐍",
+                    desc: "کدنویسی"
+                  },
                 ].map((action) => (
                   <button
                     key={action.text}
                     onClick={() => setMessage(action.text)}
-                    className="px-3 py-2 rounded-xl bg-card border border-border/50 text-xs text-foreground/80 hover:bg-muted hover:border-border transition-all"
+                    className="group flex flex-col items-start p-4 rounded-2xl bg-card/50 border border-border/40 hover:bg-card hover:border-border/80 hover:shadow-sm transition-all text-right"
                   >
-                    <span className="ml-1.5">{action.icon}</span>
-                    {action.text}
+                    <span className="text-xl mb-2">{action.icon}</span>
+                    <span className="text-xs text-muted-foreground mb-1">{action.desc}</span>
+                    <span className="text-sm text-foreground/90 leading-relaxed">{action.text}</span>
                   </button>
                 ))}
               </div>
