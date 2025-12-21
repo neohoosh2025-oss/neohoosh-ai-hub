@@ -37,7 +37,6 @@ import {
 } from "@/components/ui/popover";
 import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
 import { useOnboarding } from "@/hooks/useOnboarding";
-import { puterAIChatStream, isPuterLoaded, type PuterMessage } from "@/utils/puterAI";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "academic";
 
@@ -299,53 +298,89 @@ const Chat = () => {
         }
       }
 
-      // Prepare messages array with full history for Puter.js
-      const conversationMessages: PuterMessage[] = [
-        { role: 'system', content: `شما یک دستیار هوشمند فارسی‌زبان هستید. به سوالات به زبان فارسی پاسخ دهید. حالت انتخاب شده: ${selectedModel}` },
-        ...([...messages, userMessage].map(m => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content
-        })))
-      ];
+      // Prepare messages array with full history
+      const conversationMessages = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
       // Create assistant message placeholder
       setMessages(prev => [...prev, { role: "assistant", content: "" }]);
 
-      // Check if Puter.js is loaded
-      if (!isPuterLoaded()) {
-        throw new Error('Puter.js SDK not loaded yet. Please wait a moment and try again.');
+      // Get user's auth token for memory access
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      // Stream AI response with abort signal
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            messages: conversationMessages,
+            modelType: selectedModel
+          }),
+          signal: abortControllerRef.current.signal,
+        }
+      );
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to start stream');
       }
 
-      // Stream AI response using Puter.js with DeepSeek
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
       let accumulatedContent = "";
       accumulatedContentRef.current = "";
+      let textBuffer = "";
 
-      try {
-        const stream = puterAIChatStream(conversationMessages, 'deepseek/deepseek-v3.2');
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
         
-        for await (const chunk of stream) {
-          // Check for abort
-          if (abortControllerRef.current?.signal.aborted) {
+        let newlineIndex;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            
+            if (content) {
+              accumulatedContent += content;
+              accumulatedContentRef.current = accumulatedContent;
+              setMessages(prev => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex]?.role === "assistant") {
+                  newMessages[lastIndex] = {
+                    role: "assistant",
+                    content: accumulatedContent
+                  };
+                }
+                return newMessages;
+              });
+            }
+          } catch (e) {
+            // Re-buffer partial JSON
+            textBuffer = line + '\n' + textBuffer;
             break;
           }
-          
-          accumulatedContent += chunk;
-          accumulatedContentRef.current = accumulatedContent;
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastIndex = newMessages.length - 1;
-            if (newMessages[lastIndex]?.role === "assistant") {
-              newMessages[lastIndex] = {
-                role: "assistant",
-                content: accumulatedContent
-              };
-            }
-            return newMessages;
-          });
         }
-      } catch (streamError) {
-        console.error('Puter stream error:', streamError);
-        throw streamError;
       }
 
       // Save final AI message (only for logged in users)
@@ -394,7 +429,7 @@ const Chat = () => {
       }
       
       console.error("Error sending message:", error);
-      toast.error("خطا در ارسال پیام: " + (error.message || "خطای ناشناخته"), { duration: 3000 });
+      toast.error("خطا در ارسال پیام", { duration: 2000 });
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
