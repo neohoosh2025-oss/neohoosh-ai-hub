@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, MessageSquare, Mic, Settings, History, Sparkles } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, MessageSquare, Settings, History, Sparkles } from 'lucide-react';
 
 interface TourStep {
   id: string;
@@ -24,20 +24,6 @@ const tourSteps: TourStep[] = [
     title: 'چت هوشمند',
     description: 'هر سوالی دارید بپرسید! از نوشتن متن و کد گرفته تا ترجمه و خلاصه‌سازی.',
     icon: <MessageSquare className="h-8 w-8" />,
-    position: 'center',
-  },
-  {
-    id: 'models',
-    title: 'انتخاب مدل هوش مصنوعی',
-    description: 'از بالای صفحه می‌توانید مدل‌های مختلف AI مثل GPT-4 و Gemini را انتخاب کنید.',
-    icon: <Sparkles className="h-8 w-8" />,
-    position: 'center',
-  },
-  {
-    id: 'voice',
-    title: 'ورودی صوتی',
-    description: 'با آیکون میکروفون می‌توانید به جای تایپ، صحبت کنید و پیام صوتی ارسال کنید.',
-    icon: <Mic className="h-8 w-8" />,
     position: 'center',
   },
   {
