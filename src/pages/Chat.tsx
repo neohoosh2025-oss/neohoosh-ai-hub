@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn, Plus, ChevronDown
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ChevronLeft, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn, Plus, ChevronDown
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -988,15 +988,15 @@ const Chat = () => {
           <div className="h-full flex flex-col" dir="rtl">
             <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/40">
               <div className="flex items-center justify-between">
+                <SheetTitle className="text-lg font-bold">تاریخچه گفتگوها</SheetTitle>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowHistory(false)}
                   className="h-9 w-9 rounded-lg hover:bg-muted"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronLeft className="w-5 h-5" />
                 </Button>
-                <SheetTitle className="text-lg font-bold">تاریخچه گفتگوها</SheetTitle>
               </div>
             </SheetHeader>
             
