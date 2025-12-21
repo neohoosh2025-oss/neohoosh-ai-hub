@@ -35,6 +35,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { OnboardingTour } from "@/components/onboarding/OnboardingTour";
+import { useOnboarding } from "@/hooks/useOnboarding";
 
 type ModelType = "business" | "personal" | "general" | "ads" | "academic";
 
@@ -59,6 +61,7 @@ const Chat = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const { showOnboarding, completeOnboarding } = useOnboarding();
   const models: Model[] = [
     {
       id: "general",
@@ -1147,6 +1150,11 @@ const Chat = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Onboarding Tour */}
+      {showOnboarding && (
+        <OnboardingTour onComplete={completeOnboarding} />
+      )}
     </div>
   );
 };
