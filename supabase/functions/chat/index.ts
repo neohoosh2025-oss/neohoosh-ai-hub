@@ -151,47 +151,32 @@ serve(async (req) => {
       });
     }
 
-    // Load user memory and AI settings with caching (5 minute TTL)
+    // Load user memory and AI settings directly (no cache for accurate settings)
     let userContext = "";
     let aiSettings: any = {};
     
     if (userId) {
-      const memoryCacheKey = `user_memory:${userId}`;
-      const settingsCacheKey = `ai_settings:${userId}`;
+      // Always load from database to ensure settings are up-to-date
+      console.log('[Chat] Loading user memory and AI settings from database');
+      const { data } = await supabase
+        .from('user_memory')
+        .select('key, value, memory_type')
+        .eq('user_id', userId);
       
-      // Load memories
-      let memories = await getCachedData(supabase, memoryCacheKey);
-      if (!memories) {
-        console.log('[Chat] Loading user memory from database');
-        const { data } = await supabase
-          .from('user_memory')
-          .select('key, value, memory_type')
-          .eq('user_id', userId);
+      if (data) {
+        // Extract user memories
+        const memories = data.filter((m: any) => m.memory_type === 'user_info');
         
-        if (data) {
-          memories = data.filter((m: any) => m.memory_type === 'user_info');
-          const settings = data.filter((m: any) => m.memory_type === 'ai_settings');
-          settings.forEach((s: any) => {
-            aiSettings[s.key] = s.value;
-          });
-          
-          if (memories.length > 0) {
-            await setCachedData(supabase, memoryCacheKey, memories, 300);
-          }
-          if (Object.keys(aiSettings).length > 0) {
-            await setCachedData(supabase, settingsCacheKey, aiSettings, 300);
-          }
-        }
-      } else {
-        // Load settings from cache separately
-        const cachedSettings = await getCachedData(supabase, settingsCacheKey);
-        if (cachedSettings) {
-          aiSettings = cachedSettings;
-        }
-      }
-      
-      if (memories && memories.length > 0) {
-        userContext = `
+        // Extract AI settings
+        const settingsData = data.filter((m: any) => m.memory_type === 'ai_settings');
+        settingsData.forEach((s: any) => {
+          aiSettings[s.key] = s.value;
+        });
+        
+        console.log('[Chat] Loaded AI settings:', JSON.stringify(aiSettings));
+        
+        if (memories && memories.length > 0) {
+          userContext = `
 
 🔒 حافظه پنهان (فقط برای مرجع داخلی - هرگز مستقیماً ذکر نکن):
 ${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
@@ -202,6 +187,7 @@ ${memories.map((m: any) => `- ${m.key}: ${m.value}`).join("\n")}
 3. فقط وقتی کاربر صریحاً درباره موضوعی سؤال کرد یا بحث را ادامه داد، از حافظه استفاده کن
 4. مثل یک دوست هوشمند رفتار کن که همه چیز را یادش هست ولی فقط وقتی مناسب است از آن استفاده می‌کند
 5. هرگز نگو "طبق اطلاعات ذخیره شده" یا "در حافظه دارم" - طبیعی باش`;
+        }
       }
     }
     
