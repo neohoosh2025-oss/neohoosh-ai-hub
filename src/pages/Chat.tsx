@@ -568,22 +568,41 @@ const Chat = () => {
         setRatedMessages(newRatedMessages);
         toast.success("رتبه‌بندی حذف شد", { duration: 1500 });
       } else {
-        // Insert or update rating
+        // Get the rated message and the user's question before it
+        const ratedMessage = messages[messageIndex];
+        const userQuestion = messageIndex > 0 ? messages[messageIndex - 1] : null;
+        
+        // Insert or update rating with feedback text
+        const feedbackText = ratingType === 'dislike' 
+          ? `پاسخ غیرمفید بود. سوال: "${userQuestion?.content?.substring(0, 100) || ''}" - پاسخ: "${ratedMessage?.content?.substring(0, 200) || ''}"`
+          : `پاسخ مفید بود. سوال: "${userQuestion?.content?.substring(0, 100) || ''}"`;
+        
         await supabase
           .from('message_ratings')
           .upsert({
             conversation_id: currentConversationId,
             message_index: messageIndex,
             user_id: user.id,
-            rating_type: ratingType
+            rating_type: ratingType,
+            feedback_text: feedbackText
           }, {
             onConflict: 'conversation_id,message_index,user_id'
           });
         
+        // Save learning preference to user_memory for AI to learn
+        if (ratingType === 'dislike') {
+          await supabase.from('user_memory').insert({
+            user_id: user.id,
+            memory_type: 'feedback',
+            key: `dislike_${Date.now()}`,
+            value: `کاربر از این نوع پاسخ خوشش نیامد: "${ratedMessage?.content?.substring(0, 150) || ''}"`
+          });
+        }
+        
         const newRatedMessages = new Map(ratedMessages);
         newRatedMessages.set(messageIndex, ratingType);
         setRatedMessages(newRatedMessages);
-        toast.success(ratingType === 'like' ? "پاسخ مفید بود" : "بازخورد شما ثبت شد", { duration: 1500 });
+        toast.success(ratingType === 'like' ? "پاسخ مفید بود ✓" : "متوجه شدم، بهتر جواب می‌دم", { duration: 2000 });
       }
     } catch (error) {
       console.error("Error rating message:", error);

@@ -48,10 +48,11 @@ serve(async (req) => {
     // Prepare conversation for AI
     const conversationText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
 
-    // Call AI to extract memory - improved prompt
-    const extractionPrompt = `تحلیل این گفتگو و فقط اطلاعات واقعی و مهم شخصی کاربر را استخراج کن.
+    // Call AI to extract memory - improved prompt with preferences
+    const extractionPrompt = `تحلیل این گفتگو و دو نوع اطلاعات استخراج کن:
 
-⚠️ مهم: فقط اطلاعات زیر را استخراج کن اگر کاربر صراحتاً گفته باشد:
+## ۱. اطلاعات شخصی (memories):
+⚠️ فقط اطلاعات زیر را استخراج کن اگر کاربر صراحتاً گفته باشد:
 
 ✅ اطلاعات قابل قبول:
 - نام واقعی (نه نام کاربری، نه کلمات تصادفی)
@@ -63,25 +64,39 @@ serve(async (req) => {
 - وضعیت تأهل یا تعداد فرزندان
 - نام‌های افراد مهم زندگی (همسر، فرزند)
 
+## ۲. ترجیحات پاسخ‌دهی (preferences):
+دستوراتی که کاربر صراحتاً گفته AI چطور جواب بده:
+
+✅ مثال‌ها:
+- "از این به بعد کوتاه جواب بده"
+- "بیشتر توضیح بده"
+- "شوخی نکن"
+- "از ایموجی استفاده کن"
+- "رسمی‌تر صحبت کن"
+- "اینجوری جواب بده..."
+- "مثل X صحبت کن"
+
 ❌ موارد غیرقابل قبول (ذخیره نکن):
 - احساسات موقتی (خوبم، بدم، خسته‌ام)
 - نظرات درباره AI یا چت‌بات
-- درخواست‌ها و سوالات (مثل: کمک می‌خوام)
+- درخواست‌های یکباره (مثل: این متن رو ترجمه کن)
 - جملات عمومی و بی‌معنی
-- هر چیزی که فقط برای آن مکالمه است
-- کلمات تصادفی مثل "ennisily" یا چرت و پرت
+- کلمات تصادفی
 
 گفتگو:
 ${conversationText}
 
-اگر هیچ اطلاعات واقعی شخصی پیدا نکردی، memories را خالی برگردان.
+اگر هیچ اطلاعات پیدا نکردی، آرایه‌ها را خالی برگردان.
 
 خروجی JSON:
 {
   "memories": [
     {"key": "نام", "value": "علی"},
-    {"key": "شهر", "value": "تهران"},
-    {"key": "شغل", "value": "برنامه‌نویس"}
+    {"key": "شهر", "value": "تهران"}
+  ],
+  "preferences": [
+    "کوتاه و مختصر جواب بده",
+    "از ایموجی استفاده کن"
   ]
 }
 
@@ -137,16 +152,19 @@ ${conversationText}
       throw new Error("Invalid JSON response from AI");
     }
 
-    if (!extractedData.memories || !Array.isArray(extractedData.memories)) {
-      console.log("No memories extracted");
-      return new Response(JSON.stringify({ success: true, message: "No new memories found" }), {
+    const memories = extractedData.memories || [];
+    const preferences = extractedData.preferences || [];
+    
+    if (memories.length === 0 && preferences.length === 0) {
+      console.log("No memories or preferences extracted");
+      return new Response(JSON.stringify({ success: true, message: "No new data found" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     // Save or update memories
     let savedCount = 0;
-    for (const memory of extractedData.memories) {
+    for (const memory of memories) {
       if (!memory.key || !memory.value) continue;
 
       // Check if memory exists
@@ -180,13 +198,43 @@ ${conversationText}
       }
       savedCount++;
     }
+    
+    // Save preferences (user instructions for AI)
+    let preferencesCount = 0;
+    for (const pref of preferences) {
+      if (!pref || typeof pref !== 'string') continue;
+      
+      // Check if similar preference exists
+      const { data: existing } = await supabase
+        .from('user_memory')
+        .select('id, value')
+        .eq('user_id', user.id)
+        .eq('memory_type', 'preference')
+        .ilike('value', `%${pref.substring(0, 20)}%`)
+        .maybeSingle();
 
-    console.log(`Saved ${savedCount} memories for user ${user.id}`);
+      if (!existing) {
+        // Insert new preference
+        await supabase
+          .from('user_memory')
+          .insert({
+            user_id: user.id,
+            key: `pref_${Date.now()}`,
+            value: pref,
+            memory_type: 'preference'
+          });
+        preferencesCount++;
+      }
+    }
+
+    console.log(`Saved ${savedCount} memories and ${preferencesCount} preferences for user ${user.id}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
       memoriesSaved: savedCount,
-      memories: extractedData.memories
+      preferencesSaved: preferencesCount,
+      memories: memories,
+      preferences: preferences
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
