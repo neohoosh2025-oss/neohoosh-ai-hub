@@ -284,31 +284,46 @@ export default function AISettings() {
                 </div>
               </div>
               
-              {/* Add new memory */}
-              <div className="flex gap-2 mb-4">
-                <Input
-                  value={newMemoryKey}
-                  onChange={(e) => setNewMemoryKey(e.target.value)}
-                  placeholder="عنوان (مثل: اسم)"
-                  className="flex-1 h-9 text-sm bg-muted/50 border-border/50"
-                />
-                <Input
-                  value={newMemoryValue}
-                  onChange={(e) => setNewMemoryValue(e.target.value)}
-                  placeholder="مقدار (مثل: علی)"
-                  className="flex-[2] h-9 text-sm bg-muted/50 border-border/50"
-                />
-                <Button
-                  onClick={addMemory}
-                  size="sm"
-                  className="h-9 px-3"
-                  disabled={!newMemoryKey.trim() || !newMemoryValue.trim()}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
+              {/* Add new memory - removed manual input */}
 
               {/* Memory list */}
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {memories.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Brain className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                      <p className="text-sm">هنوز اطلاعاتی ذخیره نشده</p>
+                      <p className="text-xs mt-1">با گفتگو با AI، اطلاعات مهم خودکار ذخیره می‌شود</p>
+                    </div>
+                  ) : (
+                    memories.map((memory) => (
+                      <motion.div
+                        key={memory.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 10 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 group"
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                          {getMemoryIcon(memory.key)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">{memory.key}</p>
+                          <p className="text-sm font-medium truncate">{memory.value}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteMemory(memory.id)}
+                          className="h-7 w-7 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive rounded-lg transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
               <div className="space-y-2">
                 <AnimatePresence>
                   {memories.length === 0 ? (
