@@ -43,16 +43,102 @@ async function setCachedData(supabase: any, key: string, value: any, ttlSeconds:
   }
 }
 
+// Helper function to get GitHub tokens array
+function getGitHubTokens(): string[] {
+  // First try GITHUB_TOKENS (comma-separated multiple tokens)
+  const tokensString = Deno.env.get("GITHUB_TOKENS");
+  if (tokensString) {
+    const tokens = tokensString.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    if (tokens.length > 0) {
+      console.log(`[Tokens] Found ${tokens.length} GitHub tokens from GITHUB_TOKENS`);
+      return tokens;
+    }
+  }
+  
+  // Fallback to single GITHUB_TOKEN
+  const singleToken = Deno.env.get("GITHUB_TOKEN");
+  if (singleToken) {
+    console.log('[Tokens] Using single GITHUB_TOKEN');
+    return [singleToken];
+  }
+  
+  return [];
+}
+
+// Helper function to try GitHub API with token rotation
+async function tryGitHubRequest(
+  tokens: string[], 
+  requestBody: any
+): Promise<{ response: Response | null; error: string | null; usedTokenIndex: number }> {
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i];
+    console.log(`[Tokens] Trying token ${i + 1}/${tokens.length}`);
+    
+    try {
+      const response = await fetch("https://models.github.ai/inference/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      // If successful or non-auth error, return
+      if (response.ok) {
+        console.log(`[Tokens] Token ${i + 1} succeeded`);
+        return { response, error: null, usedTokenIndex: i };
+      }
+      
+      // Check if it's an auth/rate limit error that warrants trying next token
+      if (response.status === 401 || response.status === 403 || response.status === 429) {
+        const errorText = await response.text();
+        console.warn(`[Tokens] Token ${i + 1} failed (${response.status}): ${errorText}`);
+        
+        // If this is the last token, return the error
+        if (i === tokens.length - 1) {
+          return { 
+            response: null, 
+            error: response.status === 429 
+              ? "محدودیت تعداد درخواست در همه توکن‌ها. لطفاً چند دقیقه صبر کنید." 
+              : "خطا در احراز هویت همه توکن‌های GitHub.",
+            usedTokenIndex: i 
+          };
+        }
+        
+        // Try next token
+        continue;
+      }
+      
+      // For other errors (500, etc.), return without trying more tokens
+      return { response, error: null, usedTokenIndex: i };
+      
+    } catch (fetchError) {
+      console.error(`[Tokens] Token ${i + 1} network error:`, fetchError);
+      
+      // If this is the last token, return the error
+      if (i === tokens.length - 1) {
+        return { response: null, error: "خطا در اتصال به سرور GitHub.", usedTokenIndex: i };
+      }
+      
+      // Try next token
+      continue;
+    }
+  }
+  
+  return { response: null, error: "هیچ توکن GitHub معتبری یافت نشد.", usedTokenIndex: -1 };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { messages, modelType, imageData } = await req.json();
-    const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
+    const githubTokens = getGitHubTokens();
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    if (!GITHUB_TOKEN) throw new Error("GITHUB_TOKEN is not configured");
+    if (githubTokens.length === 0) throw new Error("No GitHub tokens configured. Please set GITHUB_TOKENS or GITHUB_TOKEN.");
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase config missing");
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -486,6 +572,7 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
     const selectedModel = "openai/gpt-4o";
 
     console.log("Calling GitHub Models API with model:", selectedModel);
+    console.log(`[Tokens] Available tokens: ${githubTokens.length}`);
 
     // Build request body for GitHub Models
     const requestBody: any = {
@@ -494,14 +581,19 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       stream: true
     };
 
-    const response = await fetch("https://models.github.ai/inference/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${GITHUB_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // Try GitHub API with token rotation
+    const { response, error, usedTokenIndex } = await tryGitHubRequest(githubTokens, requestBody);
+
+    if (error || !response) {
+      console.error("All GitHub tokens failed:", error);
+      return new Response(
+        JSON.stringify({ error: error || "خطا در پردازش درخواست." }),
+        { 
+          status: 503,
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -509,11 +601,7 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       
       let errorMessage = "خطا در پردازش درخواست.";
       
-      if (response.status === 429) {
-        errorMessage = "محدودیت تعداد درخواست. لطفاً چند لحظه صبر کنید و دوباره تلاش کنید.";
-      } else if (response.status === 402 || response.status === 401) {
-        errorMessage = "خطا در احراز هویت GitHub Token.";
-      } else if (response.status >= 500) {
+      if (response.status >= 500) {
         errorMessage = "خطای سرور. لطفاً بعداً تلاش کنید.";
       }
       
@@ -525,6 +613,8 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
         }
       );
     }
+
+    console.log(`[Tokens] Request succeeded with token ${usedTokenIndex + 1}`);
 
     // Return streaming response
     return new Response(response.body, {
