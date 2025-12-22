@@ -36,6 +36,7 @@ const VoiceToText = lazy(() => import("./pages/VoiceToText"));
 const TextToVoice = lazy(() => import("./pages/TextToVoice"));
 const CodeGenerator = lazy(() => import("./pages/CodeGenerator"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Install = lazy(() => import("./pages/Install"));
 
 // Optimized QueryClient for high-volume requests
 const queryClient = new QueryClient({
@@ -117,6 +118,7 @@ const App = () => {
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/install" element={<Install />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PageTransition>
