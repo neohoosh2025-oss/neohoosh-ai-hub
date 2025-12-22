@@ -60,10 +60,10 @@ export const MessageBubble = memo(function MessageBubble({
         isUser ? "items-end" : "items-start"
       )}>
         <div className={cn(
-          "px-4 py-2.5",
+          "px-4 py-2.5 max-w-fit",
           isUser 
-            ? "bg-primary text-primary-foreground rounded-t-2xl rounded-bl-2xl rounded-br-sm" 
-            : "bg-muted rounded-t-2xl rounded-br-2xl rounded-bl-sm"
+            ? "bg-primary text-primary-foreground rounded-[18px] rounded-br-[4px]" 
+            : "bg-muted rounded-[18px] rounded-bl-[4px]"
         )}>
           {imageUrl && (
             <img 
