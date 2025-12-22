@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
-  User, Mail, LogOut, Loader2, Check, X, MessageSquare, Calendar, Brain, ChevronLeft
+  User, Mail, LogOut, Loader2, Check, X, MessageSquare, Calendar, Brain, ChevronLeft, Download, Moon, Sun
 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet";
+import { usePWA } from "@/hooks/usePWA";
+import { useTheme } from "next-themes";
 
 interface ProfileDrawerProps {
   open: boolean;
@@ -21,6 +23,8 @@ interface ProfileDrawerProps {
 
 export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) {
   const navigate = useNavigate();
+  const { isInstalled, canInstall, installPrompt } = usePWA();
+  const { theme, setTheme } = useTheme();
   
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -28,12 +32,28 @@ export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) 
   const [tempName, setTempName] = useState("");
   const [stats, setStats] = useState({ messages: 0, conversations: 0 });
   const [loading, setLoading] = useState(true);
+  const [hasShownInstallNotification, setHasShownInstallNotification] = useState(false);
 
   useEffect(() => {
     if (open && user) {
       loadUserData();
+      
+      // Show install notification when drawer opens if app can be installed
+      if (canInstall && !hasShownInstallNotification && !isInstalled) {
+        setHasShownInstallNotification(true);
+        toast("نصب اپلیکیشن", {
+          description: "می‌توانید نئوهوش را روی دستگاه خود نصب کنید",
+          action: {
+            label: "نصب",
+            onClick: () => {
+              if (installPrompt) installPrompt();
+            }
+          },
+          duration: 8000,
+        });
+      }
     }
-  }, [open, user]);
+  }, [open, user, canInstall, hasShownInstallNotification, isInstalled, installPrompt]);
 
   const loadUserData = async () => {
     if (!user) return;
@@ -281,6 +301,68 @@ export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) 
                   </div>
                 </button>
               </motion.div>
+
+              {/* Theme Toggle */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.28, duration: 0.4 }}
+                className="mt-2"
+              >
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="w-full bg-card/30 rounded-2xl border border-border/30 p-4 hover:bg-card/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center">
+                        {theme === 'dark' ? (
+                          <Sun className="w-5 h-5 text-amber-500" />
+                        ) : (
+                          <Moon className="w-5 h-5 text-amber-500" />
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-foreground/80">
+                          {theme === 'dark' ? 'حالت روشن' : 'حالت تاریک'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/50">تغییر تم برنامه</p>
+                      </div>
+                    </div>
+                    <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
+                  </div>
+                </button>
+              </motion.div>
+
+              {/* Install App Button - Only show if not installed and can install */}
+              {canInstall && !isInstalled && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="mt-2"
+                >
+                  <button
+                    onClick={() => {
+                      if (installPrompt) installPrompt();
+                    }}
+                    className="w-full bg-gradient-to-r from-primary/20 to-primary/10 rounded-2xl border border-primary/30 p-4 hover:from-primary/30 hover:to-primary/20 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                          <Download className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium text-foreground/80">نصب اپلیکیشن</p>
+                          <p className="text-[10px] text-muted-foreground/50">نصب روی دستگاه شما</p>
+                        </div>
+                      </div>
+                      <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
+                    </div>
+                  </button>
+                </motion.div>
+              )}
 
               {/* Sign Out */}
               <motion.div
