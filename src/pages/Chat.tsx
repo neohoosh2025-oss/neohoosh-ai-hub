@@ -58,6 +58,76 @@ interface Message {
 const GUEST_QUESTION_LIMIT = 4;
 const GUEST_QUESTIONS_KEY = 'neohoosh_guest_questions';
 
+// Long-press copy for user messages
+interface UserMessageActionsProps {
+  content: string;
+  index: number;
+  copiedIndex: number | null;
+  onCopy: (content: string, index: number) => void;
+}
+
+const UserMessageActions = ({ content, index, copiedIndex, onCopy }: UserMessageActionsProps) => {
+  const [showCopy, setShowCopy] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => {
+      setShowCopy(true);
+    }, 500); // 500ms long press
+  };
+  
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+  
+  const handleCopy = () => {
+    onCopy(content, index);
+    setTimeout(() => setShowCopy(false), 1500);
+  };
+  
+  return (
+    <div
+      className="relative"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleTouchStart}
+      onMouseUp={handleTouchEnd}
+      onMouseLeave={handleTouchEnd}
+    >
+      <AnimatePresence>
+        {showCopy && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 5 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 5 }}
+            className="absolute left-0 bottom-full mb-2 z-10"
+          >
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg bg-background/95 backdrop-blur-sm border border-border shadow-lg text-foreground hover:bg-muted transition-all"
+            >
+              {copiedIndex === index ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-emerald-500">کپی شد</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>کپی متن</span>
+                </>
+              )}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Chat = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -938,92 +1008,79 @@ const Chat = () => {
                     </ReactMarkdown>
                   </div>
                   
-                  {/* User message actions */}
+                  {/* User message - Long press to show copy */}
                   {msg.role === 'user' && msg.content && (
-                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary-foreground/20">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyMessage(msg.content, index)}
-                        className="h-7 px-2 text-xs hover:bg-primary-foreground/10 rounded-md text-primary-foreground/80 hover:text-primary-foreground"
-                      >
-                        {copiedIndex === index ? (
-                          <>
-                            <Check className="w-3 h-3 ml-1" />
-                            کپی شد
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 ml-1" />
-                            کپی
-                          </>
-                        )}
-                      </Button>
-                    </div>
+                    <UserMessageActions
+                      content={msg.content}
+                      index={index}
+                      copiedIndex={copiedIndex}
+                      onCopy={handleCopyMessage}
+                    />
                   )}
                   
-                  {/* Assistant message actions */}
+                  {/* Assistant message actions - Modern style */}
                   {msg.role === 'assistant' && msg.content && !isLoading && (
-                    <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/20">
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                    <div className="flex items-center gap-1 mt-3 pt-2.5 border-t border-border/30">
+                      <button
                         onClick={() => handleRateMessage(index, 'like')}
-                        className={`h-7 px-2 text-xs hover:bg-muted rounded-md ${
-                          ratedMessages.get(index) === 'like' ? 'text-green-600 bg-green-50 dark:bg-green-950' : ''
+                        className={`flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg transition-all ${
+                          ratedMessages.get(index) === 'like' 
+                            ? 'text-emerald-600 bg-emerald-500/10 dark:text-emerald-400' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                         }`}
                       >
-                        <ThumbsUp className={`w-3 h-3 ml-1 ${ratedMessages.get(index) === 'like' ? 'fill-current' : ''}`} />
-                        مفید
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                        <ThumbsUp className={`w-3.5 h-3.5 ${ratedMessages.get(index) === 'like' ? 'fill-current' : ''}`} />
+                        <span className="hidden sm:inline">مفید</span>
+                      </button>
+                      
+                      <button
                         onClick={() => handleRateMessage(index, 'dislike')}
-                        className={`h-7 px-2 text-xs hover:bg-muted rounded-md ${
-                          ratedMessages.get(index) === 'dislike' ? 'text-red-600 bg-red-50 dark:bg-red-950' : ''
+                        className={`flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg transition-all ${
+                          ratedMessages.get(index) === 'dislike' 
+                            ? 'text-rose-600 bg-rose-500/10 dark:text-rose-400' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                         }`}
                       >
-                        <ThumbsDown className={`w-3 h-3 ml-1 ${ratedMessages.get(index) === 'dislike' ? 'fill-current' : ''}`} />
-                        غیرمفید
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                        <ThumbsDown className={`w-3.5 h-3.5 ${ratedMessages.get(index) === 'dislike' ? 'fill-current' : ''}`} />
+                        <span className="hidden sm:inline">غیرمفید</span>
+                      </button>
+                      
+                      <div className="w-px h-4 bg-border/50 mx-1" />
+                      
+                      <button
                         onClick={() => handleCopyMessage(msg.content, index)}
-                        className="h-7 px-2 text-xs hover:bg-muted rounded-md"
+                        className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
                       >
                         {copiedIndex === index ? (
                           <>
-                            <Check className="w-3 h-3 ml-1" />
-                            کپی شد
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="hidden sm:inline text-emerald-500">کپی شد</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3 h-3 ml-1" />
-                            کپی متن
+                            <Copy className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">کپی</span>
                           </>
                         )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
+                      </button>
+                      
+                      <button
                         onClick={() => handleSummarize(index)}
                         disabled={summarizingIndex === index}
-                        className="h-7 px-2 text-xs hover:bg-muted rounded-md"
+                        className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all disabled:opacity-50"
                       >
                         {summarizingIndex === index ? (
                           <>
-                            <Loader2 className="w-3 h-3 ml-1 animate-spin" />
-                            در حال خلاصه...
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <span className="hidden sm:inline">خلاصه...</span>
                           </>
                         ) : (
                           <>
-                            <FileText className="w-3 h-3 ml-1" />
-                            خلاصه
+                            <FileText className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">خلاصه</span>
                           </>
                         )}
-                      </Button>
+                      </button>
                     </div>
                   )}
                 </div>
