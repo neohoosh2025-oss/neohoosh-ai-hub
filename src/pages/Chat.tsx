@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Briefcase, User as UserIcon, MessageSquare, Megaphone, ImageIcon, 
-  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ChevronLeft, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn, Plus, ChevronDown
+  Send, Trash2, Paperclip, Sparkles, Phone, History, Bot, GraduationCap, Copy, Check, ChevronRight, ChevronLeft, ThumbsUp, ThumbsDown, Square, UserCircle, LogIn, Plus, ChevronDown, FileText, Loader2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -120,6 +120,7 @@ const Chat = () => {
     const saved = localStorage.getItem(GUEST_QUESTIONS_KEY);
     return saved ? parseInt(saved, 10) : 0;
   });
+  const [summarizingIndex, setSummarizingIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -610,6 +611,92 @@ const Chat = () => {
     }
   };
 
+  const handleSummarize = async (messageIndex: number) => {
+    const msgContent = messages[messageIndex]?.content;
+    if (!msgContent || summarizingIndex !== null) return;
+
+    setSummarizingIndex(messageIndex);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: 'user', content: `لطفا این متن را به صورت خلاصه و مختصر بازنویسی کن (حداکثر 2-3 جمله):\n\n${msgContent}` }
+            ],
+            modelType: 'general'
+          }),
+        }
+      );
+
+      if (!response.ok || !response.body) {
+        throw new Error('Failed to summarize');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let summarizedContent = "";
+      let textBuffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        textBuffer += decoder.decode(value, { stream: true });
+        
+        let newlineIndex;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              summarizedContent += content;
+            }
+          } catch (e) {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+
+      if (summarizedContent) {
+        setMessages(prev => {
+          const newMessages = [...prev];
+          newMessages[messageIndex] = {
+            ...newMessages[messageIndex],
+            content: summarizedContent
+          };
+          return newMessages;
+        });
+        toast.success("پاسخ خلاصه شد", { duration: 2000 });
+      }
+    } catch (error) {
+      console.error("Error summarizing:", error);
+      toast.error("خطا در خلاصه‌سازی", { duration: 2000 });
+    } finally {
+      setSummarizingIndex(null);
+    }
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
@@ -620,6 +707,9 @@ const Chat = () => {
       toast.error("حجم فایل نباید بیشتر از ۱۰ مگابایت باشد", { duration: 3000 });
       return;
     }
+
+    // Show loading toast with proper dismissal
+    const loadingToastId = toast.loading("در حال آپلود فایل...");
 
     try {
       const fileExt = file.name.split('.').pop();
@@ -643,10 +733,12 @@ const Chat = () => {
         .getPublicUrl(filePath);
 
       setMessage(prev => prev + `\n[فایل: ${file.name}](${publicUrl})`);
+      toast.dismiss(loadingToastId);
       toast.success("فایل با موفقیت آپلود شد", { duration: 2000 });
     } catch (error: any) {
       console.error('Error uploading file:', error);
       const errorMsg = error?.message || 'خطا در آپلود فایل';
+      toast.dismiss(loadingToastId);
       toast.error(errorMsg, { duration: 3000 });
     }
 
@@ -830,6 +922,32 @@ const Chat = () => {
                       {msg.content}
                     </ReactMarkdown>
                   </div>
+                  
+                  {/* User message actions */}
+                  {msg.role === 'user' && msg.content && (
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary-foreground/20">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleCopyMessage(msg.content, index)}
+                        className="h-7 px-2 text-xs hover:bg-primary-foreground/10 rounded-md text-primary-foreground/80 hover:text-primary-foreground"
+                      >
+                        {copiedIndex === index ? (
+                          <>
+                            <Check className="w-3 h-3 ml-1" />
+                            کپی شد
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3 ml-1" />
+                            کپی
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                  
+                  {/* Assistant message actions */}
                   {msg.role === 'assistant' && msg.content && !isLoading && (
                     <div className="flex items-center gap-2 mt-3 pt-2 border-t border-border/20">
                       <Button
@@ -869,6 +987,25 @@ const Chat = () => {
                           <>
                             <Copy className="w-3 h-3 ml-1" />
                             کپی متن
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleSummarize(index)}
+                        disabled={summarizingIndex === index}
+                        className="h-7 px-2 text-xs hover:bg-muted rounded-md"
+                      >
+                        {summarizingIndex === index ? (
+                          <>
+                            <Loader2 className="w-3 h-3 ml-1 animate-spin" />
+                            در حال خلاصه...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="w-3 h-3 ml-1" />
+                            خلاصه
                           </>
                         )}
                       </Button>
