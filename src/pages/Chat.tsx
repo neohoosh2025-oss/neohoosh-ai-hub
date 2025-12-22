@@ -776,10 +776,10 @@ const Chat = () => {
                 )}
                 
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-3 ${
+                  className={`max-w-[85%] sm:max-w-[80%] px-4 py-3 ${
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card border border-border/50'
+                      ? 'bg-primary text-primary-foreground rounded-t-2xl rounded-r-2xl rounded-bl-2xl rounded-br-md'
+                      : 'bg-card border border-border/50 rounded-t-2xl rounded-l-2xl rounded-br-2xl rounded-bl-md'
                   }`}
                 >
                   {msg.imageUrl ? (
