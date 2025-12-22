@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CodeBlock, InlineCode } from "@/components/CodeBlock";
 import { showNotification, getNotificationPermission } from "@/utils/pushNotifications";
+import { compressImage, formatFileSize } from "@/utils/imageCompression";
 import {
   Sheet,
   SheetContent,
@@ -708,17 +709,31 @@ const Chat = () => {
       return;
     }
 
-    // Show loading toast with proper dismissal
-    const loadingToastId = toast.loading("در حال آپلود فایل...");
+    const isImage = file.type.startsWith('image/');
+    const loadingToastId = toast.loading(isImage ? "در حال فشرده‌سازی و آپلود..." : "در حال آپلود فایل...");
 
     try {
-      const fileExt = file.name.split('.').pop();
+      // Compress image if it's an image file
+      let fileToUpload = file;
+      if (isImage) {
+        try {
+          fileToUpload = await compressImage(file);
+          if (fileToUpload.size < file.size) {
+            console.log(`Compression saved ${formatFileSize(file.size - fileToUpload.size)}`);
+          }
+        } catch (compressError) {
+          console.warn('Compression failed, using original:', compressError);
+          fileToUpload = file;
+        }
+      }
+
+      const fileExt = isImage ? 'jpg' : file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
 
       const { data, error: uploadError } = await supabase.storage
         .from('chat-files')
-        .upload(filePath, file, {
+        .upload(filePath, fileToUpload, {
           cacheControl: '3600',
           upsert: false
         });
@@ -734,7 +749,7 @@ const Chat = () => {
 
       setMessage(prev => prev + `\n[فایل: ${file.name}](${publicUrl})`);
       toast.dismiss(loadingToastId);
-      toast.success("فایل با موفقیت آپلود شد", { duration: 2000 });
+      toast.success(`فایل آپلود شد (${formatFileSize(fileToUpload.size)})`, { duration: 2000 });
     } catch (error: any) {
       console.error('Error uploading file:', error);
       const errorMsg = error?.message || 'خطا در آپلود فایل';
