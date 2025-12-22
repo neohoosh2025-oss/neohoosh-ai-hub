@@ -62,8 +62,8 @@ export const MessageBubble = memo(function MessageBubble({
         <div className={cn(
           "px-4 py-2.5",
           isUser 
-            ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm" 
-            : "bg-muted rounded-2xl rounded-bl-sm"
+            ? "bg-primary text-primary-foreground rounded-t-2xl rounded-bl-2xl rounded-br-sm" 
+            : "bg-muted rounded-t-2xl rounded-br-2xl rounded-bl-sm"
         )}>
           {imageUrl && (
             <img 
@@ -80,18 +80,23 @@ export const MessageBubble = memo(function MessageBubble({
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
-                  code: ({ className, children, ...props }: any) => {
+                  code: ({ className, children, node, ...props }: any) => {
                     const match = /language-(\w+)/.exec(className || '');
-                    const inline = !match;
-                    return inline ? (
-                      <InlineCode {...props}>{children}</InlineCode>
-                    ) : (
+                    // Check if it's a block code (has language) or truly inline
+                    const isBlock = match || (node?.position?.start?.line !== node?.position?.end?.line);
+                    
+                    if (!isBlock) {
+                      return <InlineCode {...props}>{children}</InlineCode>;
+                    }
+                    
+                    return (
                       <CodeBlock 
-                        language={match[1]} 
+                        language={match?.[1] || 'text'} 
                         code={String(children).replace(/\n$/, '')}
                       />
                     );
                   },
+                  pre: ({ children }) => <>{children}</>,
                   table: ({ children }) => (
                     <div className="overflow-x-auto max-w-full my-2 rounded-lg border border-border/50">
                       <table className="min-w-full text-sm">{children}</table>
