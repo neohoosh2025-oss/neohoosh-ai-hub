@@ -384,9 +384,9 @@ const Chat = () => {
       }
 
       // Save final AI message (only for logged in users)
-      if (accumulatedContent && user && currentConversationId && !currentConversationId.startsWith('guest-')) {
+      if (accumulatedContent && user && convId && !convId.startsWith('guest-')) {
         await supabase.from('messages').insert({
-          conversation_id: currentConversationId,
+          conversation_id: convId,
           role: 'assistant',
           content: accumulatedContent
         });
@@ -404,7 +404,7 @@ const Chat = () => {
 
         // Extract and save memories asynchronously (don't wait for it)
         supabase.functions.invoke('extract-memory', {
-          body: { conversationId: currentConversationId }
+          body: { conversationId: convId }
         }).then(({ data, error }) => {
           if (error) {
             console.error('Memory extraction error:', error);
@@ -418,9 +418,9 @@ const Chat = () => {
       // Handle abort - save partial content if any
       if (error.name === 'AbortError') {
         const partialContent = accumulatedContentRef.current;
-        if (partialContent && user && currentConversationId && !currentConversationId.startsWith('guest-')) {
+        if (partialContent && user && convId && !convId.startsWith('guest-')) {
           await supabase.from('messages').insert({
-            conversation_id: currentConversationId,
+            conversation_id: convId,
             role: 'assistant',
             content: partialContent
           });

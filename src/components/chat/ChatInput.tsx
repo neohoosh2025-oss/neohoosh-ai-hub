@@ -35,8 +35,13 @@ export function ChatInput({
   }, [value]);
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    // Ctrl+Enter or Cmd+Enter to send, Enter adds new line
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    // Enter to send, Ctrl+Enter or Cmd+Enter for new line
+    if (e.key === 'Enter') {
+      if (e.ctrlKey || e.metaKey || e.shiftKey) {
+        // Allow new line with Ctrl/Cmd/Shift+Enter
+        return;
+      }
+      // Plain Enter sends the message
       e.preventDefault();
       if (!disabled && value.trim()) {
         onSend();
