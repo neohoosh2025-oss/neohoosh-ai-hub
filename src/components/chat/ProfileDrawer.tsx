@@ -6,14 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { 
-  User, Mail, LogOut, Loader2, Check, X, MessageSquare, Calendar, Brain, ChevronLeft, Download, Moon, Sun
+  User, Mail, LogOut, Loader2, Check, X, MessageSquare, Calendar, Brain, ChevronLeft, Download
 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
 } from "@/components/ui/sheet";
 import { usePWA } from "@/hooks/usePWA";
-import { useTheme } from "next-themes";
 
 interface ProfileDrawerProps {
   open: boolean;
@@ -24,7 +23,6 @@ interface ProfileDrawerProps {
 export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) {
   const navigate = useNavigate();
   const { isInstalled, canInstall, installPrompt } = usePWA();
-  const { theme, setTheme } = useTheme();
   
   const [saving, setSaving] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -295,38 +293,6 @@ export function ProfileDrawer({ open, onOpenChange, user }: ProfileDrawerProps) 
                       <div className="text-right">
                         <p className="text-sm font-medium text-foreground/80">تنظیمات AI</p>
                         <p className="text-[10px] text-muted-foreground/50">لحن، حافظه و شخصی‌سازی</p>
-                      </div>
-                    </div>
-                    <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />
-                  </div>
-                </button>
-              </motion.div>
-
-              {/* Theme Toggle */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.28, duration: 0.4 }}
-                className="mt-2"
-              >
-                <button
-                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="w-full bg-card/30 rounded-2xl border border-border/30 p-4 hover:bg-card/50 transition-colors"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/10 flex items-center justify-center">
-                        {theme === 'dark' ? (
-                          <Sun className="w-5 h-5 text-amber-500" />
-                        ) : (
-                          <Moon className="w-5 h-5 text-amber-500" />
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-foreground/80">
-                          {theme === 'dark' ? 'حالت روشن' : 'حالت تاریک'}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground/50">تغییر تم برنامه</p>
                       </div>
                     </div>
                     <ChevronLeft className="w-4 h-4 text-muted-foreground/40" />

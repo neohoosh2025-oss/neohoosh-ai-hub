@@ -1041,67 +1041,55 @@ const Chat = () => {
                     />
                   )}
                   
-                  {/* Assistant message actions - Modern style */}
+                  {/* Assistant message actions - ChatGPT Style */}
                   {msg.role === 'assistant' && msg.content && !isLoading && (
-                    <div className="flex items-center gap-1 mt-3 pt-2.5 border-t border-border/30">
+                    <div className="flex items-center gap-3 mt-4">
+                      <button
+                        onClick={() => handleCopyMessage(msg.content, index)}
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                        title="کپی"
+                      >
+                        {copiedIndex === index ? (
+                          <Check className="w-4 h-4 text-emerald-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                      
                       <button
                         onClick={() => handleRateMessage(index, 'like')}
-                        className={`flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg transition-all ${
+                        className={`p-2 rounded-lg transition-all ${
                           ratedMessages.get(index) === 'like' 
-                            ? 'text-emerald-600 bg-emerald-500/10 dark:text-emerald-400' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                            ? 'text-emerald-500 bg-emerald-500/10' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                         }`}
+                        title="مفید بود"
                       >
-                        <ThumbsUp className={`w-3.5 h-3.5 ${ratedMessages.get(index) === 'like' ? 'fill-current' : ''}`} />
-                        <span className="hidden sm:inline">مفید</span>
+                        <ThumbsUp className={`w-4 h-4 ${ratedMessages.get(index) === 'like' ? 'fill-current' : ''}`} />
                       </button>
                       
                       <button
                         onClick={() => handleRateMessage(index, 'dislike')}
-                        className={`flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg transition-all ${
+                        className={`p-2 rounded-lg transition-all ${
                           ratedMessages.get(index) === 'dislike' 
-                            ? 'text-rose-600 bg-rose-500/10 dark:text-rose-400' 
-                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                            ? 'text-rose-500 bg-rose-500/10' 
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                         }`}
+                        title="غیرمفید"
                       >
-                        <ThumbsDown className={`w-3.5 h-3.5 ${ratedMessages.get(index) === 'dislike' ? 'fill-current' : ''}`} />
-                        <span className="hidden sm:inline">غیرمفید</span>
-                      </button>
-                      
-                      <div className="w-px h-4 bg-border/50 mx-1" />
-                      
-                      <button
-                        onClick={() => handleCopyMessage(msg.content, index)}
-                        className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
-                      >
-                        {copiedIndex === index ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-emerald-500" />
-                            <span className="hidden sm:inline text-emerald-500">کپی شد</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">کپی</span>
-                          </>
-                        )}
+                        <ThumbsDown className={`w-4 h-4 ${ratedMessages.get(index) === 'dislike' ? 'fill-current' : ''}`} />
                       </button>
                       
                       <button
                         onClick={() => handleSummarize(index)}
                         disabled={summarizingIndex === index}
-                        className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all disabled:opacity-50"
+                        className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all disabled:opacity-50"
+                        title="خلاصه"
                       >
                         {summarizingIndex === index ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            <span className="hidden sm:inline">خلاصه...</span>
-                          </>
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <>
-                            <FileText className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">خلاصه</span>
-                          </>
+                          <FileText className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -1113,28 +1101,43 @@ const Chat = () => {
 
           {isLoading && messages[messages.length - 1]?.role === 'assistant' && !messages[messages.length - 1]?.content && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-start gap-3"
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-2"
             >
-              <div className="w-8 h-8 flex-shrink-0 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
+              <div className="w-7 h-7 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                </motion.div>
               </div>
-              <div className="bg-card rounded-2xl px-4 py-3 border border-border/50">
-                <div className="flex gap-1.5">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-2 h-2 bg-primary/60 rounded-full"
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{
-                        duration: 0.5,
-                        repeat: Infinity,
-                        delay: i * 0.12,
-                      }}
-                    />
-                  ))}
-                </div>
+              <div className="flex items-center gap-1 py-2">
+                <motion.span
+                  className="w-1.5 h-1.5 bg-primary/70 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ duration: 1.2, repeat: Infinity, delay: 0 }}
+                />
+                <motion.span
+                  className="w-1.5 h-1.5 bg-primary/70 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }}
+                />
+                <motion.span
+                  className="w-1.5 h-1.5 bg-primary/70 rounded-full"
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{ duration: 1.2, repeat: Infinity, delay: 0.4 }}
+                />
               </div>
             </motion.div>
           )}
