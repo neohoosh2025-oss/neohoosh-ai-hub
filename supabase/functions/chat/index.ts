@@ -588,10 +588,36 @@ ${customPrompt ? `- دستور سفارشی: ${customPrompt}` : ""}`;
       systemPrompt += userContext;
     }
 
+    // Smart message limiting to avoid context window overflow
+    // GPT-4o has ~128k context, but we limit to ~30 messages to be safe and fast
+    const MAX_MESSAGES = 30;
+    const MAX_TOTAL_CHARS = 80000; // ~20k tokens estimate
+    
+    let messagesToSend = [...messages];
+    
+    // If too many messages, keep first message (for context) and last N messages
+    if (messagesToSend.length > MAX_MESSAGES) {
+      console.log(`[Chat] Trimming messages from ${messagesToSend.length} to ${MAX_MESSAGES}`);
+      const firstMessage = messagesToSend[0];
+      const recentMessages = messagesToSend.slice(-MAX_MESSAGES + 1);
+      messagesToSend = [firstMessage, ...recentMessages];
+    }
+    
+    // Also check total character count to prevent token overflow
+    let totalChars = messagesToSend.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+    while (totalChars > MAX_TOTAL_CHARS && messagesToSend.length > 4) {
+      console.log(`[Chat] Content too long (${totalChars} chars), removing oldest message`);
+      // Remove the second message (keep first for context)
+      messagesToSend.splice(1, 1);
+      totalChars = messagesToSend.reduce((sum, m) => sum + (m.content?.length || 0), 0);
+    }
+    
+    console.log(`[Chat] Sending ${messagesToSend.length} messages (${totalChars} chars)`);
+
     // Prepare messages - preserve reasoning_details if present
     const apiMessages = [
       { role: "system", content: systemPrompt },
-      ...messages.map((msg: any) => {
+      ...messagesToSend.map((msg: any) => {
         const message: any = {
           role: msg.role,
           content: msg.content
