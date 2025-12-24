@@ -187,6 +187,7 @@ const Chat = () => {
   const [userScrolled, setUserScrolled] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showContextLimitDialog, setShowContextLimitDialog] = useState(false);
   const [guestQuestionCount, setGuestQuestionCount] = useState(() => {
     const saved = localStorage.getItem(GUEST_QUESTIONS_KEY);
     return saved ? parseInt(saved, 10) : 0;
@@ -500,6 +501,14 @@ const Chat = () => {
         return; // Don't show error for manual stop
       }
       
+      // Check if it's a context limit error
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes('context') || errorMessage.includes('token') || errorMessage.includes('limit') || 
+          errorMessage.includes('too long') || errorMessage.includes('maximum')) {
+        setShowContextLimitDialog(true);
+        return;
+      }
+      
       console.error("Error sending message:", error);
       toast.error("خطا در ارسال پیام", { duration: 2000 });
     } finally {
@@ -606,9 +615,19 @@ const Chat = () => {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+    // On mobile, Enter creates new line. On desktop, Enter sends (unless Shift is pressed)
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    
+    if (e.key === 'Enter') {
+      if (isMobile) {
+        // Mobile: always allow new line, only send via button
+        return;
+      }
+      // Desktop: Enter sends, Shift+Enter creates new line
+      if (!e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
     }
   };
 
@@ -947,66 +966,70 @@ const Chat = () => {
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 ml-3 mt-1 flex-shrink-0 rounded-xl bg-primary/15 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-primary" />
+                  <div className="w-7 h-7 ml-2 mt-1 flex-shrink-0 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
                   </div>
                 )}
                 
                 <div
-                  className={`max-w-[85%] sm:max-w-[80%] px-4 py-3 ${
+                  className={`max-w-[85%] sm:max-w-[80%] ${
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-t-2xl rounded-r-2xl rounded-bl-2xl rounded-br-md'
-                      : 'bg-card border border-border/50 rounded-t-2xl rounded-l-2xl rounded-br-2xl rounded-bl-md'
+                      ? 'bg-muted/80 text-foreground px-4 py-3 rounded-2xl rounded-br-md'
+                      : ''
                   }`}
                 >
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} alt="Generated" className="rounded-xl w-full mb-2" />
                   ) : null}
-                  <div className={`prose prose-sm max-w-none leading-relaxed ${msg.role === 'user' ? 'prose-invert [&_*]:text-white' : '[&_*]:text-foreground'} [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-6 [&_h1]:mb-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-5 [&_h2]:mb-2.5 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:leading-7 [&_p]:mb-3 [&_ul]:my-3 [&_ul]:space-y-1.5 [&_ol]:my-3 [&_ol]:space-y-1.5 [&_li]:leading-7 [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_blockquote]:border-l-2 [&_blockquote]:border-primary [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-4`}>
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        code: ({ node, className, children, ...props }) => {
-                          const isInline = !className;
-                          
-                          if (isInline) {
-                            return <InlineCode>{children}</InlineCode>;
-                          }
-                          return (
-                            <code className="font-mono text-[13px] leading-6" dir="ltr" {...props}>
-                              {children}
-                            </code>
-                          );
-                        },
-                        pre: ({ children }) => {
-                          // Extract language and code from code element
-                          const codeElement = (children as any)?.props;
-                          const className = codeElement?.className || '';
-                          const language = className.replace('language-', '') || 'text';
-                          const codeContent = String(codeElement?.children || '').trim();
-                          
-                          return (
-                            <CodeBlock 
-                              code={codeContent} 
-                              language={language}
-                            />
-                          );
-                        },
-                        table: ({ children }) => (
-                          <div className="overflow-x-auto max-w-full my-3 rounded-lg border border-border/50">
-                            <table className="min-w-full text-xs border-collapse">{children}</table>
-                          </div>
-                        ),
-                        thead: ({ children }) => <thead className="bg-muted/50">{children}</thead>,
-                        tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
-                        tr: ({ children }) => <tr className="hover:bg-muted/30">{children}</tr>,
-                        th: ({ children }) => <th className="px-2 py-1.5 text-right font-medium text-[11px] whitespace-nowrap border border-border/30">{children}</th>,
-                        td: ({ children }) => <td className="px-2 py-1.5 text-[11px] whitespace-nowrap border border-border/30">{children}</td>,
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
+                  
+                  {msg.role === 'user' ? (
+                    <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  ) : (
+                    <div className="prose prose-sm max-w-none leading-relaxed [&_*]:text-foreground [&_h1]:text-lg [&_h1]:font-bold [&_h1]:mt-4 [&_h1]:mb-2 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:mt-3 [&_h2]:mb-2 [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:mt-2 [&_h3]:mb-1 [&_p]:leading-7 [&_p]:mb-2 [&_p]:last:mb-0 [&_ul]:my-2 [&_ul]:space-y-1 [&_ol]:my-2 [&_ol]:space-y-1 [&_li]:leading-7 [&_table]:border-collapse [&_table]:w-full [&_th]:border [&_th]:border-border [&_th]:p-2 [&_th]:bg-muted/50 [&_th]:font-semibold [&_th]:text-xs [&_td]:border [&_td]:border-border [&_td]:p-2 [&_td]:text-sm [&_blockquote]:border-r-2 [&_blockquote]:border-primary [&_blockquote]:pr-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground [&_blockquote]:my-3">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          code: ({ node, className, children, ...props }) => {
+                            const isInline = !className;
+                            
+                            if (isInline) {
+                              return <InlineCode>{children}</InlineCode>;
+                            }
+                            return (
+                              <code className="font-mono text-[13px] leading-6" dir="ltr" {...props}>
+                                {children}
+                              </code>
+                            );
+                          },
+                          pre: ({ children }) => {
+                            const codeElement = (children as any)?.props;
+                            const className = codeElement?.className || '';
+                            const language = className.replace('language-', '') || 'text';
+                            const codeContent = String(codeElement?.children || '').trim();
+                            
+                            return (
+                              <CodeBlock 
+                                code={codeContent} 
+                                language={language}
+                              />
+                            );
+                          },
+                          table: ({ children }) => (
+                            <div className="overflow-x-auto max-w-full my-3 rounded-lg border border-border/50">
+                              <table className="min-w-full text-xs border-collapse">{children}</table>
+                            </div>
+                          ),
+                          thead: ({ children }) => <thead className="bg-muted/50">{children}</thead>,
+                          tbody: ({ children }) => <tbody className="divide-y divide-border/30">{children}</tbody>,
+                          tr: ({ children }) => <tr className="hover:bg-muted/30">{children}</tr>,
+                          th: ({ children }) => <th className="px-2 py-1.5 text-right font-medium text-[11px] whitespace-nowrap border border-border/30">{children}</th>,
+                          td: ({ children }) => <td className="px-2 py-1.5 text-[11px] whitespace-nowrap border border-border/30">{children}</td>,
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  )}
                   
                   {/* User message - Long press to show copy */}
                   {msg.role === 'user' && msg.content && (
@@ -1182,14 +1205,6 @@ const Chat = () => {
               accept="image/*,.pdf,.doc,.docx,.txt"
               onChange={handleFileUpload}
             />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 flex-shrink-0 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Paperclip className="w-5 h-5" />
-            </Button>
 
 
             <Textarea
@@ -1374,6 +1389,56 @@ const Chat = () => {
               className="w-full text-muted-foreground hover:text-foreground"
             >
               بعداً
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Context Limit Dialog */}
+      <Dialog open={showContextLimitDialog} onOpenChange={setShowContextLimitDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader className="text-center">
+            <motion.div 
+              className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center"
+              initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ type: "spring", duration: 0.6 }}
+            >
+              <motion.span 
+                className="text-4xl"
+                animate={{ y: [0, -5, 0] }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              >
+                📝
+              </motion.span>
+            </motion.div>
+            <DialogTitle className="text-xl font-bold text-center">
+              گفتگو خیلی طولانی شده!
+            </DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground leading-relaxed mt-3">
+              این مکالمه به حداکثر طول مجاز رسیده.
+              <br />
+              <span className="text-foreground/80 font-medium">آیا می‌خواهی در یک گفتگوی جدید ادامه بدی؟</span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-5">
+            <Button 
+              onClick={() => {
+                setShowContextLimitDialog(false);
+                handleNewChat();
+                toast.success("گفتگوی جدید شروع شد", { duration: 2000 });
+              }} 
+              className="w-full h-12 rounded-2xl font-medium gap-2 bg-gradient-to-r from-primary to-primary/80"
+            >
+              <Plus className="w-4 h-4" />
+              بله، گفتگوی جدید
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowContextLimitDialog(false)}
+              className="w-full h-11 rounded-2xl text-muted-foreground hover:text-foreground border-border/50"
+            >
+              فعلاً نه، همینجا می‌مونم
             </Button>
           </div>
         </DialogContent>

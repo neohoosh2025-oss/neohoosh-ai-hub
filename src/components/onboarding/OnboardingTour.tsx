@@ -33,13 +33,6 @@ const tourSteps: TourStep[] = [
     icon: <History className="h-8 w-8" />,
     position: 'center',
   },
-  {
-    id: 'settings',
-    title: 'تنظیمات',
-    description: 'از منوی تنظیمات می‌توانید تم، زبان و سایر گزینه‌ها را شخصی‌سازی کنید.',
-    icon: <Settings className="h-8 w-8" />,
-    position: 'center',
-  },
 ];
 
 interface OnboardingTourProps {
