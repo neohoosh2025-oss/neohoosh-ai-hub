@@ -24,7 +24,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { ProfileDrawer } from "@/components/chat/ProfileDrawer";
-import { ContextProgress } from "@/components/chat/ContextProgress";
 import {
   Dialog,
   DialogContent,
@@ -851,10 +850,9 @@ const Chat = () => {
             <div className="w-9" />
           )}
           
-          {/* Center: Brand + Context Progress */}
-          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+          {/* Center: Brand */}
+          <div className="absolute left-1/2 -translate-x-1/2">
             <h1 className="text-xl font-brand font-semibold text-foreground tracking-tight">NeoHoosh</h1>
-            <ContextProgress messages={messages} />
           </div>
           
           {/* Right: Profile or Login */}
