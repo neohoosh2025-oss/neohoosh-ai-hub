@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,9 +7,19 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Auth check
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Authentication required' }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: authHeader } } });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Invalid authentication' }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
   const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
@@ -21,13 +32,11 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body
     const body = await req.json().catch(() => ({}));
     const voice = body.voice || "alloy";
 
     console.log("Requesting ephemeral token for voice:", voice);
 
-    // Request ephemeral token from OpenAI with optimized configuration
     const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
       method: "POST",
       headers: {
@@ -66,7 +75,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenAI API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: `OpenAI API error: ${response.status}`, details: errorText }), {
+      return new Response(JSON.stringify({ error: `OpenAI API error: ${response.status}` }), {
         status: response.status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -74,11 +83,6 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log("✅ Session created successfully with optimized config");
-    console.log("Session config:", JSON.stringify({
-      voice: data.voice,
-      modalities: data.modalities,
-      turn_detection: data.turn_detection
-    }));
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
