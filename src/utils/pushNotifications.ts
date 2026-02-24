@@ -48,21 +48,21 @@ export const subscribeToPush = async (): Promise<PushSubscription | null> => {
     const registration = await navigator.serviceWorker.ready;
     
     // Check if already subscribed
-    const existingSubscription = await registration.pushManager.getSubscription();
+    const existingSubscription = await (registration as any).pushManager?.getSubscription();
     if (existingSubscription) {
       return existingSubscription;
     }
 
     // Subscribe with VAPID key (only if configured)
     if (VAPID_PUBLIC_KEY && VAPID_PUBLIC_KEY !== 'YOUR_VAPID_PUBLIC_KEY') {
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
       return subscription;
     } else {
       // Subscribe without VAPID for basic push support
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true
       });
       return subscription;
@@ -79,7 +79,7 @@ export const unsubscribeFromPush = async (): Promise<boolean> => {
   
   try {
     const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.getSubscription();
+    const subscription = await (registration as any).pushManager?.getSubscription();
     
     if (subscription) {
       await subscription.unsubscribe();
